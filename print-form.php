@@ -1,0 +1,211 @@
+<?php 
+    $pageTitle = "ভর্তি ফরম প্রিন্ট - নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা"; 
+?>
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo $pageTitle; ?></title>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c6e49;
+            --secondary-color: #1a472a;
+        }
+
+        body { font-family: 'Hind Siliguri', sans-serif; background: #e0e0e0; margin: 0; padding: 0; color: #333; }
+        
+        @media print {
+            body { background: white; }
+            .no-print { display: none; }
+            .print-container { box-shadow: none !important; margin: 0 !important; width: 100% !important; border: 2px solid var(--primary-color) !important; }
+            .section-title { -webkit-print-color-adjust: exact; }
+        }
+
+        .print-container {
+            background: white;
+            width: 210mm;
+            min-height: 297mm;
+            margin: 30px auto;
+            padding: 15mm 18mm;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            position: relative;
+            box-sizing: border-box;
+            border: 4px double var(--primary-color);
+            overflow: hidden;
+        }
+
+        /* লোগো জলছাপ (Watermark) */
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 450px;
+            height: 450px;
+            opacity: 0.06; /* জলছাপের ঘনত্ব এখান থেকে নিয়ন্ত্রণ করুন */
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .content-body {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* হেডার সেটআপ */
+        .header-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .logo-top { width: 90px; height: auto; margin-right: 20px; }
+
+        .header-text { text-align: center; }
+        .header-text h1 { color: var(--primary-color); margin: 0; font-size: 26px; font-weight: 700; letter-spacing: 0.5px; }
+        .header-text p { margin: 3px 0; font-size: 15px; color: #444; font-weight: 600; }
+        
+        .photo-box {
+            width: 115px; height: 135px; border: 1px solid #000;
+            position: absolute; top: 25px; right: 25px;
+            text-align: center; font-size: 11px;
+            display: flex; align-items: center; justify-content: center;
+            background: #fff;
+        }
+
+        .form-title { text-align: center; margin: 20px 0; }
+        .form-title span {
+            background: var(--primary-color);
+            color: #fff;
+            padding: 6px 35px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            background: #f0f7f2;
+            padding: 6px 12px;
+            font-weight: bold;
+            margin-top: 18px;
+            border-left: 6px solid var(--primary-color);
+            font-size: 16px;
+            color: var(--secondary-color);
+            border-bottom: 1px solid #d1e7d9;
+        }
+
+        .field { display: flex; align-items: flex-end; margin-bottom: 14px; }
+        .label { font-weight: 600; font-size: 14.5px; color: #222; white-space: nowrap; }
+        .dotted-line {
+            border-bottom: 1px dotted #555; flex-grow: 1;
+            margin-left: 8px; height: 18px;
+        }
+
+        .row { display: flex; gap: 30px; }
+        .col { flex: 1; }
+
+        .signature-area {
+            margin-top: 70px; display: flex; justify-content: space-between;
+        }
+        .sig-box { border-top: 1.5px solid #333; width: 170px; text-align: center; font-size: 14px; padding-top: 5px; font-weight: 600; }
+
+        .btn-print {
+            position: fixed; bottom: 30px; right: 30px;
+            background: var(--primary-color); color: white; padding: 14px 28px;
+            border: none; border-radius: 50px; cursor: pointer; font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); font-size: 16px;
+            transition: 0.3s;
+        }
+        .btn-print:hover { background: var(--secondary-color); transform: scale(1.05); }
+    </style>
+</head>
+<body>
+
+    <button class="btn-print no-print" onclick="window.print()">🖨️ ফরমটি প্রিন্ট করুন</button>
+
+    <div class="print-container">
+        <img src="logo.png" alt="" class="watermark">
+
+        <div class="content-body">
+            <div class="photo-box">১ কপি পাসপোর্ট<br>সাইজ ছবি</div>
+
+            <div class="header-wrapper">
+                <img src="logo.png" alt="Madrasah Logo" class="logo-top"> 
+                <div class="header-text">
+                    <h1>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h1>
+                    <p>ডাকঘর: নলতা মোবারকনগর, উপজেলা: কালিগঞ্জ, জেলা: সাতক্ষীরা</p>
+                    <p>স্থাপিত: ১৯৮৮ খ্রি. | EIIN: ১১৮৭৭৮</p>
+                </div>
+            </div>
+
+            <div class="form-title"><span>ভর্তি আবেদন ফরম</span></div>
+
+            <div class="section-title">১. শিক্ষার্থীর প্রাথমিক তথ্য</div>
+            <div class="row">
+                <div class="col field"><span class="label">রোল নম্বর:</span><span class="dotted-line"></span></div>
+                <div class="col field"><span class="label">আইডি নম্বর:</span><span class="dotted-line"></span></div>
+            </div>
+            <div class="field"><span class="label">শিক্ষার্থীর নাম (বাংলা):</span><span class="dotted-line"></span></div>
+            <div class="field"><span class="label">Student Name (English):</span><span class="dotted-line"></span></div>
+            
+            <div class="row">
+                <div class="col field"><span class="label">শ্রেণী:</span><span class="dotted-line"></span></div>
+                <div class="col field"><span class="label">ছাত্র / ছাত্রী:</span><span class="dotted-line"></span></div>
+            </div>
+            <div class="row">
+                <div class="col field"><span class="label">জন্ম তারিখ:</span><span class="dotted-line"></span></div>
+                <div class="col field"><span class="label">জন্ম নিবন্ধন নম্বর:</span><span class="dotted-line"></span></div>
+            </div>
+
+            <div class="section-title">২. পিতা ও মাতার তথ্য</div>
+            <div class="field"><span class="label">পিতার নাম (বাংলা):</span><span class="dotted-line"></span></div>
+            <div class="field"><span class="label">Father's Name (EN):</span><span class="dotted-line"></span></div>
+            <div class="row">
+                <div class="col field"><span class="label">পিতার এনআইডি নং:</span><span class="dotted-line"></span></div>
+                <div class="col field"><span class="label">পিতার জন্ম তারিখ:</span><span class="dotted-line"></span></div>
+            </div>
+
+            <div class="field"><span class="label">মাতার নাম (বাংলা):</span><span class="dotted-line"></span></div>
+            <div class="field"><span class="label">Mother's Name (EN):</span><span class="dotted-line"></span></div>
+            <div class="row">
+                <div class="col field"><span class="label">মাতার এনআইডি নং:</span><span class="dotted-line"></span></div>
+                <div class="col field"><span class="label">মাতার জন্ম তারিখ:</span><span class="dotted-line"></span></div>
+            </div>
+
+            <div class="section-title">৩. যোগাযোগ ও ঠিকানা</div>
+            <div class="row">
+                <div class="col field"><span class="label">মোবাইল নম্বর:</span><span class="dotted-line"></span></div>
+                <div class="col field"><span class="label">নগদ নম্বর:</span><span class="dotted-line"></span></div>
+            </div>
+            <div class="field"><span class="label">গ্রাম/রাস্তা ও ইউনিয়ন:</span><span class="dotted-line"></span></div>
+            <div class="row">
+                <div class="col field"><span class="label">উপজেলা:</span><span class="dotted-line"></span></div>
+                <div class="col field"><span class="label">জেলা:</span><span class="dotted-line"></span></div>
+            </div>
+
+            <div class="section-title">৪. পূর্ববর্তী প্রতিষ্ঠানের তথ্য</div>
+            <div class="field"><span class="label">প্রতিষ্ঠানের নাম:</span><span class="dotted-line"></span></div>
+            <div class="row">
+                <div class="col field"><span class="label">রেজিস্ট্রেশন নম্বর:</span><span class="dotted-line"></span></div>
+                <div class="col field"><span class="label">পাশের সন:</span><span class="dotted-line"></span></div>
+            </div>
+
+            <div class="signature-area">
+                <div class="sig-box">অভিভাবকের স্বাক্ষর</div>
+                <div class="sig-box">আবেদনকারীর স্বাক্ষর</div>
+                <div class="sig-box">অধ্যক্ষ/অফিস স্বাক্ষর</div>
+            </div>
+
+            <div style="text-align:center; margin-top: 35px;">
+                <p style="font-size:12px; color:#444;">আবেদনের তারিখ: ...... / ...... / ২০...... খ্রি.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
