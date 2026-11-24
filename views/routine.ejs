@@ -1,0 +1,39 @@
+<%- include('partials/header') %>
+<main class="container" style="max-width: 1080px; margin: 22px auto 36px auto; padding: 0 16px;">
+    <section class="content-card" style="background:#fff; border:1px solid rgba(15,23,42,0.08); border-radius:16px; padding:24px; box-shadow:0 4px 16px rgba(15,23,42,0.04);">
+        <h1 style="font-size:1.35rem; font-weight:700; color:#14532d; margin-bottom:6px;">ক্লাস রুটিন</h1>
+        <p style="color:#475569; font-size:0.92rem; margin-bottom:18px;">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসার শ্রেণিভিত্তিক ক্লাস রুটিন</p>
+
+        <div style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:0.94rem; font-variant-numeric:tabular-nums;">
+                <thead>
+                    <tr style="background:#f8faf9; color:#14532d; text-align:left; border-bottom:1px solid rgba(15,23,42,0.1);">
+                        <th style="padding:12px;">শ্রেণি / বিভাগ</th>
+                        <th style="padding:12px;">বার</th>
+                        <th style="padding:12px;">সময়</th>
+                        <th style="padding:12px;">বিষয়</th>
+                        <th style="padding:12px;">শিক্ষক</th>
+                        <th style="padding:12px;">কক্ষ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (routines && routines.length > 0) { %>
+                        <% routines.forEach(function(item) { %>
+                            <tr style="border-bottom:1px solid rgba(15,23,42,0.06);">
+                                <td style="padding:12px; font-weight:700; color:#0f172a;"><%= item.className %></td>
+                                <td style="padding:12px;"><%= item.day %></td>
+                                <td style="padding:12px; white-space:nowrap;"><%= item.time %></td>
+                                <td style="padding:12px;"><%= item.subject %></td>
+                                <td style="padding:12px;"><%= item.teacher %></td>
+                                <td style="padding:12px;"><%= item.room %></td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr><td colspan="6" style="padding:20px; text-align:center; color:#64748b;">এখনো কোনো রুটিন যুক্ত করা হয়নি।</td></tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+<%- include('partials/footer') %>

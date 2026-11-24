@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>রুটিন, সিলেবাস, ফি ও শিক্ষার্থী সংখ্যা</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Hind Siliguri', sans-serif; background: #f6f8f7; color: #0f172a; padding: 18px; }
+        .wrap { max-width: 1180px; margin: 0 auto; }
+        .sub-tabs { display: flex; gap: 8px; flex-wrap: wrap; background: #fff; border: 1px solid rgba(15,23,42,0.08); border-radius: 12px; padding: 8px; margin-bottom: 16px; }
+        .sub-tab { flex: 1 1 150px; min-height: 40px; border: none; border-radius: 8px; background: transparent; color: #475569; font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+        .sub-tab.active { background: #15803d; color: #fff; }
+        .grid { display: grid; grid-template-columns: 330px 1fr; gap: 18px; align-items: start; }
+        .card { background: #fff; border: 1px solid rgba(15,23,42,0.08); border-radius: 14px; padding: 20px; }
+        .card h2 { font-size: 1.05rem; font-weight: 700; color: #14532d; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid rgba(15,23,42,0.08); }
+        .field { margin-bottom: 12px; }
+        .field label { display: block; font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 4px; }
+        .field input, .field textarea { width: 100%; padding: 9px 11px; border: 1px solid rgba(15,23,42,0.14); border-radius: 9px; background: #f8faf9; font-family: inherit; font-size: 0.91rem; outline: none; }
+        .field input:focus, .field textarea:focus { border-color: #15803d; background: #fff; }
+        .btn-save { width: 100%; min-height: 42px; border: none; border-radius: 9px; background: #15803d; color: #fff; font-family: inherit; font-size: 0.94rem; font-weight: 600; cursor: pointer; }
+        .btn-save:hover { background: #14532d; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+        th { background: #f8faf9; color: #14532d; text-align: left; padding: 10px 12px; border-bottom: 1px solid rgba(15,23,42,0.09); white-space: nowrap; }
+        td { padding: 10px 12px; border-bottom: 1px solid rgba(15,23,42,0.06); vertical-align: middle; }
+        .btn-del { padding: 5px 10px; border-radius: 7px; background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; font-family: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
+        .status-msg { padding: 8px 12px; border-radius: 8px; background: #dcfce7; color: #166534; font-weight: 600; font-size: 0.86rem; margin-bottom: 12px; display: none; }
+        @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <% if (!isSingle) { %>
+        <div class="sub-tabs" role="tablist">
+            <button type="button" class="sub-tab active" data-section="routines" onclick="switchSection('routines')">ক্লাস রুটিন</button>
+            <button type="button" class="sub-tab" data-section="syllabus" onclick="switchSection('syllabus')">সিলেবাস</button>
+            <button type="button" class="sub-tab" data-section="fees" onclick="switchSection('fees')">ফি কাঠামো</button>
+            <button type="button" class="sub-tab" data-section="registrations" onclick="switchSection('registrations')">রেজিস্ট্রেশন</button>
+            <button type="button" class="sub-tab" data-section="studentStats" onclick="switchSection('studentStats')">ছাত্র-ছাত্রী সংখ্যা</button>
+        </div>
+        <% } %>
+
+        <div class="grid">
+            <div class="card">
+                <h2 id="formTitle">নতুন তথ্য যুক্ত করুন</h2>
+                <div id="statusMsg" class="status-msg"></div>
+                <form id="academicForm"></form>
+            </div>
+
+            <div class="card">
+                <h2 id="tableTitle">তালিকা (সরাসরি ওয়েবসাইটে প্রকাশিত)</h2>
+                <div class="table-wrap">
+                    <table id="dataTable"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let portalData = <%- JSON.stringify(academicData || {}) %>;
+        let activeSection = 'routines';
+
+        const schema = {
+            routines: {
+                title: 'ক্লাস রুটিন',
+                fields: [
+                    { key: 'className', label: 'শ্রেণি / বিভাগ', placeholder: 'যেমন: দাখিল (ষষ্ঠ - দশম)', required: true },
+                    { key: 'day', label: 'বার', placeholder: 'যেমন: রবিবার - বৃহস্পতিবার', required: true },
+                    { key: 'time', label: 'সময়', placeholder: 'যেমন: ১০:০০ - ১০:৪৫', required: true },
+                    { key: 'subject', label: 'বিষয়', placeholder: 'যেমন: আরবি ১ম পত্র', required: true },
+                    { key: 'teacher', label: 'শিক্ষক', placeholder: 'শিক্ষকের নাম' },
+                    { key: 'room', label: 'কক্ষ নং', placeholder: 'যেমন: কক্ষ-১০২' },
+                ],
+                columns: [
+                    { key: 'className', label: 'শ্রেণি' },
+                    { key: 'day', label: 'বার' },
+                    { key: 'time', label: 'সময়' },
+                    { key: 'subject', label: 'বিষয়' },
+                    { key: 'teacher', label: 'শিক্ষক' },
+                    { key: 'room', label: 'কক্ষ' },
+                ],
+            },
+            syllabus: {
+                title: 'একাডেমিক সিলেবাস',
+                fields: [
+                    { key: 'className', label: 'শ্রেণি / বিভাগ', placeholder: 'যেমন: দাখিল সপ্তম', required: true },
+                    { key: 'examTerm', label: 'পরীক্ষা', placeholder: 'যেমন: বার্ষিক পরীক্ষা ২০২৬', required: true },
+                    { key: 'subject', label: 'বিষয়সমূহ', placeholder: 'বিষয়ের তালিকা', required: true },
+                    { key: 'topics', label: 'পাঠ্যসূচি বিবরণ', type: 'textarea', placeholder: 'অধ্যায় বা সিলেবাস লিখুন' },
+                    { key: 'note', label: 'মন্তব্য', placeholder: 'ঐচ্ছিক নির্দেশনা' },
+                ],
+                columns: [
+                    { key: 'className', label: 'শ্রেণি' },
+                    { key: 'examTerm', label: 'পরীক্ষা' },
+                    { key: 'subject', label: 'বিষয়' },
+                    { key: 'topics', label: 'বিবরণ' },
+                ],
+            },
+            fees: {
+                title: 'বেতন ও ফি কাঠামো',
+                fields: [
+                    { key: 'className', label: 'শ্রেণি / বিভাগ', placeholder: 'যেমন: দাখিল (৬ষ্ঠ - ৮ম)', required: true },
+                    { key: 'feeTitle', label: 'ফি-এর খাত', placeholder: 'যেমন: মাসিক টিউশন ফি', required: true },
+                    { key: 'amount', label: 'পরিমাণ (টাকা)', placeholder: 'যেমন: ৪০০', required: true },
+                    { key: 'period', label: 'সময়কাল', placeholder: 'মাসিক / বার্ষিক' },
+                    { key: 'note', label: 'নির্দেশনা', placeholder: 'পরিশোধ সংক্রান্ত তথ্য' },
+                ],
+                columns: [
+                    { key: 'className', label: 'শ্রেণি' },
+                    { key: 'feeTitle', label: 'খাত' },
+                    { key: 'amount', label: 'টাকা' },
+                    { key: 'period', label: 'সময়কাল' },
+                ],
+            },
+            registrations: {
+                title: 'বোর্ড রেজিস্ট্রেশন',
+                fields: [
+                    { key: 'className', label: 'শ্রেণি / বর্ষ', placeholder: 'যেমন: আলিম ১ম বর্ষ', required: true },
+                    { key: 'examYear', label: 'সেশন / সাল', placeholder: 'যেমন: ২০২৬-২০২৭', required: true },
+                    { key: 'deadline', label: 'শেষ সময়', placeholder: 'তারিখ বা চলমান' },
+                    { key: 'feeAmount', label: 'ফি পরিমাণ', placeholder: 'বোর্ড নির্ধারিত ফি' },
+                    { key: 'instructions', label: 'কাগজপত্র ও নির্দেশনা', type: 'textarea' },
+                ],
+                columns: [
+                    { key: 'className', label: 'শ্রেণি' },
+                    { key: 'examYear', label: 'সেশন' },
+                    { key: 'deadline', label: 'সময়সীমা' },
+                    { key: 'feeAmount', label: 'ফি' },
+                ],
+            },
+            studentStats: {
+                title: 'ছাত্র-ছাত্রী সংখ্যা',
+                fields: [
+                    { key: 'className', label: 'শ্রেণি / বিভাগ', placeholder: 'যেমন: দাখিল (৬ষ্ঠ - ৮ম)', required: true },
+                    { key: 'boys', label: 'ছাত্র সংখ্যা', type: 'number', placeholder: '0', required: true },
+                    { key: 'girls', label: 'ছাত্রী সংখ্যা', type: 'number', placeholder: '0', required: true },
+                ],
+                columns: [
+                    { key: 'className', label: 'শ্রেণি' },
+                    { key: 'boys', label: 'ছাত্র' },
+                    { key: 'girls', label: 'ছাত্রী' },
+                ],
+            },
+        };
+
+        function esc(s) {
+            return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+        }
+
+        function showStatus(msg) {
+            const el = document.getElementById('statusMsg');
+            el.textContent = msg;
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 3000);
+        }
+
+        function switchSection(sec) {
+            activeSection = sec;
+            document.querySelectorAll('.sub-tab').forEach(b => b.classList.toggle('active', b.getAttribute('data-section') === sec));
+            renderForm();
+            renderTable();
+        }
+
+        function renderForm() {
+            const cfg = schema[activeSection];
+            document.getElementById('formTitle').textContent = cfg.title + ' — নতুন এন্ট্রি';
+            const form = document.getElementById('academicForm');
+            form.innerHTML = cfg.fields.map(f => {
+                if (f.type === 'textarea') {
+                    return `<div class="field"><label>${esc(f.label)}</label><textarea name="${esc(f.key)}" rows="3" placeholder="${esc(f.placeholder || '')}" ${f.required ? 'required' : ''}></textarea></div>`;
+                }
+                return `<div class="field"><label>${esc(f.label)}</label><input type="${esc(f.type || 'text')}" name="${esc(f.key)}" placeholder="${esc(f.placeholder || '')}" ${f.required ? 'required' : ''}></div>`;
+            }).join('') + '<button type="submit" class="btn-save">সংরক্ষণ ও প্রকাশ করুন</button>';
+        }
+
+        function renderTable() {
+            const cfg = schema[activeSection];
+            const rows = portalData[activeSection] || [];
+            document.getElementById('tableTitle').textContent = cfg.title + ' তালিকা';
+            const table = document.getElementById('dataTable');
+            const head = `<thead><tr>${cfg.columns.map(c => `<th>${esc(c.label)}</th>`).join('')}<th style="text-align:right;">অ্যাকশন</th></tr></thead>`;
+            const bodyRows = rows.length ? rows.map(r => `
+                <tr>
+                    ${cfg.columns.map(c => `<td>${esc(r[c.key])}</td>`).join('')}
+                    <td style="text-align:right;"><button type="button" class="btn-del" onclick="deleteItem('${esc(r.id)}')">ডিলিট</button></td>
+                </tr>
+            `).join('') : `<tr><td colspan="${cfg.columns.length + 1}" style="text-align:center; padding:22px; color:#64748b;">কোনো তথ্য নেই।</td></tr>`;
+            table.innerHTML = head + '<tbody>' + bodyRows + '</tbody>';
+        }
+
+        document.getElementById('academicForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const payload = Object.fromEntries(fd.entries());
+            const res = await fetch('/api/portal/academic/' + encodeURIComponent(activeSection), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const data = await res.json();
+            if (res.ok && data.items) {
+                portalData[activeSection] = data.items;
+                e.target.reset();
+                renderTable();
+                showStatus('সফলভাবে যুক্ত ও প্রকাশিত হয়েছে।');
+            }
+        });
+
+        async function deleteItem(id) {
+            const res = await fetch('/api/portal/academic/' + encodeURIComponent(activeSection) + '/' + encodeURIComponent(id), {
+                method: 'DELETE',
+            });
+            const data = await res.json();
+            if (res.ok && data.items) {
+                portalData[activeSection] = data.items;
+                renderTable();
+                showStatus('তালিকা থেকে মুছে ফেলা হয়েছে।');
+            }
+        }
+
+        const initialSection = <%- JSON.stringify(initialSection || 'routines') %>;
+        switchSection(schema[initialSection] ? initialSection : 'routines');
+    </script>
+</body>
+</html>

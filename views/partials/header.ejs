@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title><%= typeof pageTitle !== 'undefined' && pageTitle ? pageTitle : 'নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা' %></title>
+    <meta name="description" content="নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসার অফিসিয়াল ওয়েব অ্যাপ, নোটিশ বোর্ড, অনলাইন ফলাফল ও একাডেমিক সেবা।">
+
+    <link rel="shortcut icon" href="/logo.png" type="image/x-icon">
+    <link rel="icon" href="/pwa-192x192.png" type="image/png" sizes="192x192">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#15803d">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="NADUFM">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+
+<body>
+<% if (!isEmbedded) { %>
+    <header class="app-topbar">
+        <div class="app-topbar-inner">
+            <a href="/index.php" class="app-brand">
+                <img src="/logo.png" alt="মাদ্রাসার লোগো" class="app-brand-logo" referrerpolicy="no-referrer">
+                <span class="app-brand-title">নলতা ফাজিল মাদ্রাসা</span>
+            </a>
+
+            <nav class="app-desktop-nav" aria-label="মূল মেনু">
+                <a href="/index.php" class="app-nav-link" data-nav-match="/">হোম</a>
+                <a href="/#notice-section" class="app-nav-link" data-nav-match="#notice">নোটিশ</a>
+                <a href="/student.php" class="app-nav-link" data-nav-match="/student">শিক্ষার্থী</a>
+                <a href="/teacher-list.php" class="app-nav-link" data-nav-match="/teacher">শিক্ষকবৃন্দ</a>
+                <a href="/result.php" class="app-nav-link" data-nav-match="/result">ফলাফল</a>
+            </nav>
+
+            <div class="app-topbar-actions">
+                <div id="pwa-install-slot" class="pwa-install-slot"></div>
+                <a href="/dashboard.php" class="app-admin-cta">অ্যাডমিন</a>
+                <button type="button" class="app-menu-trigger" onclick="openAppDrawer()" aria-label="সব সেবা ও মেনু খুলুন">
+                    <i class="fas fa-th-large" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+<% } %>
+
+    <script src="/vendor/html2pdf.bundle.min.js" defer></script>
+    <script src="/doc-export.js" defer></script>

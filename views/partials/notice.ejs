@@ -1,0 +1,131 @@
+<section id="notice-section" class="app-card">
+    <div class="app-card-header">
+        <div>
+            <h3>নোটিশ বোর্ড</h3>
+            <p class="app-card-sub">সর্বশেষ প্রাতিষ্ঠানিক বিজ্ঞপ্তি ও ঘোষণা</p>
+        </div>
+        <div class="notice-search-box">
+            <input type="search" id="noticeSearchInput" placeholder="নোটিশ খুঁজুন..." aria-label="নোটিশ খুঁজুন">
+        </div>
+    </div>
+
+    <div class="notice-board-container">
+        <ul class="notice-list" id="notice-list-container">
+            <li class="notice-item">
+                <div class="notice-link">
+                    <span class="notice-subject">নোটিশ লোড হচ্ছে...</span>
+                </div>
+            </li>
+        </ul>
+
+        <div class="notice-pagination">
+            <button id="prevBtn" onclick="changePage(-1)" class="page-nav-btn" type="button">আগে</button>
+            <div id="page-numbers" class="page-numbers"></div>
+            <button id="nextBtn" onclick="changePage(1)" class="page-nav-btn" type="button">পরে</button>
+        </div>
+    </div>
+</section>
+
+<script>
+    const allData = <%- JSON.stringify(notices || []) %>;
+
+    const itemsPerPage = 5;
+    let currentPage = 1;
+    let filteredData = allData.slice();
+    const noticeIcons = ["fas fa-bell", "fas fa-info-circle", "fas fa-bullhorn", "fas fa-file-alt", "fas fa-envelope"];
+
+    function escapeHtml(str) {
+        return String(str ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function renderNotices() {
+        const container = document.getElementById('notice-list-container');
+        container.innerHTML = "";
+
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        const pagedItems = filteredData.slice(start, end);
+
+        if (pagedItems.length === 0) {
+            container.innerHTML = '<li class="notice-empty">কোনো নোটিশ পাওয়া যায়নি।</li>';
+            setupPagination();
+            return;
+        }
+
+        pagedItems.forEach((item, index) => {
+            const isNew = item.isNew && item.isNew.toString().trim().toLowerCase() === 'yes';
+            const iconClass = noticeIcons[index % noticeIcons.length];
+            const targetLink = (item.link && item.link !== "#" && item.link.trim() !== "")
+                               ? item.link
+                               : `/view_notice.php?id=${item.id}`;
+            const isExternal = /^https?:\/\//i.test(targetLink);
+
+            const li = document.createElement('li');
+            li.className = 'notice-item';
+            li.innerHTML = `
+                <a href="${escapeHtml(targetLink)}" ${isExternal ? 'target="_blank" rel="noopener"' : ''} class="notice-link">
+                    <span class="notice-icon" aria-hidden="true"><i class="${iconClass}"></i></span>
+                    <span class="notice-body">
+                        <span class="notice-subject">${escapeHtml(item.subject)}</span>
+                        <span class="notice-meta">
+                            <span>${escapeHtml(item.date)}</span>
+                            ${isNew ? '<span aria-hidden="true">·</span><span class="notice-new-label">নতুন</span>' : ''}
+                        </span>
+                    </span>
+                    <span class="notice-chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+                </a>`;
+            container.appendChild(li);
+        });
+
+        setupPagination();
+    }
+
+    function setupPagination() {
+        const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+        const pageNumbersContainer = document.getElementById('page-numbers');
+        pageNumbersContainer.innerHTML = "";
+
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.innerText = i;
+            btn.className = `page-num ${i === currentPage ? 'active' : ''}`;
+            btn.onclick = function() {
+                currentPage = i;
+                renderNotices();
+                document.getElementById('notice-section').scrollIntoView({ behavior: 'smooth' });
+            };
+            pageNumbersContainer.appendChild(btn);
+        }
+
+        document.getElementById('prevBtn').disabled = (currentPage <= 1);
+        document.getElementById('nextBtn').disabled = (currentPage >= totalPages || totalPages === 0);
+    }
+
+    function changePage(step) {
+        currentPage += step;
+        renderNotices();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('noticeSearchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const q = searchInput.value.trim().toLowerCase();
+                filteredData = !q
+                    ? allData.slice()
+                    : allData.filter(n =>
+                        String(n.subject || '').toLowerCase().includes(q) ||
+                        String(n.date || '').toLowerCase().includes(q)
+                    );
+                currentPage = 1;
+                renderNotices();
+            });
+        }
+        renderNotices();
+    });
+</script>

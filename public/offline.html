@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>অফলাইন - নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .offline-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: #f4f7f6;
+    }
+    .offline-card {
+      max-width: 440px;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 32px 24px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      border-top: 5px solid #28a745;
+    }
+    .offline-card img {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      margin-bottom: 16px;
+      border: 3px solid #28a745;
+    }
+    .offline-card h1 {
+      font-size: 22px;
+      color: #1b5e20;
+      margin-bottom: 10px;
+    }
+    .offline-card p {
+      font-size: 15px;
+      color: #555;
+      margin-bottom: 22px;
+    }
+    .offline-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .offline-btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .offline-btn-primary {
+      background: #28a745;
+      color: #fff;
+    }
+    .offline-btn-secondary {
+      background: #e9ecef;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="offline-wrapper">
+    <div class="offline-card">
+      <img src="/logo.png" alt="মাদ্রাসার লোগো">
+      <h1>আপনি বর্তমানে অফলাইনে আছেন</h1>
+      <p>ইন্টারনেট সংযোগ বিচ্ছিন্ন রয়েছে। সংযোগ ফিরে এলে পুনরায় চেষ্টা করুন অথবা সংরক্ষিত মূল পাতায় ফিরে যান।</p>
+      <div class="offline-actions">
+        <button class="offline-btn offline-btn-primary" onclick="window.location.reload()">পুনরায় চেষ্টা করুন</button>
+        <a class="offline-btn offline-btn-secondary" href="/">হোম পেজ</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

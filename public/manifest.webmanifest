@@ -1,0 +1,33 @@
+{
+  "id": "/",
+  "name": "নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা",
+  "short_name": "NADUFM",
+  "description": "নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসার অফিসিয়াল ওয়েব অ্যাপ, নোটিশ বোর্ড, ফলাফল ও শিক্ষার্থী কর্ণার।",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#28a745",
+  "background_color": "#f8f9fa",
+  "lang": "bn",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

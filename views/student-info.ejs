@@ -1,0 +1,47 @@
+<%- include('partials/header') %>
+<main class="container" style="max-width: 1080px; margin: 22px auto 36px auto; padding: 0 16px;">
+    <section class="content-card" style="background:#fff; border:1px solid rgba(15,23,42,0.08); border-radius:16px; padding:24px; box-shadow:0 4px 16px rgba(15,23,42,0.04);">
+        <h1 style="font-size:1.35rem; font-weight:700; color:#14532d; margin-bottom:6px;">শ্রেণিভিত্তিক ছাত্র-ছাত্রী সংখ্যা</h1>
+        <p style="color:#475569; font-size:0.92rem; margin-bottom:18px;">অত্র মাদ্রাসার বর্তমান শিক্ষার্থীর পরিসংখ্যান</p>
+
+        <div style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:0.95rem; font-variant-numeric:tabular-nums;">
+                <thead>
+                    <tr style="background:#f8faf9; color:#14532d; text-align:left; border-bottom:1px solid rgba(15,23,42,0.1);">
+                        <th style="padding:12px;">শ্রেণি / বিভাগ</th>
+                        <th style="padding:12px; text-align:center;">ছাত্র</th>
+                        <th style="padding:12px; text-align:center;">ছাত্রী</th>
+                        <th style="padding:12px; text-align:center;">মোট শিক্ষার্থী</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% let sumBoys = 0, sumGirls = 0; %>
+                    <% if (studentStats && studentStats.length > 0) { %>
+                        <% studentStats.forEach(function(item) {
+                            const b = Number(item.boys) || 0;
+                            const g = Number(item.girls) || 0;
+                            sumBoys += b;
+                            sumGirls += g;
+                        %>
+                            <tr style="border-bottom:1px solid rgba(15,23,42,0.06);">
+                                <td style="padding:12px; font-weight:700; color:#0f172a;"><%= item.className %></td>
+                                <td style="padding:12px; text-align:center;"><%= convertToBengali(b) %></td>
+                                <td style="padding:12px; text-align:center;"><%= convertToBengali(g) %></td>
+                                <td style="padding:12px; text-align:center; font-weight:700; color:#15803d;"><%= convertToBengali(b + g) %></td>
+                            </tr>
+                        <% }); %>
+                        <tr style="background:#f0fdf4; font-weight:700; color:#14532d;">
+                            <td style="padding:12px;">সর্বমোট</td>
+                            <td style="padding:12px; text-align:center;"><%= convertToBengali(sumBoys) %></td>
+                            <td style="padding:12px; text-align:center;"><%= convertToBengali(sumGirls) %></td>
+                            <td style="padding:12px; text-align:center;"><%= convertToBengali(sumBoys + sumGirls) %></td>
+                        </tr>
+                    <% } else { %>
+                        <tr><td colspan="4" style="padding:20px; text-align:center; color:#64748b;">এখনো কোনো পরিসংখ্যান যুক্ত করা হয়নি।</td></tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+<%- include('partials/footer') %>

@@ -1,0 +1,37 @@
+<%- include('partials/header') %>
+<main class="container" style="max-width: 1080px; margin: 22px auto 36px auto; padding: 0 16px;">
+    <section class="content-card" style="background:#fff; border:1px solid rgba(15,23,42,0.08); border-radius:16px; padding:24px; box-shadow:0 4px 16px rgba(15,23,42,0.04);">
+        <h1 style="font-size:1.35rem; font-weight:700; color:#14532d; margin-bottom:6px;">বেতন ও ফি কাঠামো</h1>
+        <p style="color:#475569; font-size:0.92rem; margin-bottom:18px;">শ্রেণিভিত্তিক নির্ধারিত টিউশন ও সেশন ফি</p>
+
+        <div style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:0.94rem; font-variant-numeric:tabular-nums;">
+                <thead>
+                    <tr style="background:#f8faf9; color:#14532d; text-align:left; border-bottom:1px solid rgba(15,23,42,0.1);">
+                        <th style="padding:12px;">শ্রেণি / বিভাগ</th>
+                        <th style="padding:12px;">ফি-এর খাত</th>
+                        <th style="padding:12px;">পরিমাণ (টাকা)</th>
+                        <th style="padding:12px;">সময়কাল</th>
+                        <th style="padding:12px;">নির্দেশনা</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (feesList && feesList.length > 0) { %>
+                        <% feesList.forEach(function(item) { %>
+                            <tr style="border-bottom:1px solid rgba(15,23,42,0.06);">
+                                <td style="padding:12px; font-weight:700; color:#0f172a;"><%= item.className %></td>
+                                <td style="padding:12px;"><%= item.feeTitle %></td>
+                                <td style="padding:12px; font-weight:700; color:#15803d;">৳ <%= item.amount %></td>
+                                <td style="padding:12px;"><%= item.period %></td>
+                                <td style="padding:12px; color:#475569;"><%= item.note %></td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr><td colspan="5" style="padding:20px; text-align:center; color:#64748b;">এখনো কোনো ফি তথ্য যুক্ত করা হয়নি।</td></tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+<%- include('partials/footer') %>

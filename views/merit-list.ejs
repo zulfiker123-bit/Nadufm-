@@ -1,0 +1,282 @@
+<%- include('partials/header') %>
+
+<style>
+    .merit-shell {
+        max-width: 1020px;
+        margin: 24px auto 36px auto;
+        padding: 0 16px;
+    }
+
+    .merit-card {
+        background: #ffffff;
+        border: 1px solid rgba(15, 23, 42, 0.09);
+        border-radius: 18px;
+        padding: 24px;
+        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.07);
+    }
+
+    .merit-header {
+        text-align: center;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.09);
+        padding-bottom: 16px;
+        margin-bottom: 20px;
+    }
+
+    .merit-header h1 {
+        color: #14532d;
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .merit-subtitle {
+        color: #475569;
+        font-size: 0.94rem;
+        margin-top: 4px;
+    }
+
+    .merit-form {
+        background: #f8faf9;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        padding: 16px;
+        border-radius: 14px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .merit-form select {
+        height: 44px;
+        padding: 0 14px;
+        border-radius: 10px;
+        border: 1px solid rgba(15, 23, 42, 0.14);
+        background: #ffffff;
+        min-width: 240px;
+        font-size: 0.95rem;
+    }
+
+    .merit-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 44px;
+        padding: 0 18px;
+        border-radius: 10px;
+        border: none;
+        background: #15803d;
+        color: #ffffff;
+        font-size: 0.92rem;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .merit-btn:hover { background: #14532d; }
+    .merit-btn-blue { background: #1d4ed8; }
+    .merit-btn-blue:hover { background: #1e40af; }
+    .merit-btn-rose { background: #be123c; }
+    .merit-btn-rose:hover { background: #9f1239; }
+
+    .merit-btn-secondary {
+        background: #f1f5f9;
+        color: #0f172a;
+        border: 1px solid rgba(15, 23, 42, 0.1);
+    }
+
+    .merit-table-wrap {
+        overflow-x: auto;
+    }
+
+    table.merit-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-variant-numeric: tabular-nums;
+    }
+
+    table.merit-table th {
+        background: #14532d;
+        color: #ffffff;
+        padding: 11px 10px;
+        text-align: center;
+        font-size: 0.9em;
+        font-weight: 600;
+    }
+
+    table.merit-table td {
+        padding: 10px;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        text-align: center;
+        font-size: 0.94em;
+    }
+
+    table.merit-table tr:nth-child(even) { background: #f8faf9; }
+    .rank-num { font-weight: 700; color: #14532d; }
+    .status-pass { color: #15803d; font-weight: 700; }
+    .status-promoted { color: #b45309; font-weight: 700; }
+    .status-fail { color: #b91c1c; font-weight: 700; }
+    .status-abs { color: #64748b; }
+    .absent-row { opacity: 0.78; }
+
+    @page {
+        size: A4 portrait;
+        margin: 12mm;
+    }
+
+    @media print {
+        .no-print, .app-footer, .app-topbar, .app-bottom-nav { display: none !important; }
+        body { background: #ffffff !important; }
+        .merit-shell { margin: 0; max-width: 100%; padding: 0; }
+        .merit-card { box-shadow: none; border: none; padding: 0; }
+        table.merit-table th, table.merit-table td { border: 1px solid #cbd5e1; }
+    }
+</style>
+
+<div class="merit-shell">
+    <div class="merit-card" id="meritPrintArea">
+        <div class="merit-header">
+            <h1>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h1>
+            <p class="merit-subtitle"><%= selectedExamTitle || ('বার্ষিক পরীক্ষার মেধাতালিকা' + (selectedClass !== '' ? ' · শ্রেণি: ' + selectedName : '')) %></p>
+        </div>
+
+        <form method="GET" action="/merit-list.php" class="merit-form no-print">
+            <select name="class_id" required aria-label="শ্রেণি বা পরীক্ষা নির্বাচন করুন">
+                <option value="">শ্রেণি / পরীক্ষা নির্বাচন করুন</option>
+                <% if (typeof uploadedExams !== 'undefined' && uploadedExams.length > 0) { %>
+                    <optgroup label="আপলোডকৃত এক্সেল মেধা তালিকা">
+                        <% uploadedExams.forEach(function(ex) { %>
+                            <option value="excel:<%= ex.id %>" <%= (selectedClass === 'excel:' + ex.id || selectedExamId === ex.id) ? 'selected' : '' %>><%= ex.title %> (<%= convertToBengali(ex.rowCount) %> জন)</option>
+                        <% }); %>
+                    </optgroup>
+                <% } %>
+                <optgroup label="সকল শ্রেণি">
+                    <% Object.entries(classMap).forEach(function([id, info]) { %>
+                        <option value="<%= id %>" <%= (selectedClass === id) ? 'selected' : '' %>><%= info.name %> শ্রেণি</option>
+                    <% }); %>
+                </optgroup>
+            </select>
+            <button type="submit" class="merit-btn">
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <span>মেধাতালিকা দেখুন</span>
+            </button>
+            <a href="/result.php" class="merit-btn merit-btn-secondary">
+                <i class="fas fa-poll" aria-hidden="true"></i>
+                <span>ব্যক্তিগত ফলাফল</span>
+            </a>
+        </form>
+
+        <% if (meritData && meritData.length > 0) { %>
+        <div class="merit-table-wrap">
+            <table class="merit-table">
+                <thead>
+                    <tr>
+                        <th>মেধাক্রম</th>
+                        <th>রোল</th>
+                        <th style="text-align: left;">শিক্ষার্থীর নাম</th>
+                        <th>প্রাপ্ত নম্বর</th>
+                        <th>GPA</th>
+                        <th>গড় (%)</th>
+                        <th>ফলাফল</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% let rank = 1; meritData.forEach(function(row) { %>
+                    <tr class="<%= row.absent ? 'absent-row' : '' %>">
+                        <td class="rank-num"><%= row.absent ? '—' : convertToBengali(row.meritRank || rank++) %></td>
+                        <td><%= convertToBengali(row.roll) %></td>
+                        <td style="text-align: left; font-weight: 600;"><%= row.name %></td>
+                        <td style="font-weight: 700;"><%= convertToBengali(row.total) %></td>
+                        <td style="font-weight: 700;"><%= convertToBengali(Number(row.gpa || 0).toFixed(2)) %></td>
+                        <td><%= convertToBengali(Math.round(row.pct * 100) / 100) %>%</td>
+                        <td>
+                            <% if (row.absent) { %>
+                                <span class="status-abs">অনুপস্থিত</span>
+                            <% } else if (row.isPromoted) { %>
+                                <span class="status-promoted"><%= row.statusBn || 'প্রমোটেড' %> (<%= convertToBengali(row.fail) %>টি)</span>
+                            <% } else if (row.fail > 0) { %>
+                                <span class="status-fail">অকৃতকার্য (<%= convertToBengali(row.fail) %>টি)</span>
+                            <% } else { %>
+                                <span class="status-pass">উত্তীর্ণ</span>
+                            <% } %>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+        <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-top: 20px;" class="no-print">
+            <button type="button" onclick="window.print()" class="merit-btn">
+                <i class="fas fa-print" aria-hidden="true"></i>
+                <span>সরাসরি প্রিন্ট (A4)</span>
+            </button>
+            <button type="button" onclick="downloadMeritPdf()" class="merit-btn merit-btn-rose">
+                <i class="fas fa-file-pdf" aria-hidden="true"></i>
+                <span>PDF ডাউনলোড</span>
+            </button>
+            <button type="button" onclick="downloadMeritWord()" class="merit-btn merit-btn-blue">
+                <i class="fas fa-file-word" aria-hidden="true"></i>
+                <span>Word (.doc)</span>
+            </button>
+        </div>
+        <div id="meritExportStatus" class="no-print" style="display:none; margin-top:12px; padding:9px 13px; border-radius:9px; font-size:0.88rem; font-weight:600; text-align:center;"></div>
+        <script>
+            function setMeritStatus(msg, isErr) {
+                var st = document.getElementById('meritExportStatus');
+                if (!st) return;
+                st.style.display = 'block';
+                st.textContent = msg;
+                st.style.background = isErr ? '#fef2f2' : '#f0fdf4';
+                st.style.color = isErr ? '#b91c1c' : '#15803d';
+                st.style.border = isErr ? '1px solid #fecaca' : '1px solid #bbf7d0';
+            }
+
+            async function downloadMeritPdf() {
+                var el = document.getElementById('meritPrintArea');
+                if (!el) return;
+                try {
+                    if (!window.NadufmExport) throw new Error('এক্সপোর্ট স্ক্রিপ্ট লোড হয়নি।');
+                    await window.NadufmExport.exportElementToA4Pdf({
+                        element: el,
+                        filename: 'merit-list.pdf',
+                        marginMm: [10, 10, 10, 10],
+                        onStatus: setMeritStatus
+                    });
+                } catch (err) {
+                    setMeritStatus(err && err.message ? err.message : 'PDF ডাউনলোড ব্যর্থ হয়েছে।', true);
+                }
+            }
+
+            async function downloadMeritWord() {
+                var el = document.getElementById('meritPrintArea');
+                if (!el) return;
+                var cssText = '@page Section1 { size: 210mm 297mm; margin: 14mm; }' +
+                    'div.Section1 { page: Section1; font-family: "SolaimanLipi", "Kalpurush", "Hind Siliguri", Arial, sans-serif; font-size: 13px; color: #0f172a; }' +
+                    'table { width: 100%; border-collapse: collapse; }' +
+                    'th, td { border: 1px solid #cbd5e1; padding: 6px; text-align: center; }' +
+                    'th { background: #14532d; color: #ffffff; }';
+                try {
+                    if (!window.NadufmExport) throw new Error('এক্সপোর্ট স্ক্রিপ্ট লোড হয়নি।');
+                    await window.NadufmExport.exportElementToWord({
+                        element: el,
+                        filename: 'merit-list.doc',
+                        title: 'Merit List',
+                        cssText: cssText,
+                        onStatus: setMeritStatus
+                    });
+                } catch (err) {
+                    setMeritStatus(err && err.message ? err.message : 'Word ডাউনলোড ব্যর্থ হয়েছে।', true);
+                }
+            }
+        </script>
+        <% } else if (selectedClass !== '') { %>
+            <p style="text-align: center; color: #b91c1c; font-weight: 600; padding: 24px;">কোনো ডেটা পাওয়া যায়নি। শিটটি পাবলিশ বা আপলোড করা আছে কি না যাচাই করুন।</p>
+        <% } %>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
+

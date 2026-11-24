@@ -1,0 +1,37 @@
+<%- include('partials/header') %>
+<main class="container" style="max-width: 1080px; margin: 22px auto 36px auto; padding: 0 16px;">
+    <section class="content-card" style="background:#fff; border:1px solid rgba(15,23,42,0.08); border-radius:16px; padding:24px; box-shadow:0 4px 16px rgba(15,23,42,0.04);">
+        <h1 style="font-size:1.35rem; font-weight:700; color:#14532d; margin-bottom:6px;">বোর্ড রেজিস্ট্রেশন ও ফরম ফিলাপ</h1>
+        <p style="color:#475569; font-size:0.92rem; margin-bottom:18px;">বাংলাদেশ মাদ্রাসা শিক্ষা বোর্ড ও বিশ্ববিদ্যালয় রেজিস্ট্রেশন সংক্রান্ত তথ্য</p>
+
+        <div style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:0.94rem; font-variant-numeric:tabular-nums;">
+                <thead>
+                    <tr style="background:#f8faf9; color:#14532d; text-align:left; border-bottom:1px solid rgba(15,23,42,0.1);">
+                        <th style="padding:12px;">শ্রেণি / বর্ষ</th>
+                        <th style="padding:12px;">সেশন / সাল</th>
+                        <th style="padding:12px;">শেষ সময়</th>
+                        <th style="padding:12px;">ফি</th>
+                        <th style="padding:12px;">প্রয়োজনীয় কাগজপত্র</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (registrations && registrations.length > 0) { %>
+                        <% registrations.forEach(function(item) { %>
+                            <tr style="border-bottom:1px solid rgba(15,23,42,0.06);">
+                                <td style="padding:12px; font-weight:700; color:#0f172a;"><%= item.className %></td>
+                                <td style="padding:12px;"><%= item.examYear %></td>
+                                <td style="padding:12px;"><%= item.deadline %></td>
+                                <td style="padding:12px;"><%= item.feeAmount %></td>
+                                <td style="padding:12px; color:#475569;"><%= item.instructions %></td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr><td colspan="5" style="padding:20px; text-align:center; color:#64748b;">এখনো কোনো রেজিস্ট্রেশন তথ্য যুক্ত করা হয়নি।</td></tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+<%- include('partials/footer') %>

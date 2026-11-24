@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= pageTitle %></title>
+    <link rel="icon" href="/pwa-192x192.png" type="image/png" sizes="192x192">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#15803d">
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Hind Siliguri', sans-serif; background: #f4f7f5; color: #0f172a; padding: 20px; }
+        .report-card {
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid rgba(15, 23, 42, 0.09);
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+            max-width: 980px;
+            margin: 10px auto;
+        }
+        .report-title { text-align: center; font-size: 1.35rem; font-weight: 700; color: #14532d; margin-bottom: 18px; }
+        .stat-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 22px; }
+        .box { padding: 18px; border-radius: 12px; text-align: center; border: 1px solid rgba(15, 23, 42, 0.08); background: #f8faf9; }
+        .box-label { font-size: 0.9rem; font-weight: 600; color: #475569; }
+        .amount { font-size: 1.6rem; font-weight: 700; display: block; margin-top: 6px; font-variant-numeric: tabular-nums; }
+        .box-income .amount { color: #15803d; }
+        .box-expense .amount { color: #b91c1c; }
+        .box-balance .amount { color: #1d4ed8; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; font-variant-numeric: tabular-nums; }
+        th, td { padding: 12px; border-bottom: 1px solid rgba(15, 23, 42, 0.08); text-align: center; font-size: 0.94rem; }
+        th { background: #14532d; color: #ffffff; font-weight: 600; }
+        .loading { text-align: center; padding: 40px 16px; font-size: 1rem; color: #475569; }
+        @media (max-width: 700px) { .stat-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="report-card">
+        <h2 class="report-title">মাদ্রাসার আয়-ব্যয় সারসংক্ষেপ</h2>
+
+        <div id="loader" class="loading">হিসাবের তথ্য সংগ্রহ করা হচ্ছে...</div>
+
+        <div class="stat-grid" id="stats-area" style="display:none;">
+            <div class="box box-income">
+                <span class="box-label">চলতি মাসের মোট আয়</span>
+                <span class="amount" id="monthly-income">৳ ০</span>
+            </div>
+            <div class="box box-expense">
+                <span class="box-label">চলতি মাসের মোট ব্যয়</span>
+                <span class="amount" id="monthly-expense">৳ ০</span>
+            </div>
+            <div class="box box-balance">
+                <span class="box-label">মোট বর্তমান স্থিতি</span>
+                <span class="amount" id="total-balance">৳ ০</span>
+            </div>
+        </div>
+
+        <div id="table-area" style="display:none;">
+            <h3 style="font-size:1.08rem; color:#0f172a; margin-bottom:8px;">মাসিক হিসাব তালিকা</h3>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>মাস ও বছর</th>
+                            <th>মোট আয়</th>
+                            <th>মোট ব্যয়</th>
+                            <th>উদ্বৃত্ত / ঘাটতি</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR3FdKRAA46EvP4MBCPiqwJ0tVAaxkbCBJbExtNePmOk781BwSQm_gf1xa7xE-YqNj_-XlEYrMpx6TL/pub?output=csv';
+
+        async function loadReport() {
+            try {
+                const response = await fetch(csvUrl);
+                const data = await response.text();
+                const rows = data.split('\n').slice(1);
+
+                let totalIncome = 0;
+                let totalExpense = 0;
+                let monthlySummary = {};
+
+                const now = new Date();
+                const currentMonthYear = now.toLocaleString('bn-BD', { month: 'long', year: 'numeric' });
+
+                rows.forEach(row => {
+                    const cols = row.split(',');
+                    if (cols.length < 5) return;
+
+                    const dateStr = cols[0].trim();
+                    const income = parseFloat(cols[2]) || 0;
+                    const expense = parseFloat(cols[4]) || 0;
+
+                    const dateObj = new Date(dateStr);
+                    if (!isNaN(dateObj)) {
+                        const monthKey = dateObj.toLocaleString('bn-BD', { month: 'long', year: 'numeric' });
+                        totalIncome += income;
+                        totalExpense += expense;
+
+                        if (!monthlySummary[monthKey]) {
+                            monthlySummary[monthKey] = { income: 0, expense: 0 };
+                        }
+                        monthlySummary[monthKey].income += income;
+                        monthlySummary[monthKey].expense += expense;
+                    }
+                });
+
+                const currentStats = monthlySummary[currentMonthYear] || { income: 0, expense: 0 };
+                document.getElementById('monthly-income').innerText = '৳ ' + currentStats.income.toLocaleString('bn-BD');
+                document.getElementById('monthly-expense').innerText = '৳ ' + currentStats.expense.toLocaleString('bn-BD');
+                document.getElementById('total-balance').innerText = '৳ ' + (totalIncome - totalExpense).toLocaleString('bn-BD');
+
+                let tableHTML = '';
+                for (let month in monthlySummary) {
+                    const balance = monthlySummary[month].income - monthlySummary[month].expense;
+                    tableHTML += `<tr>
+                        <td>${month}</td>
+                        <td style="color:#15803d; font-weight:700;">৳ ${monthlySummary[month].income.toLocaleString('bn-BD')}</td>
+                        <td style="color:#b91c1c; font-weight:700;">৳ ${monthlySummary[month].expense.toLocaleString('bn-BD')}</td>
+                        <td style="color:#1d4ed8; font-weight:700;">৳ ${balance.toLocaleString('bn-BD')}</td>
+                    </tr>`;
+                }
+
+                document.getElementById('report-table-body').innerHTML = tableHTML;
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('stats-area').style.display = 'grid';
+                document.getElementById('table-area').style.display = 'block';
+            } catch (error) {
+                document.getElementById('loader').innerHTML = '<span style="color:#b91c1c;">তথ্য লোড করা যায়নি। অনুগ্রহ করে পরে আবার চেষ্টা করুন।</span>';
+            }
+        }
+
+        loadReport();
+    </script>
+</body>
+</html>

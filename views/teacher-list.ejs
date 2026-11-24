@@ -1,0 +1,124 @@
+<%- include('partials/header') %>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+    .teacher-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 25px;
+        padding: 20px;
+    }
+    .staff-card {
+        background: #ffffff;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 1px solid #eee;
+    }
+    .staff-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    .image-container {
+        background: linear-gradient(to bottom, #f9f9f9, #e8f5e9);
+        padding: 25px 0;
+        text-align: center;
+        border-bottom: 4px solid #28a745;
+    }
+    .staff-img {
+        width: 130px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 4px solid #fff;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .staff-info {
+        padding: 20px;
+    }
+    .staff-name {
+        color: #1b5e20;
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 12px;
+        text-align: center;
+        min-height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .staff-details-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        font-size: 14px;
+        color: #444;
+    }
+    .staff-details-list li {
+        padding: 7px 0;
+        border-bottom: 1px solid #f1f1f1;
+        display: flex;
+        align-items: center;
+    }
+    .staff-details-list li:last-child {
+        border-bottom: none;
+    }
+    .staff-details-list i {
+        width: 25px;
+        color: #28a745;
+        font-size: 14px;
+    }
+    .label-text {
+        font-weight: 600;
+        color: #333;
+        margin-right: 5px;
+    }
+    .contact-link {
+        color: #444;
+        text-decoration: none;
+    }
+    .contact-link:hover {
+        color: #28a745;
+    }
+</style>
+
+<main>
+    <section id="notice-section">
+        <div style="text-align: center; margin: 40px 0;">
+            <h2 style="color: #28a745; font-size: 30px; margin-bottom: 10px; font-weight: bold;">শিক্ষক ও কর্মচারীবৃন্দ</h2>
+            <div style="width: 80px; height: 4px; background: #ffc107; margin: 0 auto; border-radius: 2px;"></div>
+            <p style="color: #666; margin-top: 15px; font-size: 17px;">নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা</p>
+        </div>
+
+        <div class="teacher-grid">
+            <% (teachers || []).forEach(function(teacher) { %>
+            <div class="staff-card">
+                <div class="image-container">
+                    <img src="/<%= teacher.photo ? teacher.photo : 'logo.png' %>"
+                         alt="<%= teacher.name %>"
+                         class="staff-img" />
+                </div>
+
+                <div class="staff-info">
+                    <div class="staff-name"><%= teacher.name %></div>
+                    <ul class="staff-details-list">
+                        <li><i class="fas fa-user-tie"></i> <span class="label-text">পদবি:</span> <%= teacher.designation %></li>
+                        <li><i class="fas fa-book"></i> <span class="label-text">বিষয়:</span> <%= teacher.subject %></li>
+                        <li><i class="fas fa-fingerprint"></i> <span class="label-text">ইনডেক্স:</span> <%= teacher.index_no %></li>
+                        <li><i class="fas fa-calendar-check"></i> <span class="label-text">এমপিও:</span> <%= teacher.mpo_date %></li>
+                        <li>
+                            <i class="fas fa-phone-alt"></i>
+                            <span class="label-text">মোবাইল:</span>
+                            <a href="tel:<%= teacher.mobile %>" class="contact-link"><%= teacher.mobile %></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <% }); %>
+        </div>
+
+        <%- include('partials/importantsite1') %>
+    </section>
+</main>
+<%- include('partials/footer') %>

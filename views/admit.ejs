@@ -1,0 +1,268 @@
+<%- include('partials/header') %>
+
+<style>
+    .admit-shell {
+        max-width: 820px;
+        margin: 24px auto 32px auto;
+        padding: 0 16px;
+    }
+
+    .admit-search-card {
+        max-width: 500px;
+        margin: 0 auto;
+        background: #ffffff;
+        border: 1px solid rgba(15, 23, 42, 0.09);
+        border-radius: 18px;
+        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.07);
+        overflow: hidden;
+    }
+
+    .admit-search-head {
+        background: linear-gradient(135deg, #14532d 0%, #15803d 100%);
+        color: #ffffff;
+        padding: 24px 20px;
+        text-align: center;
+    }
+
+    .admit-search-head h1 { font-size: 1.3rem; font-weight: 700; margin: 0; }
+    .admit-search-head p { font-size: 0.9rem; opacity: 0.9; margin-top: 4px; }
+
+    .admit-search-body { padding: 24px; }
+
+    .input-group { margin-bottom: 16px; }
+    .input-group label { display: block; font-weight: 600; font-size: 0.94rem; margin-bottom: 6px; color: #0f172a; }
+    .input-group input {
+        width: 100%;
+        height: 44px;
+        padding: 0 14px;
+        border: 1px solid rgba(15, 23, 42, 0.14);
+        border-radius: 10px;
+        background: #f8faf9;
+        color: #0f172a;
+        font-size: 0.95rem;
+        outline: none;
+    }
+    .input-group input:focus { border-color: #15803d; background: #ffffff; }
+
+    .btn-search {
+        width: 100%;
+        min-height: 46px;
+        background: #15803d;
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 1rem;
+    }
+    .btn-search:hover { background: #14532d; }
+
+    #admit-card-result { display: none; }
+
+    .admit-toolbar {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+    }
+
+    .btn-admit-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 44px;
+        padding: 0 20px;
+        border-radius: 10px;
+        border: none;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-print-admit { background: #15803d; color: #ffffff; }
+    .btn-reset-admit { background: #f1f5f9; color: #0f172a; border: 1px solid rgba(15, 23, 42, 0.12); }
+
+    .admit-scroll-wrap { overflow-x: auto; }
+
+    .admit-card {
+        width: 180mm;
+        margin: 0 auto;
+        border: 2px solid #166534;
+        padding: 20px;
+        background: #ffffff;
+        border-radius: 8px;
+    }
+
+    .admit-header {
+        display: flex;
+        align-items: center;
+        border-bottom: 2px solid #166534;
+        padding-bottom: 12px;
+        margin-bottom: 16px;
+    }
+
+    .admit-header img { width: 60px; margin-right: 14px; }
+    .admit-title { text-align: center; flex-grow: 1; }
+    .admit-title h2 { font-size: 18px; margin: 0; color: #14532d; }
+    .admit-title p { font-size: 12px; margin: 2px 0; color: #475569; }
+    .admit-doc-label { font-size: 13px; font-weight: 700; color: #166534; margin-top: 4px; }
+
+    .admit-body { display: flex; gap: 20px; }
+    .student-info { flex-grow: 1; }
+    .info-row { display: flex; margin-bottom: 10px; border-bottom: 1px dotted #cbd5e1; padding-bottom: 3px; }
+    .info-label { width: 125px; font-weight: 700; font-size: 14px; color: #0f172a; }
+    .info-value { flex-grow: 1; font-size: 14px; color: #1e293b; font-variant-numeric: tabular-nums; }
+
+    .student-photo { width: 100px; height: 112px; border: 1px solid #0f172a; overflow: hidden; flex-shrink: 0; }
+    .student-photo img { width: 100%; height: 100%; object-fit: cover; }
+
+    .admit-footer { margin-top: 46px; display: flex; justify-content: space-between; padding: 0 20px; }
+    .sig { border-top: 1px solid #0f172a; width: 130px; text-align: center; font-size: 12px; font-weight: 700; padding-top: 4px; }
+
+    @media print {
+        .no-print, .app-footer { display: none !important; }
+        body { background: #ffffff; }
+        .admit-shell { margin: 0; max-width: 100%; padding: 0; }
+        #admit-card-result { display: block !important; }
+        .admit-card { width: 100%; border: 1.5px solid #000; border-radius: 0; }
+    }
+</style>
+
+<div class="admit-shell">
+    <div class="admit-search-card no-print" id="admitSearchCard">
+        <div class="admit-search-head">
+            <h1>এডমিট কার্ড ডাউনলোড</h1>
+            <p>শ্রেণি ও রোল নম্বর দিয়ে প্রবেশপত্র সংগ্রহ করুন</p>
+        </div>
+        <div class="admit-search-body">
+            <form id="searchForm">
+                <div class="input-group">
+                    <label for="search_class">শ্রেণি (Class)</label>
+                    <input type="text" id="search_class" list="classSuggestions" placeholder="যেমন: ৬ষ্ঠ / ফাজিল ১ম বর্ষ" required>
+                    <datalist id="classSuggestions">
+                        <option value="৬ষ্ঠ">
+                        <option value="৭ম">
+                        <option value="৮ম">
+                        <option value="৯ম">
+                        <option value="১০ম">
+                        <option value="আলিম ১ম বর্ষ">
+                        <option value="আলিম ২য় বর্ষ">
+                        <option value="ফাজিল ১ম বর্ষ">
+                    </datalist>
+                </div>
+                <div class="input-group">
+                    <label for="search_roll">রোল নম্বর (Roll)</label>
+                    <input type="text" id="search_roll" placeholder="রোল নম্বর লিখুন" required>
+                </div>
+                <button type="submit" class="btn-search" id="searchBtn">প্রবেশপত্র খুঁজুন</button>
+            </form>
+            <p id="error-msg" style="color:#b91c1c; font-weight:600; text-align:center; display:none; margin-top:14px;">দুঃখিত! কোনো তথ্য পাওয়া যায়নি।</p>
+        </div>
+    </div>
+
+    <div id="admit-card-result">
+        <div class="admit-toolbar no-print">
+            <button type="button" class="btn-admit-action btn-print-admit" onclick="window.print()">
+                <i class="fas fa-print" aria-hidden="true"></i>
+                <span>প্রবেশপত্র প্রিন্ট করুন</span>
+            </button>
+            <button type="button" class="btn-admit-action btn-reset-admit" onclick="resetAdmitSearch()">
+                <i class="fas fa-redo" aria-hidden="true"></i>
+                <span>আবার খুঁজুন</span>
+            </button>
+        </div>
+
+        <div class="admit-scroll-wrap">
+            <div class="admit-card">
+                <div class="admit-header">
+                    <img src="/logo.png" alt="Logo" referrerpolicy="no-referrer">
+                    <div class="admit-title">
+                        <h2>নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা</h2>
+                        <p>ডাকঘর: নলতা মোবারকনগর, কালিগঞ্জ, সাতক্ষীরা</p>
+                        <div class="admit-doc-label">প্রবেশপত্র (Admit Card)</div>
+                    </div>
+                </div>
+
+                <div class="admit-body">
+                    <div class="student-info">
+                        <div class="info-row"><span class="info-label">শিক্ষার্থীর নাম:</span><span class="info-value" id="res_name"></span></div>
+                        <div class="info-row"><span class="info-label">পিতার নাম:</span><span class="info-value" id="res_father"></span></div>
+                        <div class="info-row"><span class="info-label">শ্রেণি:</span><span class="info-value" id="res_class"></span></div>
+                        <div class="info-row"><span class="info-label">রোল নম্বর:</span><span class="info-value" id="res_roll"></span></div>
+                        <div class="info-row"><span class="info-label">আইডি নম্বর:</span><span class="info-value" id="res_id"></span></div>
+                    </div>
+                    <div class="student-photo" id="res_photo"></div>
+                </div>
+
+                <div class="admit-footer">
+                    <div class="sig">শিক্ষার্থীর স্বাক্ষর</div>
+                    <div class="sig">পরীক্ষা নিয়ন্ত্রক</div>
+                    <div class="sig">অধ্যক্ষের স্বাক্ষর</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxZR0c6PLITftRWpUKe0usjXg-orylIVmTxQ0lYwolDKx1G84wIb_sg8RxDqAoVg7Wh1g/exec';
+
+    function resetAdmitSearch() {
+        document.getElementById('admit-card-result').style.display = 'none';
+        document.getElementById('admitSearchCard').style.display = 'block';
+        const btn = document.getElementById('searchBtn');
+        btn.disabled = false;
+        btn.innerText = "প্রবেশপত্র খুঁজুন";
+    }
+
+    document.getElementById('searchForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const roll = document.getElementById('search_roll').value;
+        const sClass = document.getElementById('search_class').value;
+        const btn = document.getElementById('searchBtn');
+        const errorMsg = document.getElementById('error-msg');
+
+        btn.disabled = true;
+        btn.innerText = "খোঁজা হচ্ছে...";
+        errorMsg.style.display = "none";
+
+        function showAdmitData(data) {
+            document.getElementById('res_name').innerText = data.name || '—';
+            document.getElementById('res_father').innerText = data.father || '—';
+            document.getElementById('res_class').innerText = data.class || '—';
+            document.getElementById('res_roll').innerText = data.roll || '—';
+            document.getElementById('res_id').innerText = data.id || '—';
+            document.getElementById('res_photo').innerHTML = data.photo ? `<img src="${data.photo}" alt="শিক্ষার্থীর ছবি">` : '<img src="/logo.png" alt="লোগো">';
+            document.getElementById('admitSearchCard').style.display = 'none';
+            document.getElementById('admit-card-result').style.display = 'block';
+        }
+
+        try {
+            const localRes = await fetch(`/api/portal/admit-lookup?roll=${encodeURIComponent(roll)}&class=${encodeURIComponent(sClass)}`);
+            if (localRes.ok) {
+                const localData = await localRes.json();
+                if (localData && localData.status === 'success') {
+                    showAdmitData(localData);
+                    return;
+                }
+            }
+            const response = await fetch(`${scriptURL}?action=getStudent&roll=${encodeURIComponent(roll)}&class=${encodeURIComponent(sClass)}`);
+            const data = await response.json();
+            if (data.status === "success") {
+                showAdmitData(data);
+            } else {
+                errorMsg.style.display = "block";
+                btn.disabled = false;
+                btn.innerText = "প্রবেশপত্র খুঁজুন";
+            }
+        } catch (err) {
+            errorMsg.innerText = "সার্ভার সমস্যা! অনুগ্রহ করে আবার চেষ্টা করুন।";
+            errorMsg.style.display = "block";
+            btn.disabled = false;
+            btn.innerText = "প্রবেশপত্র খুঁজুন";
+        }
+    });
+</script>
+
+<%- include('partials/footer') %>

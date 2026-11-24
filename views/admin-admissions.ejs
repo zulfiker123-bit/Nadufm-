@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ভর্তি ও এডমিট কার্ড ব্যবস্থাপনা</title>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Hind Siliguri', sans-serif; background: #f6f8f7; color: #0f172a; padding: 18px; }
+        .wrap { max-width: 1180px; margin: 0 auto; }
+        .mode-tabs { display: flex; gap: 8px; flex-wrap: wrap; background: #fff; border: 1px solid rgba(15,23,42,0.08); border-radius: 12px; padding: 8px; margin-bottom: 16px; }
+        .mode-tab { flex: 1 1 180px; min-height: 40px; border: none; border-radius: 8px; background: transparent; color: #475569; font-family: inherit; font-size: 0.92rem; font-weight: 600; cursor: pointer; }
+        .mode-tab.active { background: #15803d; color: #fff; }
+        .card { background: #fff; border: 1px solid rgba(15,23,42,0.08); border-radius: 14px; padding: 20px; }
+        .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+        .toolbar h2 { font-size: 1.06rem; font-weight: 700; color: #14532d; }
+        .search-box { height: 38px; padding: 0 12px; border: 1px solid rgba(15,23,42,0.14); border-radius: 9px; min-width: 220px; font-family: inherit; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+        th { background: #f8faf9; color: #14532d; text-align: left; padding: 11px 12px; border-bottom: 1px solid rgba(15,23,42,0.09); }
+        td { padding: 10px 12px; border-bottom: 1px solid rgba(15,23,42,0.06); vertical-align: middle; }
+        .btn-sm { padding: 5px 10px; border-radius: 7px; border: 1px solid transparent; font-family: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
+        .btn-del { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+        .sub-frame { width: 100%; height: calc(100vh - 110px); min-height: 620px; border: none; border-radius: 14px; background: #fff; border: 1px solid rgba(15,23,42,0.08); }
+        .is-hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="mode-tabs" role="tablist">
+            <button type="button" class="mode-tab active" data-pane="list" onclick="switchPane('list')">ভর্তি আবেদন তালিকা</button>
+            <button type="button" class="mode-tab" data-pane="form" onclick="switchPane('form')">নতুন ভর্তি ফরম</button>
+        </div>
+
+        <section id="pane-list" class="card">
+            <div class="toolbar">
+                <h2>জমাকৃত অনলাইন ভর্তি আবেদন (<span id="admCount">০</span>)</h2>
+                <input type="search" id="admSearch" class="search-box" placeholder="নাম, শ্রেণি বা রোল খুঁজুন..." oninput="renderAdmissions()">
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>নাম (বাংলা)</th>
+                            <th>শ্রেণি</th>
+                            <th>রোল / আইডি</th>
+                            <th>পিতার নাম</th>
+                            <th>মোবাইল</th>
+                            <th style="text-align:right;">অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="pane-form" class="is-hidden">
+            <iframe id="formFrame" class="sub-frame" src="about:blank" title="ভর্তি ফরম"></iframe>
+        </section>
+    </div>
+
+    <script>
+        let admissions = <%- JSON.stringify(admissions || []) %>;
+
+        function bnNum(v) {
+            const d = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+            return String(v).replace(/[0-9]/g, ch => d[Number(ch)]);
+        }
+
+        function esc(s) {
+            return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+        }
+
+        function switchPane(pane) {
+            document.querySelectorAll('.mode-tab').forEach(b => b.classList.toggle('active', b.getAttribute('data-pane') === pane));
+            document.getElementById('pane-list').classList.toggle('is-hidden', pane !== 'list');
+            document.getElementById('pane-form').classList.toggle('is-hidden', pane !== 'form');
+            if (pane === 'form' && document.getElementById('formFrame').getAttribute('src') === 'about:blank') {
+                document.getElementById('formFrame').setAttribute('src', '/admission.php?embed=1');
+            }
+        }
+
+        function renderAdmissions() {
+            const q = (document.getElementById('admSearch').value || '').trim().toLowerCase();
+            const list = admissions.filter(a => {
+                const hay = `${a.name_bn} ${a.name_en} ${a.student_class} ${a.roll_no} ${a.id_no} ${a.mobile}`.toLowerCase();
+                return !q || hay.includes(q);
+            });
+            document.getElementById('admCount').textContent = bnNum(list.length);
+            const tbody = document.getElementById('admBody');
+            if (!list.length) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:24px; color:#64748b;">এখনো কোনো ভর্তি আবেদন জমা হয়নি। "নতুন ভর্তি ফরম" ট্যাব থেকে আবেদন যুক্ত করা যাবে।</td></tr>';
+                return;
+            }
+            tbody.innerHTML = list.map(a => `
+                <tr>
+                    <td><div style="font-weight:700;">${esc(a.name_bn)}</div><div style="font-size:0.8rem; color:#64748b;">${esc(a.name_en)}</div></td>
+                    <td>${esc(a.student_class)}</td>
+                    <td>রোল: ${esc(a.roll_no || '—')}<br><span style="font-size:0.8rem; color:#64748b;">আইডি: ${esc(a.id_no || '—')}</span></td>
+                    <td>${esc(a.father_bn || '—')}</td>
+                    <td>${esc(a.mobile || '—')}</td>
+                    <td style="text-align:right;"><button type="button" class="btn-sm btn-del" onclick="deleteAdmission('${esc(a.id)}')">ডিলিট</button></td>
+                </tr>
+            `).join('');
+        }
+
+        async function deleteAdmission(id) {
+            const res = await fetch('/api/portal/admissions/' + encodeURIComponent(id), { method: 'DELETE' });
+            const data = await res.json();
+            if (res.ok && data.admissions) {
+                admissions = data.admissions;
+                renderAdmissions();
+            }
+        }
+
+        renderAdmissions();
+    </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<section class="carousel-container" aria-label="আমাদের শিক্ষকবৃন্দ">
+    <div class="carousel-header">
+        <div>
+            <h2>আমাদের শিক্ষকবৃন্দ</h2>
+            <p class="app-card-sub">অভিজ্ঞ ও নিবেদিতপ্রাণ শিক্ষকমণ্ডলী</p>
+        </div>
+        <div class="carousel-controls-inline">
+            <button type="button" class="prev-btn" aria-label="পূর্ববর্তী শিক্ষক"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>
+            <button type="button" class="next-btn" aria-label="পরবর্তী শিক্ষক"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>
+            <a href="/teacher-list.php" class="carousel-all-link">সকল শিক্ষক</a>
+        </div>
+    </div>
+
+    <div class="carousel-slider-wrapper">
+        <div class="carousel-slider">
+            <% (teachers || []).forEach(function(teacher) { %>
+                <div class="carousel-item">
+                    <div class="card-inner">
+                        <img class="teacher-photo" src="/<%= teacher.img %>" alt="<%= teacher.name %>" referrerpolicy="no-referrer" />
+                        <div class="teacher-info">
+                            <h4><%= teacher.name %></h4>
+                            <p class="desg-text"><%= teacher.desg %></p>
+                            <p class="teacher-meta">ID: <%= teacher.index %> · <%= teacher.phone %></p>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+</section>

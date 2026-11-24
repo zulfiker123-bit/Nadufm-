@@ -1,0 +1,2474 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= pageTitle %></title>
+    <link rel="icon" href="/pwa-192x192.png" type="image/png" sizes="192x192">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#14532d">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="/vendor/html2pdf.bundle.min.js" defer></script>
+    <script src="/doc-export.js" defer></script>
+    <style>
+        :root {
+            --brand: #14532d;
+            --brand-strong: #15803d;
+            --brand-tint: #f0fdf4;
+            --bg: #f4f7f5;
+            --surface: #ffffff;
+            --border: rgba(15, 23, 42, 0.1);
+            --text: #0f172a;
+            --muted: #475569;
+            --danger: #b91c1c;
+            --amber: #b45309;
+            --blue: #1d4ed8;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: 'Hind Siliguri', 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .studio-topbar {
+            background: #ffffff;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .studio-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .studio-brand img {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid var(--border);
+        }
+
+        .studio-brand h1 {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--brand);
+            line-height: 1.2;
+        }
+
+        .studio-brand p {
+            margin: 0;
+            font-size: 0.78rem;
+            color: var(--muted);
+        }
+
+        .studio-top-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .studio-container {
+            max-width: 1400px;
+            margin: 18px auto 40px auto;
+            padding: 0 16px;
+        }
+
+        .studio-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            background: #ffffff;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            margin-bottom: 18px;
+        }
+
+        .studio-tab {
+            flex: 1 1 190px;
+            min-height: 44px;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            background: transparent;
+            color: var(--muted);
+            font-family: inherit;
+            font-size: 0.94rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px 14px;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+
+        .studio-tab:hover {
+            background: #f1f5f9;
+            color: var(--text);
+        }
+
+        .studio-tab.active {
+            background: var(--brand);
+            color: #ffffff;
+        }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 16px;
+        }
+
+        .card-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-title {
+            margin: 0;
+            font-size: 1.06rem;
+            font-weight: 700;
+            color: var(--brand);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-sub {
+            margin: 2px 0 0 0;
+            font-size: 0.84rem;
+            color: var(--muted);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            min-height: 44px;
+            padding: 0 15px;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            font-family: inherit;
+            font-size: 0.89rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: background-color 0.15s ease, transform 0.1s ease;
+        }
+
+        .btn:active { transform: scale(0.98); }
+        .btn-sm { min-height: 36px; padding: 0 11px; font-size: 0.82rem; border-radius: 8px; }
+        .btn-primary { background: var(--brand-strong); color: #ffffff; }
+        .btn-primary:hover { background: var(--brand); }
+        .btn-dark { background: #1e293b; color: #ffffff; }
+        .btn-dark:hover { background: #0f172a; }
+        .btn-blue { background: var(--blue); color: #ffffff; }
+        .btn-blue:hover { background: #1e40af; }
+        .btn-rose { background: #be123c; color: #ffffff; }
+        .btn-rose:hover { background: #9f1239; }
+        .btn-amber { background: #d97706; color: #ffffff; }
+        .btn-amber:hover { background: #b45309; }
+        .btn-outline { background: #ffffff; color: var(--text); border-color: var(--border); }
+        .btn-outline:hover { background: #f8fafc; }
+        .btn-danger-outline { background: #ffffff; color: var(--danger); border-color: #fecaca; }
+        .btn-danger-outline:hover { background: #fef2f2; }
+
+        .btn-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+
+        .field label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .field input[type="text"],
+        .field input[type="number"],
+        .field input[type="date"],
+        .field input[type="search"],
+        .field select,
+        .field textarea {
+            width: 100%;
+            min-height: 40px;
+            padding: 7px 11px;
+            border: 1px solid rgba(15, 23, 42, 0.15);
+            border-radius: 9px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            background: #f8faf9;
+            color: var(--text);
+            outline: none;
+        }
+
+        .field input:focus,
+        .field select:focus,
+        .field textarea:focus {
+            border-color: var(--brand-strong);
+            background: #ffffff;
+        }
+
+        .upload-zone {
+            border: 2px dashed rgba(21, 128, 61, 0.35);
+            background: #f8fcf9;
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .upload-zone-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .upload-zone-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: #dcfce7;
+            color: var(--brand);
+            display: grid;
+            place-items: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .col-chip-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .col-chip {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px;
+            background: #f8faf9;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .col-chip-top {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .col-chip-top input {
+            flex: 1;
+            min-width: 0;
+            height: 34px;
+            padding: 4px 8px;
+            border: 1px solid rgba(15, 23, 42, 0.14);
+            border-radius: 7px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: #ffffff;
+        }
+
+        .col-chip-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .col-chip-meta input[type="number"] {
+            width: 66px;
+            height: 30px;
+            padding: 2px 6px;
+            border: 1px solid rgba(15, 23, 42, 0.14);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.82rem;
+            text-align: center;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #ffffff;
+        }
+
+        table.sheet-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            font-variant-numeric: tabular-nums;
+        }
+
+        table.sheet-table th {
+            background: #14532d;
+            color: #ffffff;
+            padding: 10px 8px;
+            text-align: center;
+            font-weight: 600;
+            white-space: nowrap;
+            border-right: 1px solid rgba(255, 255, 255, 0.14);
+        }
+
+        table.sheet-table td {
+            border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+            border-right: 1px solid rgba(15, 23, 42, 0.06);
+            padding: 5px 6px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        table.sheet-table tr:nth-child(even) td { background: #f8faf9; }
+
+        .cell-input {
+            width: 100%;
+            min-width: 72px;
+            padding: 6px 8px;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            background: transparent;
+            font-family: inherit;
+            font-size: 0.88rem;
+            color: var(--text);
+            text-align: inherit;
+        }
+
+        .cell-input:focus {
+            outline: none;
+            border-color: var(--brand-strong);
+            background: #ffffff;
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+            margin-bottom: 14px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .stat-box {
+            background: #f8faf9;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 14px;
+        }
+
+        .stat-box-label { font-size: 0.78rem; color: var(--muted); }
+        .stat-box-val { font-size: 1.3rem; font-weight: 700; color: var(--text); margin-top: 2px; }
+
+        .status-pass { color: #15803d; font-weight: 700; }
+        .status-promoted { color: #b45309; font-weight: 700; }
+        .status-fail { color: #b91c1c; font-weight: 700; }
+        .status-abs { color: #64748b; font-weight: 600; }
+
+        .empty-state {
+            text-align: center;
+            padding: 36px 20px;
+            color: var(--muted);
+        }
+
+        .empty-state i {
+            font-size: 2rem;
+            color: #94a3b8;
+            margin-bottom: 10px;
+        }
+
+        .toast-banner {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 90;
+            background: #0f172a;
+            color: #ffffff;
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.22);
+            display: none;
+            max-width: 380px;
+        }
+
+        /* Tab 4: A4 Document Studio */
+        .doc-studio-grid {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 18px;
+            align-items: start;
+        }
+
+        @media (max-width: 1060px) {
+            .doc-studio-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .doc-preview-panel {
+            background: #cbd5e1;
+            border-radius: 16px;
+            padding: 18px;
+            overflow-x: auto;
+        }
+
+        .a4-pages-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            align-items: center;
+        }
+
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            background: #ffffff;
+            color: #0f172a;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.18);
+            box-sizing: border-box;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            page-break-after: always;
+            break-after: page;
+        }
+
+        .a4-page:last-child {
+            page-break-after: auto;
+            break-after: auto;
+        }
+
+        .a4-frame {
+            border: 2px solid #166534;
+            padding: 16px 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .cert-frame {
+            border: 3px double #14532d;
+            padding: 22px 26px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .a4-inst-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border-bottom: 2px solid #166534;
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+        }
+
+        .a4-inst-title {
+            text-align: center;
+            flex: 1;
+        }
+
+        .a4-inst-title h2 {
+            margin: 0;
+            color: #14532d;
+            font-size: 1.38em;
+            line-height: 1.25;
+        }
+
+        .a4-inst-title p {
+            margin: 2px 0;
+            font-size: 0.9em;
+            color: #334155;
+        }
+
+        .a4-doc-badge {
+            text-align: center;
+            font-size: 1.18em;
+            font-weight: 700;
+            color: #14532d;
+            text-decoration: underline;
+            text-underline-offset: 4px;
+            margin: 8px 0 14px 0;
+        }
+
+        .a4-memo-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.92em;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .a4-body-text {
+            line-height: 1.85;
+            text-align: justify;
+            font-size: 1em;
+        }
+
+        .a4-ms-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.92em;
+            font-variant-numeric: tabular-nums;
+            margin-top: 10px;
+        }
+
+        .a4-ms-table th, .a4-ms-table td {
+            border: 1px solid #166534;
+            padding: 6px 6px;
+            text-align: center;
+        }
+
+        .a4-ms-table th {
+            background: #166534;
+            color: #ffffff;
+        }
+
+        .a4-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            border: 1px solid #166534;
+            margin-top: 14px;
+            font-weight: 700;
+            font-size: 0.92em;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .a4-summary-grid div {
+            padding: 8px 6px;
+            text-align: center;
+            border-right: 1px solid #166534;
+        }
+
+        .a4-summary-grid div:last-child { border-right: none; }
+
+        .a4-sign-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            margin-top: 48px;
+            font-size: 0.9em;
+            font-weight: 700;
+            color: #14532d;
+        }
+
+        .a4-sign-box {
+            text-align: center;
+            min-width: 140px;
+        }
+
+        .a4-sign-line {
+            border-top: 1px solid #14532d;
+            padding-top: 5px;
+            margin-top: 32px;
+        }
+
+        .hidden { display: none !important; }
+
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: #ffffff !important; margin: 0 !important; padding: 0 !important; }
+            .studio-container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            .tab-panel { display: none !important; }
+            #panel-docstudio { display: block !important; }
+            .doc-studio-grid { display: block !important; }
+            .doc-preview-panel { background: transparent !important; padding: 0 !important; overflow: visible !important; }
+            .a4-pages-stack { gap: 0 !important; display: block !important; }
+            .a4-page { box-shadow: none !important; margin: 0 !important; width: 210mm !important; min-height: 297mm !important; }
+        }
+    </style>
+</head>
+<body>
+
+<% if (!isEmbedded) { %>
+<header class="studio-topbar no-print">
+    <div class="studio-brand">
+        <img src="/logo.png" alt="মাদ্রাসা লোগো">
+        <div>
+            <h1>এক্সেল ও A4 ডকুমেন্ট স্টুডিও</h1>
+            <p>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</p>
+        </div>
+    </div>
+    <div class="studio-top-actions">
+        <a href="/result.php" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-poll"></i> পাবলিক ফলাফল</a>
+        <a href="/merit-list.php" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-trophy"></i> মেধা তালিকা</a>
+        <a href="/dashboard.php" class="btn btn-dark btn-sm"><i class="fas fa-arrow-left"></i> ড্যাশবোর্ড</a>
+    </div>
+</header>
+<% } %>
+
+<main class="studio-container">
+<% if (!hideTabs) { %>
+    <nav class="studio-tabs no-print" role="tablist">
+        <button type="button" class="studio-tab active" data-tab="students" onclick="switchTab('students')">
+            <i class="fas fa-user-graduate"></i>
+            <span>১. শিক্ষার্থী তথ্য Excel</span>
+        </button>
+        <button type="button" class="studio-tab" data-tab="results" onclick="switchTab('results')">
+            <i class="fas fa-calculator"></i>
+            <span>২. রেজাল্ট, GPA ও মেধা তালিকা</span>
+        </button>
+        <button type="button" class="studio-tab" data-tab="documents" onclick="switchTab('documents')">
+            <i class="fas fa-folder-open"></i>
+            <span>৩. সকল ডকুমেন্টস Excel</span>
+        </button>
+        <button type="button" class="studio-tab" data-tab="docstudio" onclick="switchTab('docstudio')">
+            <i class="fas fa-print"></i>
+            <span>৪. A4 ডকুমেন্ট (Word / PDF / Print)</span>
+        </button>
+    </nav>
+<% } %>
+
+    <!-- ========================================== -->
+    <!-- TAB 1: STUDENTS EXCEL                      -->
+    <!-- ========================================== -->
+    <section id="panel-students" class="tab-panel active no-print">
+        <div class="card">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title"><i class="fas fa-file-excel"></i> শিক্ষার্থীদের তথ্য Excel আপলোড ও ব্যবস্থাপনা</h2>
+                    <p class="card-sub">যেকোনো কলাম সংখ্যা ও ফরম্যাটের .xlsx / .xls / .csv ফাইল আপলোড করুন, কলাম যোগ/বাদ দিন বা এডিট করুন।</p>
+                </div>
+                <div class="btn-group">
+                    <a href="/api/excel/template/students" class="btn btn-outline btn-sm"><i class="fas fa-download"></i> নমুনা Excel</a>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="exportSheetExcel('students')"><i class="fas fa-file-export"></i> Excel এক্সপোর্ট</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="saveStudentsSheet()"><i class="fas fa-save"></i> সংরক্ষণ করুন</button>
+                </div>
+            </div>
+
+            <div class="upload-zone">
+                <div class="upload-zone-info">
+                    <div class="upload-zone-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <div>
+                        <div style="font-weight: 700;">শিক্ষার্থী তথ্যের Excel ফাইল নির্বাচন করুন</div>
+                        <div style="font-size: 0.82rem; color: var(--muted);">ফাইল নির্বাচন করলেই স্বয়ংক্রিয়ভাবে আপলোড হবে (.xlsx, .xls, .csv)।</div>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <input type="file" id="studentsFileInput" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain" onchange="uploadExcelFile('students')" style="max-width: 240px;">
+                    <button type="button" id="studentsUploadBtn" class="btn btn-primary btn-sm" onclick="triggerOrUploadExcel('students')"><i class="fas fa-upload"></i> ফাইল আপলোড</button>
+                </div>
+            </div>
+            <div id="studentsUploadStatus" style="display:none; margin-top:10px; padding:10px 14px; border-radius:10px; font-size:0.88rem; font-weight:600;"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-head">
+                <div>
+                    <h3 class="card-title"><i class="fas fa-columns"></i> কলাম ম্যানেজার (কলাম কম/বেশি ও নাম পরিবর্তন)</h3>
+                    <p class="card-sub">নতুন কলাম যোগ করুন, অপ্রয়োজনীয় কলাম মুছুন অথবা নাম পরিবর্তন করুন।</p>
+                </div>
+                <div class="btn-group">
+                    <input type="text" id="newStudentColLabel" placeholder="নতুন কলামের নাম (যেমন: রক্তের গ্রুপ)" style="height:38px; padding:0 10px; border:1px solid var(--border); border-radius:8px; min-width:220px;">
+                    <button type="button" class="btn btn-dark btn-sm" onclick="addSimpleColumn('students')"><i class="fas fa-plus"></i> কলাম যোগ</button>
+                </div>
+            </div>
+
+            <div class="col-chip-list" id="studentsColList"></div>
+
+            <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border);">
+                <div style="font-weight:700; font-size:0.86rem; color:var(--brand); margin-bottom:8px;">ডকুমেন্ট স্টুডিও ফিল্ড ম্যাপিং (স্বয়ংক্রিয়ভাবে প্রত্যয়ন/প্রশংসা পত্রে বসানোর জন্য):</div>
+                <div class="grid-4" id="studentsMappingGrid"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-head">
+                <div>
+                    <h3 class="card-title"><i class="fas fa-table"></i> শিক্ষার্থীদের ডেটা তালিকা (<span id="studentsCount">0</span> জন)</h3>
+                </div>
+                <div class="btn-group">
+                    <input type="search" id="studentsSearchInput" placeholder="নাম, রোল বা মোবাইল খুঁজুন..." oninput="renderStudentsTable()" style="height:38px; padding:0 12px; border:1px solid var(--border); border-radius:8px; min-width:210px;">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="addSimpleRow('students')"><i class="fas fa-plus"></i> নতুন সারি</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="saveStudentsSheet()"><i class="fas fa-save"></i> সংরক্ষণ</button>
+                </div>
+            </div>
+            <div id="studentsTableContainer"></div>
+        </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: RESULTS, AUTO GPA, MERIT & PROMOTE  -->
+    <!-- ========================================== -->
+    <section id="panel-results" class="tab-panel no-print">
+        <div class="card">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title"><i class="fas fa-award"></i> রেজাল্ট শিট আপলোড, অটো GPA, মেধা তালিকা ও প্রমোশন</h2>
+                    <p class="card-sub">বিষয়ের কলাম কম-বেশি করুন, পূর্ণমান নির্ধারণ করুন, অটো GPA/মেধা তালিকা ও ফেলকৃত শিক্ষার্থীদের প্রমোশন নিয়ন্ত্রণ করুন।</p>
+                </div>
+                <div class="btn-group">
+                    <a href="/api/excel/template/results" class="btn btn-outline btn-sm"><i class="fas fa-download"></i> নমুনা রেজাল্ট Excel</a>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="exportComputedResultsExcel()"><i class="fas fa-file-export"></i> GPA ও মেধাসহ Excel</button>
+                    <button type="button" class="btn btn-blue btn-sm" onclick="openBatchMarksheets()"><i class="fas fa-copy"></i> সকল শিক্ষার্থীর মার্কশিট (A4)</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="saveResultsSheet()"><i class="fas fa-save"></i> ফলাফল সংরক্ষণ</button>
+                </div>
+            </div>
+
+            <div class="grid-4" style="margin-bottom: 14px;">
+                <div class="field">
+                    <label>সক্রিয় পরীক্ষা / রেজাল্ট শিট</label>
+                    <select id="activeExamSelect" onchange="switchActiveExam(this.value)"></select>
+                </div>
+                <div class="field">
+                    <label>শ্রেণি (পাবলিক রেজাল্টে যুক্ত করতে)</label>
+                    <select id="examClassId" onchange="updateExamMeta()"></select>
+                </div>
+                <div class="field">
+                    <label>পরীক্ষার নাম</label>
+                    <input type="text" id="examNameInput" oninput="updateExamMeta()">
+                </div>
+                <div class="field">
+                    <label>শিক্ষাবর্ষ</label>
+                    <input type="text" id="examYearInput" oninput="updateExamMeta()">
+                </div>
+            </div>
+
+            <div class="btn-group" style="margin-bottom: 14px;">
+                <button type="button" class="btn btn-dark btn-sm" onclick="createNewExam()"><i class="fas fa-plus-circle"></i> নতুন পরীক্ষা / শ্রেণি তৈরি</button>
+                <button type="button" class="btn btn-danger-outline btn-sm" onclick="deleteCurrentExam()"><i class="fas fa-trash"></i> এই শিট মুছুন</button>
+            </div>
+
+            <div class="upload-zone">
+                <div class="upload-zone-info">
+                    <div class="upload-zone-icon"><i class="fas fa-file-upload"></i></div>
+                    <div>
+                        <div style="font-weight: 700;">রেজাল্ট শিট Excel আপলোড করুন</div>
+                        <div style="font-size: 0.82rem; color: var(--muted);">উদাহরণ হেডার: <code>রোল</code>, <code>শিক্ষার্থীর নাম</code>, <code>কুরআন মাজিদ (100)</code>, <code>আরবি (100)</code> — ফাইল নির্বাচন করলেই আপলোড ও GPA হিসাব হবে।</div>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <input type="file" id="resultsFileInput" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain" onchange="uploadExcelFile('results')" style="max-width: 240px;">
+                    <button type="button" id="resultsUploadBtn" class="btn btn-primary btn-sm" onclick="triggerOrUploadExcel('results')"><i class="fas fa-upload"></i> আপলোড ও ক্যালকুলেট</button>
+                </div>
+            </div>
+            <div id="resultsUploadStatus" style="display:none; margin-top:10px; padding:10px 14px; border-radius:10px; font-size:0.88rem; font-weight:600;"></div>
+        </div>
+
+        <!-- Column manager + Auto Promotion rules -->
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-head">
+                    <div>
+                        <h3 class="card-title"><i class="fas fa-sliders-h"></i> বিষয়ের কলাম ম্যানেজার (কলাম কম-বেশি)</h3>
+                        <p class="card-sub">বিষয় বা তথ্য কলাম যোগ/বাদ দিন এবং পূর্ণমান নির্ধারণ করুন।</p>
+                    </div>
+                </div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+                    <input type="text" id="newResultColLabel" placeholder="বিষয়ের নাম (যেমন: বিজ্ঞান)" style="flex:1; min-width:140px; height:38px; padding:0 10px; border:1px solid var(--border); border-radius:8px;">
+                    <input type="number" id="newResultColFM" value="100" min="10" max="500" title="পূর্ণমান" style="width:82px; height:38px; padding:0 8px; border:1px solid var(--border); border-radius:8px;">
+                    <select id="newResultColType" style="height:38px; padding:0 8px; border:1px solid var(--border); border-radius:8px;">
+                        <option value="subject">বিষয় (নম্বর)</option>
+                        <option value="info">তথ্য কলাম</option>
+                    </select>
+                    <button type="button" class="btn btn-dark btn-sm" onclick="addResultColumn()"><i class="fas fa-plus"></i> যোগ</button>
+                </div>
+                <div class="col-chip-list" id="resultsColList"></div>
+
+                <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border);" class="grid-4" id="resultsMappingGrid"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <div>
+                        <h3 class="card-title"><i class="fas fa-level-up-alt"></i> ফেলকৃত প্রমোশন ও পাস নিয়মাবলি</h3>
+                        <p class="card-sub">বিষয়ে ফেলকৃত শিক্ষার্থীদের অটোমেটিক বা ম্যানুয়ালি প্রমোট করার অপশন।</p>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="field">
+                        <label>পাস নম্বর শতকরা হার (%)</label>
+                        <input type="number" id="examPassPercent" min="10" max="80" value="33" oninput="updatePromoConfig()">
+                    </div>
+                    <div class="field">
+                        <label>অটো-প্রমোশন সীমা (ফেল বিষয় সংখ্যা)</label>
+                        <select id="examMaxPromoteFail" onchange="updatePromoConfig()">
+                            <option value="0">প্রমোশন বন্ধ (সকল ফেল অকৃতকার্য)</option>
+                            <option value="1">সর্বোচ্চ ১ বিষয়ে ফেল করলে প্রমোট</option>
+                            <option value="2">সর্বোচ্চ ২ বিষয়ে ফেল করলে প্রমোট</option>
+                            <option value="3">সর্বোচ্চ ৩ বিষয়ে ফেল করলে প্রমোট</option>
+                            <option value="99">সকল ফেলকৃত শিক্ষার্থী প্রমোট</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="field" style="margin-top: 10px;">
+                    <label>প্রমোশন মন্তব্য (মার্কশিট ও মেধাতালিকায় দেখাবে)</label>
+                    <input type="text" id="examPromoLabel" value="বিশেষ বিবেচনায় প্রমোটেড" oninput="updatePromoConfig()">
+                </div>
+                <div class="btn-group" style="margin-top: 12px;">
+                    <button type="button" class="btn btn-amber btn-sm" onclick="bulkPromoteFailed(true)"><i class="fas fa-check-double"></i> সকল ফেলকৃত প্রমোট করুন</button>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="bulkPromoteFailed(null)"><i class="fas fa-undo"></i> ম্যানুয়াল প্রমোশন রিসেট</button>
+                </div>
+                <p style="font-size:0.8rem; color:var(--muted); margin:10px 0 0 0;">নিচের টেবিল থেকেও প্রতিটি শিক্ষার্থীর জন্য আলাদাভাবে <strong>প্রমোট / বাতিল</strong> করতে পারবেন।</p>
+            </div>
+        </div>
+
+        <!-- Live Stats -->
+        <div class="stats-bar" id="resultStatsBar"></div>
+
+        <!-- Result & Merit Data Table -->
+        <div class="card">
+            <div class="card-head">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-primary" id="btnViewEditor" onclick="setResultSubView('editor')"><i class="fas fa-edit"></i> মার্কস এডিট ও প্রমোশন</button>
+                    <button type="button" class="btn btn-sm btn-outline" id="btnViewMerit" onclick="setResultSubView('merit')"><i class="fas fa-trophy"></i> অটো মেধা তালিকা (GPA ভিত্তিক)</button>
+                </div>
+                <div class="btn-group">
+                    <input type="search" id="resultsSearchInput" placeholder="নাম বা রোল খুঁজুন..." oninput="renderResultsTable()" style="height:38px; padding:0 12px; border:1px solid var(--border); border-radius:8px; min-width:190px;">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="addResultRow()"><i class="fas fa-plus"></i> নতুন শিক্ষার্থী</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="saveResultsSheet()"><i class="fas fa-save"></i> সংরক্ষণ</button>
+                </div>
+            </div>
+            <div id="resultsTableContainer"></div>
+        </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: GENERAL DOCUMENTS EXCEL             -->
+    <!-- ========================================== -->
+    <section id="panel-documents" class="tab-panel no-print">
+        <div class="card">
+            <div class="card-head">
+                <div>
+                    <h2 class="card-title"><i class="fas fa-file-alt"></i> সকল ডকুমেন্টস Excel শিট</h2>
+                    <p class="card-sub">প্রশংসা পত্র, প্রত্যায়ন পত্র বা যেকোনো দাপ্তরিক ডকুমেন্টের তথ্য Excel-এ আপলোড করুন, কলাম কম-বেশি করুন এবং প্রিন্ট/PDF/Word তৈরি করুন।</p>
+                </div>
+                <div class="btn-group">
+                    <a href="/api/excel/template/documents" class="btn btn-outline btn-sm"><i class="fas fa-download"></i> নমুনা ডকুমেন্ট Excel</a>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="exportSheetExcel('documents')"><i class="fas fa-file-export"></i> Excel এক্সপোর্ট</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="saveDocumentsSheet()"><i class="fas fa-save"></i> সংরক্ষণ করুন</button>
+                </div>
+            </div>
+
+            <div class="upload-zone">
+                <div class="upload-zone-info">
+                    <div class="upload-zone-icon"><i class="fas fa-folder-plus"></i></div>
+                    <div>
+                        <div style="font-weight: 700;">সকল ডকুমেন্টস Excel ফাইল আপলোড করুন</div>
+                        <div style="font-size: 0.82rem; color: var(--muted);">ফাইল নির্বাচন করলেই স্বয়ংক্রিয়ভাবে আপলোড হবে (.xlsx, .xls, .csv)।</div>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <input type="file" id="documentsFileInput" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain" onchange="uploadExcelFile('documents')" style="max-width: 240px;">
+                    <button type="button" id="documentsUploadBtn" class="btn btn-primary btn-sm" onclick="triggerOrUploadExcel('documents')"><i class="fas fa-upload"></i> ফাইল আপলোড</button>
+                </div>
+            </div>
+            <div id="documentsUploadStatus" style="display:none; margin-top:10px; padding:10px 14px; border-radius:10px; font-size:0.88rem; font-weight:600;"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-head">
+                <div>
+                    <h3 class="card-title"><i class="fas fa-columns"></i> কলাম ম্যানেজার ও ফিল্ড ম্যাপিং</h3>
+                </div>
+                <div class="btn-group">
+                    <input type="text" id="newDocColLabel" placeholder="নতুন কলামের নাম" style="height:38px; padding:0 10px; border:1px solid var(--border); border-radius:8px; min-width:200px;">
+                    <button type="button" class="btn btn-dark btn-sm" onclick="addSimpleColumn('documents')"><i class="fas fa-plus"></i> কলাম যোগ</button>
+                </div>
+            </div>
+            <div class="col-chip-list" id="documentsColList"></div>
+            <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border);" class="grid-4" id="documentsMappingGrid"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-head">
+                <h3 class="card-title"><i class="fas fa-list"></i> ডকুমেন্ট ডেটা সারি (<span id="documentsCount">0</span> টি)</h3>
+                <div class="btn-group">
+                    <input type="search" id="documentsSearchInput" placeholder="খুঁজুন..." oninput="renderDocumentsTable()" style="height:38px; padding:0 12px; border:1px solid var(--border); border-radius:8px;">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="addSimpleRow('documents')"><i class="fas fa-plus"></i> নতুন সারি</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="saveDocumentsSheet()"><i class="fas fa-save"></i> সংরক্ষণ</button>
+                </div>
+            </div>
+            <div id="documentsTableContainer"></div>
+        </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: A4 DOCUMENT STUDIO                  -->
+    <!-- ========================================== -->
+    <section id="panel-docstudio" class="tab-panel">
+        <div class="doc-studio-grid">
+            <!-- Left Controls -->
+            <aside class="no-print">
+                <div class="card">
+                    <h3 class="card-title" style="margin-bottom: 12px;"><i class="fas fa-file-signature"></i> ডকুমেন্ট ও উৎস নির্বাচন</h3>
+
+                    <div class="field" style="margin-bottom: 10px;">
+                        <label>ডকুমেন্টের ধরন</label>
+                        <select id="docTypeSelect" onchange="onDocConfigChange()">
+                            <option value="marksheet">মার্কশিট (একাডেমিক ট্রান্সক্রিপ্ট)</option>
+                            <option value="testimonial">প্রশংসা পত্র (Testimonial)</option>
+                            <option value="attestation">প্রত্যায়ন পত্র (Attestation / Certificate)</option>
+                        </select>
+                    </div>
+
+                    <div class="field" style="margin-bottom: 10px;" id="batchToggleWrap">
+                        <label>প্রিন্ট মোড (মার্কশিট)</label>
+                        <select id="docBatchMode" onchange="onDocConfigChange()">
+                            <option value="single">একক শিক্ষার্থী (Single A4)</option>
+                            <option value="batch">সকল শিক্ষার্থী (প্রতি পৃষ্ঠায় ১টি A4)</option>
+                        </select>
+                    </div>
+
+                    <div class="field" style="margin-bottom: 10px;">
+                        <label>তথ্যের উৎস শিট</label>
+                        <select id="docSourceSelect" onchange="populateDocRecordPicker()">
+                            <option value="results">রেজাল্ট শিট (সক্রিয় পরীক্ষা)</option>
+                            <option value="students">শিক্ষার্থী তথ্য Excel</option>
+                            <option value="documents">সকল ডকুমেন্টস Excel</option>
+                        </select>
+                    </div>
+
+                    <div class="field" id="singleRecordWrap">
+                        <label>শিক্ষার্থী / সারি নির্বাচন করুন</label>
+                        <select id="docRecordSelect" onchange="loadSelectedRecordIntoForm()"></select>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title" style="margin-bottom: 12px;"><i class="fas fa-text-height"></i> A4 পেজ ফন্ট ও মার্জিন (mm)</h3>
+
+                    <div class="field" style="margin-bottom: 12px;">
+                        <label>মূল ফন্ট সাইজ: <strong id="docFontSizeLabel">14px</strong></label>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <input type="range" id="docFontSize" min="10" max="22" step="0.5" value="14" oninput="syncDocStyle('font')" style="flex:1; accent-color:var(--brand-strong);">
+                            <input type="number" id="docFontSizeNum" min="10" max="24" step="0.5" value="14" oninput="syncDocStyle('fontNum')" style="width:68px;">
+                        </div>
+                    </div>
+
+                    <div class="btn-group" style="margin-bottom: 10px;">
+                        <button type="button" class="btn btn-outline btn-sm" onclick="setMarginPreset(10)">সংকীর্ণ (10mm)</button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="setMarginPreset(15)">স্বাভাবিক (15mm)</button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="setMarginPreset(22)">প্রশস্ত (22mm)</button>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="field">
+                            <label>উপরে (Top mm)</label>
+                            <input type="number" id="mTop" min="4" max="45" value="15" oninput="renderA4Document()">
+                        </div>
+                        <div class="field">
+                            <label>ডানে (Right mm)</label>
+                            <input type="number" id="mRight" min="4" max="45" value="15" oninput="renderA4Document()">
+                        </div>
+                        <div class="field">
+                            <label>নিচে (Bottom mm)</label>
+                            <input type="number" id="mBottom" min="4" max="45" value="15" oninput="renderA4Document()">
+                        </div>
+                        <div class="field">
+                            <label>বামে (Left mm)</label>
+                            <input type="number" id="mLeft" min="4" max="45" value="15" oninput="renderA4Document()">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title" style="margin-bottom: 12px;"><i class="fas fa-pen-nib"></i> ডকুমেন্টের তথ্য সম্পাদনা</h3>
+                    <div class="grid-2">
+                        <div class="field"><label>স্মারক নং</label><input type="text" id="docMemoNo" value="নালতা/ফা.মা./২০২৬/০১" oninput="renderA4Document()"></div>
+                        <div class="field"><label>তারিখ</label><input type="text" id="docDateText" value="" oninput="renderA4Document()"></div>
+                        <div class="field"><label>শিক্ষার্থীর নাম</label><input type="text" id="fName" oninput="renderA4Document()"></div>
+                        <div class="field"><label>রোল / আইডি</label><input type="text" id="fRoll" oninput="renderA4Document()"></div>
+                        <div class="field"><label>পিতার নাম</label><input type="text" id="fFather" oninput="renderA4Document()"></div>
+                        <div class="field"><label>মাতার নাম</label><input type="text" id="fMother" oninput="renderA4Document()"></div>
+                        <div class="field"><label>শ্রেণি</label><input type="text" id="fClass" oninput="renderA4Document()"></div>
+                        <div class="field"><label>শিক্ষাবর্ষ / সেশন</label><input type="text" id="fSession" value="২০২৫-২০২৬" oninput="renderA4Document()"></div>
+                        <div class="field"><label>জন্ম তারিখ</label><input type="text" id="fDob" oninput="renderA4Document()"></div>
+                        <div class="field"><label>রেজিস্ট্রেশন নং</label><input type="text" id="fReg" oninput="renderA4Document()"></div>
+                        <div class="field"><label>জিপিএ / ফলাফল</label><input type="text" id="fGpa" oninput="renderA4Document()"></div>
+                        <div class="field"><label>ঠিকানা</label><input type="text" id="fAddress" oninput="renderA4Document()"></div>
+                    </div>
+                    <div class="field" style="margin-top: 10px;">
+                        <label>অধ্যক্ষের পদবি / নাম (স্বাক্ষর অংশ)</label>
+                        <input type="text" id="fPrincipalLabel" value="অধ্যক্ষ, নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা" oninput="renderA4Document()">
+                    </div>
+                    <div class="field" style="margin-top: 10px;">
+                        <label>অতিরিক্ত মন্তব্য / চরিত্র</label>
+                        <input type="text" id="fRemark" value="আমার জানামতে সে একজন উত্তম চরিত্রের অধিকারী এবং মাদ্রাসার নিয়ম-শৃঙ্খলা মেনে চলে।" oninput="renderA4Document()">
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Right A4 Preview + Actions -->
+            <div>
+                <div class="card no-print">
+                    <div class="card-head" style="margin-bottom: 0; padding-bottom: 0; border-bottom: none;">
+                        <div>
+                            <h3 class="card-title"><i class="fas fa-file-invoice"></i> A4 প্রিভিউ (২১০ মি.মি. × ২৯৭ মি.মি.)</h3>
+                            <p class="card-sub">ফন্ট ও মার্জিন পরিবর্তন করে সরাসরি প্রিন্ট, PDF অথবা Word (.doc) ডাউনলোড করুন।</p>
+                        </div>
+                        <div class="btn-group">
+                            <% if (hideTabs && initialTab !== 'docstudio') { %>
+                                <button type="button" class="btn btn-outline btn-sm" onclick="switchTab(initialTab)"><i class="fas fa-arrow-left"></i> শিটে ফিরুন</button>
+                            <% } %>
+                            <button type="button" class="btn btn-primary" onclick="printA4()"><i class="fas fa-print"></i> সরাসরি প্রিন্ট (A4)</button>
+                            <button type="button" id="btnDownloadA4Pdf" class="btn btn-rose" onclick="downloadA4Pdf()"><i class="fas fa-file-pdf"></i> PDF ডাউনলোড</button>
+                            <button type="button" id="btnDownloadA4Word" class="btn btn-blue" onclick="downloadA4Word()"><i class="fas fa-file-word"></i> Word (.doc)</button>
+                        </div>
+                    </div>
+                    <div id="docExportStatus" style="display:none; margin-top:10px; padding:9px 13px; border-radius:9px; font-size:0.86rem; font-weight:600;"></div>
+                </div>
+
+                <div class="doc-preview-panel">
+                    <div id="a4PagesContainer" class="a4-pages-stack"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<div id="toastBanner" class="toast-banner no-print"></div>
+
+<script type="application/json" id="initial-excel-state"><%- JSON.stringify(initialState).replace(/</g, '\\u003c') %></script>
+
+<script>
+    const state = JSON.parse(document.getElementById('initial-excel-state').textContent);
+    let resultSubView = 'editor';
+
+    const STUDENT_MAP_FIELDS = [
+        { key: 'roll', label: 'রোল' },
+        { key: 'id', label: 'আইডি' },
+        { key: 'name_bn', label: 'নাম (বাংলা)' },
+        { key: 'name_en', label: 'নাম (ইংরেজি)' },
+        { key: 'class_name', label: 'শ্রেণি' },
+        { key: 'father_bn', label: 'পিতার নাম' },
+        { key: 'mother_bn', label: 'মাতার নাম' },
+        { key: 'dob', label: 'জন্ম তারিখ' },
+        { key: 'reg_no', label: 'রেজিস্ট্রেশন নং' },
+        { key: 'session', label: 'শিক্ষাবর্ষ' },
+        { key: 'gpa', label: 'জিপিএ' },
+        { key: 'address', label: 'ঠিকানা' },
+        { key: 'remark', label: 'মন্তব্য' },
+    ];
+
+    const RESULT_MAP_FIELDS = [
+        { key: 'roll', label: 'রোল কলাম' },
+        { key: 'name', label: 'নাম কলাম' },
+        { key: 'father', label: 'পিতার নাম কলাম' },
+        { key: 'id', label: 'আইডি কলাম' },
+    ];
+
+    function bnNum(input) {
+        const en = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.'];
+        const bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯', '.'];
+        return String(input ?? '').replace(/[0-9.]/g, (c) => {
+            const idx = en.indexOf(c);
+            return idx >= 0 ? bn[idx] : c;
+        });
+    }
+
+    function enNum(str) {
+        const bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+        return String(str ?? '').replace(/[০-৯]/g, (c) => {
+            const i = bn.indexOf(c);
+            return i >= 0 ? String(i) : c;
+        });
+    }
+
+    function getGradeClient(mark, fm, isFail) {
+        if (isFail || fm <= 0) return ['F', '0.00'];
+        const p = (mark / fm) * 100;
+        if (p >= 80) return ['A+', '5.00'];
+        if (p >= 70) return ['A', '4.00'];
+        if (p >= 60) return ['A-', '3.50'];
+        if (p >= 50) return ['B', '3.00'];
+        if (p >= 40) return ['C', '2.00'];
+        if (p >= 33) return ['D', '1.00'];
+        return ['F', '0.00'];
+    }
+
+    function cleanSubTitle(label) {
+        return String(label || '').replace(/\s*\([^)]*\)/g, '').trim();
+    }
+
+    function esc(s) {
+        return String(s ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function showToast(msg, isErr) {
+        const el = document.getElementById('toastBanner');
+        el.textContent = msg;
+        el.style.background = isErr ? '#991b1b' : '#14532d';
+        el.style.display = 'block';
+        clearTimeout(el._timer);
+        el._timer = setTimeout(() => { el.style.display = 'none'; }, 3600);
+    }
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.studio-tab').forEach((btn) => {
+            btn.classList.toggle('active', btn.dataset.tab === tabName);
+        });
+        document.querySelectorAll('.tab-panel').forEach((p) => {
+            p.classList.toggle('active', p.id === 'panel-' + tabName);
+        });
+        if (tabName === 'docstudio') {
+            populateDocRecordPicker();
+            renderA4Document();
+        }
+    }
+
+    function applyState(newState) {
+        state.students = newState.students;
+        state.results = newState.results;
+        state.documents = newState.documents;
+        if (newState.classMap) state.classMap = newState.classMap;
+        renderAll();
+    }
+
+    function getActiveExam() {
+        const id = state.results.activeExamId;
+        const exams = state.results.exams || {};
+        return exams[id] || Object.values(exams)[0];
+    }
+
+    function recomputeExamClient(exam) {
+        const passPercent = Number(exam.passPercent) > 0 ? Number(exam.passPercent) : 33;
+        const maxPromoteFail = Number(exam.maxPromoteFail) || 0;
+        const promotionLabel = String(exam.promotionLabel || 'বিশেষ বিবেচনায় প্রমোটেড');
+        const cols = exam.columns || [];
+        const subjectCols = cols.filter((c) => c.isSubject);
+        const mapping = exam.mapping || {};
+        const rows = exam.rows || [];
+
+        const evaluated = rows.map((row, idx) => {
+            const roll = mapping.roll ? String(row[mapping.roll] ?? '').trim() : String(idx + 1);
+            const name = mapping.name ? String(row[mapping.name] ?? '').trim() : '';
+            const father = mapping.father ? String(row[mapping.father] ?? '').trim() : '';
+            const studentId = mapping.id ? String(row[mapping.id] ?? '').trim() : '';
+
+            let totalObtained = 0;
+            let totalFullMarks = 0;
+            let failCount = 0;
+            let absentSubjects = 0;
+            let totalGp = 0;
+            const subjects = [];
+
+            for (const sub of subjectCols) {
+                const fm = Number(sub.fullMarks) > 0 ? Number(sub.fullMarks) : 100;
+                const rawVal = String(row[sub.key] ?? '').trim();
+                const up = rawVal.toUpperCase();
+                const isAbsent = up === 'A' || up === 'ABS' || up === 'ABSENT' || rawVal === 'অনুপস্থিত';
+                let mark = 0;
+                let isFail = false;
+
+                if (isAbsent) {
+                    absentSubjects++;
+                    isFail = true;
+                } else if (rawVal !== '') {
+                    const p = parseFloat(enNum(rawVal));
+                    mark = Number.isNaN(p) ? 0 : p;
+                    if (mark < fm * (passPercent / 100)) isFail = true;
+                } else {
+                    isFail = true;
+                }
+
+                if (isFail) failCount++;
+                const [grade, gp] = getGradeClient(mark, fm, isFail);
+                totalObtained += mark;
+                totalFullMarks += fm;
+                totalGp += parseFloat(gp);
+
+                subjects.push({
+                    key: sub.key,
+                    name: cleanSubTitle(sub.label),
+                    fullMarks: fm,
+                    rawVal,
+                    obtained: isAbsent ? 'অনুপস্থিত' : bnNum(mark),
+                    numericMark: mark,
+                    isAbsent,
+                    isFail,
+                    grade,
+                    gp,
+                });
+            }
+
+            const allAbsent = subjectCols.length > 0 && absentSubjects === subjectCols.length;
+            const percentage = totalFullMarks > 0 ? (totalObtained / totalFullMarks) * 100 : 0;
+            const rawGpa = subjectCols.length > 0 ? totalGp / subjectCols.length : 0;
+            const gpa = failCount === 0 && subjectCols.length > 0 ? rawGpa : 0;
+
+            const manualPromoted = row._promoted === true;
+            const manualDemoted = row._promoted === false;
+            const autoPromoted = !manualDemoted && maxPromoteFail > 0 && failCount > 0 && failCount <= maxPromoteFail && !allAbsent;
+            const isPromoted = failCount > 0 && !allAbsent && (manualPromoted || autoPromoted);
+
+            let status = 'Passed';
+            let statusBn = 'উত্তীর্ণ';
+            if (allAbsent) {
+                status = 'Absent';
+                statusBn = 'অনুপস্থিত';
+            } else if (isPromoted) {
+                status = 'Promoted';
+                statusBn = row._promotionNote || promotionLabel;
+            } else if (failCount > 0) {
+                status = 'Failed';
+                statusBn = 'অকৃতকার্য';
+            }
+
+            return {
+                _id: row._id || `r_${idx}`,
+                raw: row,
+                roll,
+                name,
+                father,
+                studentId,
+                subjects,
+                totalObtained: Math.round(totalObtained * 100) / 100,
+                totalFullMarks,
+                percentage: Math.round(percentage * 100) / 100,
+                failCount,
+                allAbsent,
+                gpa: Number(gpa.toFixed(2)),
+                isPromoted,
+                status,
+                statusBn,
+            };
+        });
+
+        const rankOrder = { Passed: 0, Promoted: 1, Failed: 2, Absent: 3 };
+        const meritList = evaluated
+            .slice()
+            .sort((a, b) => {
+                if (rankOrder[a.status] !== rankOrder[b.status]) return rankOrder[a.status] - rankOrder[b.status];
+                if (a.status === 'Passed') {
+                    if (b.gpa !== a.gpa) return b.gpa - a.gpa;
+                    return b.totalObtained - a.totalObtained;
+                }
+                if (a.failCount !== b.failCount) return a.failCount - b.failCount;
+                return b.totalObtained - a.totalObtained;
+            })
+            .map((item, i) => ({ ...item, meritRank: item.status === 'Absent' ? null : i + 1 }));
+
+        const rankById = new Map(meritList.map((m) => [m._id, m.meritRank]));
+        const evaluatedRows = evaluated.map((item) => ({ ...item, meritRank: rankById.get(item._id) ?? null }));
+
+        const total = evaluatedRows.length;
+        const passed = evaluatedRows.filter((r) => r.status === 'Passed').length;
+        const promoted = evaluatedRows.filter((r) => r.status === 'Promoted').length;
+        const failed = evaluatedRows.filter((r) => r.status === 'Failed').length;
+        const absent = evaluatedRows.filter((r) => r.status === 'Absent').length;
+
+        exam.computed = {
+            evaluatedRows,
+            meritList,
+            stats: {
+                total,
+                passed,
+                promoted,
+                failed,
+                absent,
+                passRate: total > 0 ? Math.round(((passed + promoted) / total) * 1000) / 10 : 0,
+            },
+        };
+        return exam.computed;
+    }
+
+    // ============ UPLOAD EXCEL ============
+    function setUploadStatus(target, message, kind) {
+        const id = target + 'UploadStatus';
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (!message) {
+            el.style.display = 'none';
+            return;
+        }
+        el.style.display = 'block';
+        el.textContent = message;
+        if (kind === 'error') {
+            el.style.background = '#fef2f2';
+            el.style.color = '#b91c1c';
+            el.style.border = '1px solid #fecaca';
+        } else if (kind === 'loading') {
+            el.style.background = '#eff6ff';
+            el.style.color = '#1d4ed8';
+            el.style.border = '1px solid #bfdbfe';
+        } else {
+            el.style.background = '#f0fdf4';
+            el.style.color = '#15803d';
+            el.style.border = '1px solid #bbf7d0';
+        }
+    }
+
+    function triggerOrUploadExcel(target) {
+        const inputId = target === 'students' ? 'studentsFileInput' : target === 'results' ? 'resultsFileInput' : 'documentsFileInput';
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        if (input.files && input.files[0]) {
+            uploadExcelFile(target);
+        } else {
+            input.click();
+        }
+    }
+
+    async function uploadExcelFile(target) {
+        const inputId = target === 'students' ? 'studentsFileInput' : target === 'results' ? 'resultsFileInput' : 'documentsFileInput';
+        const btnId = target + 'UploadBtn';
+        const input = document.getElementById(inputId);
+        const btn = document.getElementById(btnId);
+        if (!input || !input.files || !input.files[0]) {
+            setUploadStatus(target, 'প্রথমে একটি .xlsx, .xls অথবা .csv ফাইল নির্বাচন করুন।', 'error');
+            showToast('প্রথমে একটি .xlsx, .xls অথবা .csv ফাইল নির্বাচন করুন।', true);
+            return;
+        }
+        const selectedFile = input.files[0];
+        const fd = new FormData();
+        fd.append('file', selectedFile);
+        fd.append('target', target);
+
+        if (target === 'results') {
+            const exam = getActiveExam();
+            fd.append('examId', exam.id);
+            fd.append('classId', exam.classId || '6');
+            fd.append('className', exam.className || '');
+            fd.append('examName', exam.examName || 'বার্ষিক পরীক্ষা');
+            fd.append('year', exam.year || '২০২৬');
+            fd.append('passPercent', exam.passPercent || 33);
+            fd.append('maxPromoteFail', exam.maxPromoteFail || 0);
+            fd.append('promotionLabel', exam.promotionLabel || 'বিশেষ বিবেচনায় প্রমোটেড');
+        }
+
+        if (btn) btn.disabled = true;
+        setUploadStatus(target, `"${selectedFile.name}" আপলোড ও প্রসেস হচ্ছে...`, 'loading');
+
+        try {
+            const res = await fetch('/api/excel/upload', { method: 'POST', body: fd });
+            const rawText = await res.text();
+            let data = {};
+            try {
+                data = JSON.parse(rawText);
+            } catch {
+                throw new Error('সার্ভার থেকে সঠিক উত্তর পাওয়া যায়নি। ফাইল ফরম্যাট যাচাই করুন।');
+            }
+            if (!res.ok) throw new Error(data.error || 'আপলোড ব্যর্থ হয়েছে');
+            applyState(data.state);
+            input.value = '';
+            setUploadStatus(target, data.message, 'success');
+            showToast(data.message);
+        } catch (err) {
+            setUploadStatus(target, err.message || 'আপলোড ব্যর্থ হয়েছে', 'error');
+            showToast(err.message || 'আপলোড ব্যর্থ হয়েছে', true);
+        } finally {
+            if (btn) btn.disabled = false;
+        }
+    }
+
+    // ============ STUDENTS & DOCUMENTS SHARED HELPERS ============
+    function renderSimpleColumnsAndMapping(type) {
+        const sheet = state[type];
+        const colListEl = document.getElementById(type + 'ColList');
+        const mapGridEl = document.getElementById(type + 'MappingGrid');
+
+        colListEl.innerHTML = sheet.columns.map((col, idx) => `
+            <div class="col-chip">
+                <div class="col-chip-top">
+                    <input type="text" value="${esc(col.label)}" onchange="renameSimpleColumn('${type}', ${idx}, this.value)">
+                    <button type="button" class="btn btn-danger-outline btn-sm" title="কলাম মুছুন" onclick="removeSimpleColumn('${type}', ${idx})"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="col-chip-meta">
+                    <span>কী: <code>${esc(col.key)}</code></span>
+                    <span>ক্রম: ${bnNum(idx + 1)}</span>
+                </div>
+            </div>
+        `).join('');
+
+        mapGridEl.innerHTML = STUDENT_MAP_FIELDS.map((mf) => `
+            <div class="field">
+                <label>${mf.label}</label>
+                <select onchange="updateSimpleMapping('${type}', '${mf.key}', this.value)">
+                    <option value="">-- নেই --</option>
+                    ${sheet.columns.map((c) => `<option value="${esc(c.key)}" ${sheet.mapping?.[mf.key] === c.key ? 'selected' : ''}>${esc(c.label)}</option>`).join('')}
+                </select>
+            </div>
+        `).join('');
+    }
+
+    function addSimpleColumn(type) {
+        const input = document.getElementById(type === 'students' ? 'newStudentColLabel' : 'newDocColLabel');
+        const label = String(input.value || '').trim();
+        if (!label) {
+            showToast('কলামের নাম লিখুন।', true);
+            return;
+        }
+        const key = 'col_' + Date.now();
+        state[type].columns.push({ key, label });
+        state[type].rows.forEach((r) => { r[key] = ''; });
+        input.value = '';
+        if (type === 'students') renderStudentsSection();
+        else renderDocumentsSection();
+        showToast('নতুন কলাম যোগ করা হয়েছে।');
+    }
+
+    function renameSimpleColumn(type, idx, newLabel) {
+        state[type].columns[idx].label = String(newLabel || '').trim() || `কলাম ${idx + 1}`;
+        if (type === 'students') renderStudentsTable();
+        else renderDocumentsTable();
+    }
+
+    function removeSimpleColumn(type, idx) {
+        if (state[type].columns.length <= 1) {
+            showToast('অন্তত ১টি কলাম থাকতে হবে।', true);
+            return;
+        }
+        const removed = state[type].columns.splice(idx, 1)[0];
+        state[type].rows.forEach((r) => { delete r[removed.key]; });
+        if (type === 'students') renderStudentsSection();
+        else renderDocumentsSection();
+    }
+
+    function updateSimpleMapping(type, fieldKey, colKey) {
+        if (!state[type].mapping) state[type].mapping = {};
+        state[type].mapping[fieldKey] = colKey;
+    }
+
+    function addSimpleRow(type) {
+        const row = { _id: `row_${Date.now()}` };
+        state[type].columns.forEach((c) => { row[c.key] = ''; });
+        state[type].rows.push(row);
+        if (type === 'students') renderStudentsTable();
+        else renderDocumentsTable();
+    }
+
+    function deleteSimpleRow(type, rowIndex) {
+        state[type].rows.splice(rowIndex, 1);
+        if (type === 'students') renderStudentsTable();
+        else renderDocumentsTable();
+    }
+
+    function updateSimpleCell(type, rowIndex, colKey, val) {
+        state[type].rows[rowIndex][colKey] = val;
+    }
+
+    function renderSimpleTable(type, searchInputId, containerId, countId) {
+        const sheet = state[type];
+        const q = String(document.getElementById(searchInputId)?.value || '').trim().toLowerCase();
+        document.getElementById(countId).textContent = bnNum(sheet.rows.length);
+        const container = document.getElementById(containerId);
+
+        if (sheet.rows.length === 0) {
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-table"></i><p>এখনো কোনো সারি নেই। উপরে Excel আপলোড করুন অথবা <strong>নতুন সারি</strong> বাটনে ক্লিক করুন।</p></div>`;
+            return;
+        }
+
+        const indexedRows = sheet.rows
+            .map((r, i) => ({ r, i }))
+            .filter(({ r }) => !q || sheet.columns.some((c) => String(r[c.key] || '').toLowerCase().includes(q)));
+
+        container.innerHTML = `
+            <div class="table-wrap">
+                <table class="sheet-table">
+                    <thead>
+                        <tr>
+                            <th style="width:46px;">নং</th>
+                            ${sheet.columns.map((c) => `<th>${esc(c.label)}</th>`).join('')}
+                            <th style="width:175px;">অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${indexedRows.map(({ r, i }, sl) => `
+                            <tr>
+                                <td>${bnNum(sl + 1)}</td>
+                                ${sheet.columns.map((c) => `
+                                    <td><input class="cell-input" value="${esc(r[c.key] ?? '')}" onchange="updateSimpleCell('${type}', ${i}, '${esc(c.key)}', this.value)"></td>
+                                `).join('')}
+                                <td style="white-space:nowrap;">
+                                    <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('${type}', ${i}, 'testimonial')" title="প্রশংসা পত্র">প্রশংসা</button>
+                                    <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('${type}', ${i}, 'attestation')" title="প্রত্যায়ন পত্র">প্রত্যায়ন</button>
+                                    <button type="button" class="btn btn-danger-outline btn-sm" onclick="deleteSimpleRow('${type}', ${i})" title="মুছুন"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    function renderStudentsTable() {
+        renderSimpleTable('students', 'studentsSearchInput', 'studentsTableContainer', 'studentsCount');
+    }
+
+    function renderDocumentsTable() {
+        renderSimpleTable('documents', 'documentsSearchInput', 'documentsTableContainer', 'documentsCount');
+    }
+
+    function renderStudentsSection() {
+        renderSimpleColumnsAndMapping('students');
+        renderStudentsTable();
+    }
+
+    function renderDocumentsSection() {
+        renderSimpleColumnsAndMapping('documents');
+        renderDocumentsTable();
+    }
+
+    async function saveStudentsSheet() {
+        try {
+            const res = await fetch('/api/excel/students/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(state.students),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            applyState(data.state);
+            showToast(data.message);
+        } catch (err) {
+            showToast(err.message, true);
+        }
+    }
+
+    async function saveDocumentsSheet() {
+        try {
+            const res = await fetch('/api/excel/documents/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(state.documents),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            applyState(data.state);
+            showToast(data.message);
+        } catch (err) {
+            showToast(err.message, true);
+        }
+    }
+
+    // ============ RESULTS SECTION ============
+    function renderExamSelectors() {
+        const exams = Object.values(state.results.exams || {});
+        const active = getActiveExam();
+
+        document.getElementById('activeExamSelect').innerHTML = exams.map((ex) => `
+            <option value="${esc(ex.id)}" ${ex.id === active.id ? 'selected' : ''}>${esc(ex.title || ex.examName)} (${bnNum((ex.rows || []).length)} জন)</option>
+        `).join('');
+
+        const cmEntries = Object.entries(state.classMap || {});
+        document.getElementById('examClassId').innerHTML = cmEntries.map(([k, v]) => `
+            <option value="${esc(k)}" ${String(active.classId) === String(k) ? 'selected' : ''}>${esc(v.name)} শ্রেণি</option>
+        `).join('') + `<option value="custom" ${active.classId === 'custom' ? 'selected' : ''}>কাস্টম শ্রেণি</option>`;
+
+        document.getElementById('examNameInput').value = active.examName || 'বার্ষিক পরীক্ষা';
+        document.getElementById('examYearInput').value = active.year || '২০২৬';
+        document.getElementById('examPassPercent').value = active.passPercent || 33;
+        document.getElementById('examMaxPromoteFail').value = String(active.maxPromoteFail ?? 0);
+        document.getElementById('examPromoLabel').value = active.promotionLabel || 'বিশেষ বিবেচনায় প্রমোটেড';
+    }
+
+    function switchActiveExam(examId) {
+        state.results.activeExamId = examId;
+        renderResultsSection();
+    }
+
+    function updateExamMeta() {
+        const exam = getActiveExam();
+        const cid = document.getElementById('examClassId').value;
+        exam.classId = cid;
+        if (state.classMap && state.classMap[cid]) {
+            exam.className = state.classMap[cid].name;
+        }
+        exam.examName = document.getElementById('examNameInput').value;
+        exam.year = document.getElementById('examYearInput').value;
+        exam.title = `${exam.examName} - ${exam.className || 'শ্রেণি'}`;
+        renderExamSelectors();
+    }
+
+    function updatePromoConfig() {
+        const exam = getActiveExam();
+        exam.passPercent = Number(document.getElementById('examPassPercent').value) || 33;
+        exam.maxPromoteFail = Number(document.getElementById('examMaxPromoteFail').value) || 0;
+        exam.promotionLabel = document.getElementById('examPromoLabel').value || 'বিশেষ বিবেচনায় প্রমোটেড';
+        renderResultsTableAndStats();
+    }
+
+    function bulkPromoteFailed(val) {
+        const exam = getActiveExam();
+        const computed = recomputeExamClient(exam);
+        computed.evaluatedRows.forEach((ev, idx) => {
+            if (val === true) {
+                if (ev.failCount > 0 && !ev.allAbsent) {
+                    exam.rows[idx]._promoted = true;
+                }
+            } else {
+                delete exam.rows[idx]._promoted;
+            }
+        });
+        renderResultsTableAndStats();
+        showToast(val === true ? 'সকল ফেলকৃত শিক্ষার্থীকে প্রমোটেড করা হয়েছে।' : 'ম্যানুয়াল প্রমোশন রিসেট হয়েছে।');
+    }
+
+    function toggleRowPromote(rowIndex) {
+        const exam = getActiveExam();
+        const computed = recomputeExamClient(exam);
+        const ev = computed.evaluatedRows[rowIndex];
+        if (!ev) return;
+        exam.rows[rowIndex]._promoted = !ev.isPromoted;
+        renderResultsTableAndStats();
+    }
+
+    async function createNewExam() {
+        try {
+            const res = await fetch('/api/excel/results/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ classId: '6', examName: 'বার্ষিক পরীক্ষা', year: '২০২৬' }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            applyState(data.state);
+            showToast(data.message);
+        } catch (err) {
+            showToast(err.message, true);
+        }
+    }
+
+    async function deleteCurrentExam() {
+        const exam = getActiveExam();
+        try {
+            const res = await fetch('/api/excel/results/' + encodeURIComponent(exam.id), { method: 'DELETE' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            applyState(data.state);
+            showToast(data.message);
+        } catch (err) {
+            showToast(err.message, true);
+        }
+    }
+
+    function renderResultColumns() {
+        const exam = getActiveExam();
+        const colListEl = document.getElementById('resultsColList');
+        const mapGridEl = document.getElementById('resultsMappingGrid');
+
+        colListEl.innerHTML = exam.columns.map((col, idx) => `
+            <div class="col-chip">
+                <div class="col-chip-top">
+                    <input type="text" value="${esc(col.label)}" onchange="renameResultColumn(${idx}, this.value)">
+                    <button type="button" class="btn btn-danger-outline btn-sm" onclick="removeResultColumn(${idx})" title="কলাম মুছুন"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="col-chip-meta">
+                    <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer;">
+                        <input type="checkbox" ${col.isSubject ? 'checked' : ''} onchange="toggleResultColSubject(${idx}, this.checked)">
+                        <span>বিষয়</span>
+                    </label>
+                    ${col.isSubject ? `<label style="display:inline-flex; align-items:center; gap:4px;">পূর্ণমান: <input type="number" min="5" max="500" value="${Number(col.fullMarks) || 100}" onchange="updateResultColFM(${idx}, this.value)"></label>` : '<span>তথ্য কলাম</span>'}
+                </div>
+            </div>
+        `).join('');
+
+        mapGridEl.innerHTML = RESULT_MAP_FIELDS.map((mf) => `
+            <div class="field">
+                <label>${mf.label}</label>
+                <select onchange="updateResultMapping('${mf.key}', this.value)">
+                    <option value="">-- নেই --</option>
+                    ${exam.columns.map((c) => `<option value="${esc(c.key)}" ${exam.mapping?.[mf.key] === c.key ? 'selected' : ''}>${esc(c.label)}</option>`).join('')}
+                </select>
+            </div>
+        `).join('');
+    }
+
+    function addResultColumn() {
+        const exam = getActiveExam();
+        const labelEl = document.getElementById('newResultColLabel');
+        const fmEl = document.getElementById('newResultColFM');
+        const typeEl = document.getElementById('newResultColType');
+        const rawLabel = String(labelEl.value || '').trim();
+        if (!rawLabel) {
+            showToast('কলাম বা বিষয়ের নাম লিখুন।', true);
+            return;
+        }
+        const isSubject = typeEl.value === 'subject';
+        const fm = isSubject ? (Number(fmEl.value) || 100) : 0;
+        const label = isSubject && !/\(\d+\)/.test(rawLabel) ? `${rawLabel} (${fm})` : rawLabel;
+        const key = 'col_' + Date.now();
+        exam.columns.push({ key, label, isSubject, fullMarks: fm });
+        exam.rows.forEach((r) => { r[key] = ''; });
+        labelEl.value = '';
+        renderResultsSection();
+        showToast('নতুন কলাম যোগ করা হয়েছে।');
+    }
+
+    function renameResultColumn(idx, val) {
+        const exam = getActiveExam();
+        exam.columns[idx].label = String(val || '').trim() || `কলাম ${idx + 1}`;
+        renderResultsTableAndStats();
+    }
+
+    function toggleResultColSubject(idx, checked) {
+        const exam = getActiveExam();
+        exam.columns[idx].isSubject = checked;
+        if (checked && (!exam.columns[idx].fullMarks || exam.columns[idx].fullMarks <= 0)) {
+            exam.columns[idx].fullMarks = 100;
+        }
+        renderResultsSection();
+    }
+
+    function updateResultColFM(idx, val) {
+        const exam = getActiveExam();
+        exam.columns[idx].fullMarks = Number(val) > 0 ? Number(val) : 100;
+        renderResultsTableAndStats();
+    }
+
+    function removeResultColumn(idx) {
+        const exam = getActiveExam();
+        if (exam.columns.length <= 1) {
+            showToast('অন্তত ১টি কলাম থাকতে হবে।', true);
+            return;
+        }
+        const removed = exam.columns.splice(idx, 1)[0];
+        exam.rows.forEach((r) => { delete r[removed.key]; });
+        renderResultsSection();
+    }
+
+    function updateResultMapping(fieldKey, colKey) {
+        const exam = getActiveExam();
+        if (!exam.mapping) exam.mapping = {};
+        exam.mapping[fieldKey] = colKey;
+        renderResultsTableAndStats();
+    }
+
+    function addResultRow() {
+        const exam = getActiveExam();
+        const row = { _id: `r_${Date.now()}` };
+        exam.columns.forEach((c) => { row[c.key] = ''; });
+        exam.rows.push(row);
+        renderResultsTableAndStats();
+    }
+
+    function deleteResultRow(rowIndex) {
+        const exam = getActiveExam();
+        exam.rows.splice(rowIndex, 1);
+        renderResultsTableAndStats();
+    }
+
+    function updateResultCell(rowIndex, colKey, val) {
+        const exam = getActiveExam();
+        exam.rows[rowIndex][colKey] = val;
+        renderResultsTableAndStats();
+    }
+
+    function setResultSubView(view) {
+        resultSubView = view;
+        document.getElementById('btnViewEditor').className = view === 'editor' ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline';
+        document.getElementById('btnViewMerit').className = view === 'merit' ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline';
+        renderResultsTable();
+    }
+
+    function renderResultsTableAndStats() {
+        const exam = getActiveExam();
+        const computed = recomputeExamClient(exam);
+        const s = computed.stats;
+
+        document.getElementById('resultStatsBar').innerHTML = `
+            <div class="stat-box"><div class="stat-box-label">মোট শিক্ষার্থী</div><div class="stat-box-val">${bnNum(s.total)}</div></div>
+            <div class="stat-box"><div class="stat-box-label">উত্তীর্ণ (Passed)</div><div class="stat-box-val" style="color:#15803d;">${bnNum(s.passed)}</div></div>
+            <div class="stat-box"><div class="stat-box-label">প্রমোটেড (Promoted)</div><div class="stat-box-val" style="color:#b45309;">${bnNum(s.promoted)}</div></div>
+            <div class="stat-box"><div class="stat-box-label">অকৃতকার্য (Failed)</div><div class="stat-box-val" style="color:#b91c1c;">${bnNum(s.failed)}</div></div>
+            <div class="stat-box"><div class="stat-box-label">পাসের হার (উত্তীর্ণ+প্রমোটেড)</div><div class="stat-box-val">${bnNum(s.passRate)}%</div></div>
+        `;
+        renderResultsTable();
+    }
+
+    function renderResultsTable() {
+        const exam = getActiveExam();
+        const computed = exam.computed || recomputeExamClient(exam);
+        const container = document.getElementById('resultsTableContainer');
+        const q = String(document.getElementById('resultsSearchInput')?.value || '').trim().toLowerCase();
+
+        if (!exam.rows || exam.rows.length === 0) {
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-poll-h"></i><p>রেজাল্ট শিটে কোনো শিক্ষার্থী নেই। Excel আপলোড করুন অথবা <strong>নতুন শিক্ষার্থী</strong> যোগ করুন।</p></div>`;
+            return;
+        }
+
+        if (resultSubView === 'merit') {
+            const list = computed.meritList.filter((m) => !q || String(m.name).toLowerCase().includes(q) || String(m.roll).toLowerCase().includes(q));
+            container.innerHTML = `
+                <div class="table-wrap">
+                    <table class="sheet-table">
+                        <thead>
+                            <tr>
+                                <th>মেধাক্রম</th>
+                                <th>রোল</th>
+                                <th style="text-align:left;">শিক্ষার্থীর নাম</th>
+                                <th>মোট প্রাপ্ত নম্বর</th>
+                                <th>পূর্ণমান</th>
+                                <th>শতকরা (%)</th>
+                                <th>GPA</th>
+                                <th>ফেল বিষয়</th>
+                                <th>অবস্থা / স্ট্যাটাস</th>
+                                <th>মার্কশিট</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${list.map((m) => {
+                                const origIdx = exam.rows.findIndex((r) => (r._id || '') === m._id);
+                                const statusClass = m.status === 'Passed' ? 'status-pass' : m.status === 'Promoted' ? 'status-promoted' : m.status === 'Failed' ? 'status-fail' : 'status-abs';
+                                return `
+                                    <tr>
+                                        <td style="font-weight:700; color:var(--brand);">${m.meritRank ? bnNum(m.meritRank) : '—'}</td>
+                                        <td>${bnNum(m.roll)}</td>
+                                        <td style="text-align:left; font-weight:600;">${esc(m.name || '—')}</td>
+                                        <td style="font-weight:700;">${bnNum(m.totalObtained)}</td>
+                                        <td>${bnNum(m.totalFullMarks)}</td>
+                                        <td>${bnNum(m.percentage)}%</td>
+                                        <td style="font-weight:700;">${bnNum(m.gpa.toFixed(2))}</td>
+                                        <td>${bnNum(m.failCount)}</td>
+                                        <td class="${statusClass}">${esc(m.statusBn)}</td>
+                                        <td><button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('results', ${origIdx >= 0 ? origIdx : 0}, 'marksheet')">মার্কশিট</button></td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            return;
+        }
+
+        const indexed = computed.evaluatedRows
+            .map((ev, idx) => ({ ev, idx }))
+            .filter(({ ev }) => !q || String(ev.name).toLowerCase().includes(q) || String(ev.roll).toLowerCase().includes(q));
+
+        container.innerHTML = `
+            <div class="table-wrap">
+                <table class="sheet-table">
+                    <thead>
+                        <tr>
+                            <th>ক্রম</th>
+                            ${exam.columns.map((c) => `<th>${esc(c.label)}</th>`).join('')}
+                            <th>মোট</th>
+                            <th>GPA</th>
+                            <th>মেধাক্রম</th>
+                            <th>ফলাফল</th>
+                            <th>প্রমোট / অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${indexed.map(({ ev, idx }, sl) => {
+                            const statusClass = ev.status === 'Passed' ? 'status-pass' : ev.status === 'Promoted' ? 'status-promoted' : ev.status === 'Failed' ? 'status-fail' : 'status-abs';
+                            return `
+                                <tr>
+                                    <td>${bnNum(sl + 1)}</td>
+                                    ${exam.columns.map((c) => {
+                                        const sub = ev.subjects.find((s) => s.key === c.key);
+                                        const cellStyle = sub && sub.isFail ? 'color:#b91c1c; font-weight:700;' : '';
+                                        return `<td><input class="cell-input" style="${cellStyle}" value="${esc(exam.rows[idx][c.key] ?? '')}" onchange="updateResultCell(${idx}, '${esc(c.key)}', this.value)"></td>`;
+                                    }).join('')}
+                                    <td style="font-weight:700;">${bnNum(ev.totalObtained)}</td>
+                                    <td style="font-weight:700;">${bnNum(ev.gpa.toFixed(2))}</td>
+                                    <td style="font-weight:700; color:var(--brand);">${ev.meritRank ? bnNum(ev.meritRank) : '—'}</td>
+                                    <td class="${statusClass}" style="white-space:nowrap;">${esc(ev.statusBn)}</td>
+                                    <td style="white-space:nowrap;">
+                                        ${ev.failCount > 0 && !ev.allAbsent ? `
+                                            <button type="button" class="btn btn-sm ${ev.isPromoted ? 'btn-amber' : 'btn-outline'}" onclick="toggleRowPromote(${idx})">
+                                                ${ev.isPromoted ? 'প্রমোট বাতিল' : 'প্রমোট দিন'}
+                                            </button>
+                                        ` : ''}
+                                        <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('results', ${idx}, 'marksheet')">মার্কশিট</button>
+                                        <button type="button" class="btn btn-danger-outline btn-sm" onclick="deleteResultRow(${idx})"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    function renderResultsSection() {
+        renderExamSelectors();
+        renderResultColumns();
+        renderResultsTableAndStats();
+    }
+
+    async function saveResultsSheet() {
+        try {
+            const exam = getActiveExam();
+            const payloadExam = { ...exam };
+            delete payloadExam.computed;
+            const res = await fetch('/api/excel/results/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ exam: payloadExam }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            applyState(data.state);
+            showToast(data.message);
+        } catch (err) {
+            showToast(err.message, true);
+        }
+    }
+
+    // ============ EXPORT EXCEL ============
+    async function exportSheetExcel(type) {
+        const sheet = state[type];
+        const headers = sheet.columns.map((c) => c.label);
+        const rows = sheet.rows.map((r) => sheet.columns.map((c) => r[c.key] ?? ''));
+        await downloadExportedXlsx(headers, rows, `${type}-export.xlsx`, type);
+    }
+
+    async function exportComputedResultsExcel() {
+        const exam = getActiveExam();
+        const computed = recomputeExamClient(exam);
+        const headers = [...exam.columns.map((c) => c.label), 'মোট প্রাপ্ত নম্বর', 'পূর্ণমান', 'শতকরা (%)', 'GPA', 'ফেল বিষয়', 'মেধাক্রম', 'ফলাফল'];
+        const rows = computed.meritList.map((m) => [
+            ...exam.columns.map((c) => m.raw[c.key] ?? ''),
+            m.totalObtained,
+            m.totalFullMarks,
+            m.percentage,
+            m.gpa.toFixed(2),
+            m.failCount,
+            m.meritRank ?? '',
+            m.statusBn,
+        ]);
+        await downloadExportedXlsx(headers, rows, `${exam.id}-gpa-merit.xlsx`, 'Result_Merit');
+    }
+
+    async function downloadExportedXlsx(headers, rows, filename, sheetName) {
+        try {
+            if (window.NadufmExport && typeof window.NadufmExport.postDownloadForm === 'function') {
+                window.NadufmExport.postDownloadForm('/api/excel/export', {
+                    payload: JSON.stringify({ headers, rows, filename, sheetName }),
+                });
+                showToast('Excel ফাইল ডাউনলোড শুরু হয়েছে।');
+                return;
+            }
+            const res = await fetch('/api/excel/export', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ headers, rows, filename, sheetName }),
+            });
+            if (!res.ok) throw new Error('এক্সপোর্ট ব্যর্থ হয়েছে');
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+                if (a.parentNode) a.parentNode.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 30000);
+        } catch (err) {
+            showToast(err.message || 'এক্সপোর্ট ব্যর্থ হয়েছে', true);
+        }
+    }
+
+    // ============ TAB 4: A4 DOCUMENT STUDIO ============
+    function getMappedField(row, mapping, candidateKeys) {
+        for (const mk of candidateKeys) {
+            const colKey = mapping?.[mk];
+            if (colKey && row[colKey] !== undefined && String(row[colKey]).trim() !== '') {
+                return String(row[colKey]).trim();
+            }
+        }
+        return '';
+    }
+
+    function openInDocStudio(source, rowIndex, docType) {
+        switchTab('docstudio');
+        document.getElementById('docTypeSelect').value = docType;
+        document.getElementById('docBatchMode').value = 'single';
+        document.getElementById('docSourceSelect').value = source;
+        populateDocRecordPicker();
+        document.getElementById('docRecordSelect').value = String(rowIndex);
+        loadSelectedRecordIntoForm();
+        onDocConfigChange();
+    }
+
+    function openBatchMarksheets() {
+        const exam = getActiveExam();
+        if (!exam.rows || exam.rows.length === 0) {
+            showToast('প্রথমে রেজাল্ট শিটে শিক্ষার্থী আপলোড বা যোগ করুন।', true);
+            return;
+        }
+        switchTab('docstudio');
+        document.getElementById('docTypeSelect').value = 'marksheet';
+        document.getElementById('docBatchMode').value = 'batch';
+        document.getElementById('docSourceSelect').value = 'results';
+        populateDocRecordPicker();
+        onDocConfigChange();
+    }
+
+    function onDocConfigChange() {
+        const docType = document.getElementById('docTypeSelect').value;
+        const batchWrap = document.getElementById('batchToggleWrap');
+        const singleWrap = document.getElementById('singleRecordWrap');
+        if (docType === 'marksheet') {
+            batchWrap.classList.remove('hidden');
+            const isBatch = document.getElementById('docBatchMode').value === 'batch';
+            singleWrap.classList.toggle('hidden', isBatch);
+        } else {
+            batchWrap.classList.add('hidden');
+            document.getElementById('docBatchMode').value = 'single';
+            singleWrap.classList.remove('hidden');
+        }
+        renderA4Document();
+    }
+
+    function populateDocRecordPicker() {
+        const source = document.getElementById('docSourceSelect').value;
+        const select = document.getElementById('docRecordSelect');
+        if (source === 'results') {
+            const exam = getActiveExam();
+            const computed = recomputeExamClient(exam);
+            select.innerHTML = computed.evaluatedRows.length
+                ? computed.evaluatedRows.map((r, i) => `<option value="${i}">রোল ${bnNum(r.roll)} - ${esc(r.name || 'নাম নেই')}</option>`).join('')
+                : '<option value="">-- কোনো শিক্ষার্থী নেই --</option>';
+        } else {
+            const sheet = state[source];
+            const m = sheet.mapping || {};
+            select.innerHTML = sheet.rows.length
+                ? sheet.rows.map((r, i) => {
+                    const nm = getMappedField(r, m, ['name_bn', 'name_en']) || Object.values(r).find((v) => v && !String(v).startsWith('row_')) || `সারি ${i + 1}`;
+                    const rl = getMappedField(r, m, ['roll', 'id']);
+                    return `<option value="${i}">${rl ? 'রোল ' + bnNum(rl) + ' - ' : ''}${esc(nm)}</option>`;
+                }).join('')
+                : '<option value="">-- কোনো তথ্য নেই --</option>';
+        }
+        loadSelectedRecordIntoForm();
+    }
+
+    function loadSelectedRecordIntoForm() {
+        const source = document.getElementById('docSourceSelect').value;
+        const idx = parseInt(document.getElementById('docRecordSelect').value, 10);
+        if (Number.isNaN(idx)) {
+            renderA4Document();
+            return;
+        }
+
+        if (source === 'results') {
+            const exam = getActiveExam();
+            const computed = recomputeExamClient(exam);
+            const ev = computed.evaluatedRows[idx];
+            if (!ev) return;
+            document.getElementById('fName').value = ev.name || '';
+            document.getElementById('fRoll').value = ev.roll || '';
+            document.getElementById('fFather').value = ev.father || '';
+            document.getElementById('fMother').value = '';
+            document.getElementById('fClass').value = exam.className || '';
+            document.getElementById('fSession').value = exam.year || '২০২৬';
+            document.getElementById('fGpa').value = ev.gpa ? ev.gpa.toFixed(2) : ev.statusBn;
+        } else {
+            const sheet = state[source];
+            const row = sheet.rows[idx];
+            if (!row) return;
+            const m = sheet.mapping || {};
+            document.getElementById('fName').value = getMappedField(row, m, ['name_bn', 'name_en']);
+            document.getElementById('fRoll').value = getMappedField(row, m, ['roll', 'id']);
+            document.getElementById('fFather').value = getMappedField(row, m, ['father_bn']);
+            document.getElementById('fMother').value = getMappedField(row, m, ['mother_bn']);
+            document.getElementById('fClass').value = getMappedField(row, m, ['class_name']);
+            document.getElementById('fSession').value = getMappedField(row, m, ['session']) || '২০২৫-২০২৬';
+            document.getElementById('fDob').value = getMappedField(row, m, ['dob']);
+            document.getElementById('fReg').value = getMappedField(row, m, ['reg_no', 'id']);
+            document.getElementById('fGpa').value = getMappedField(row, m, ['gpa']);
+            document.getElementById('fAddress').value = getMappedField(row, m, ['address']);
+            const rem = getMappedField(row, m, ['remark']);
+            if (rem) document.getElementById('fRemark').value = rem;
+        }
+        renderA4Document();
+    }
+
+    function syncDocStyle(origin) {
+        const range = document.getElementById('docFontSize');
+        const num = document.getElementById('docFontSizeNum');
+        const val = origin === 'fontNum' ? num.value : range.value;
+        range.value = val;
+        num.value = val;
+        document.getElementById('docFontSizeLabel').textContent = val + 'px';
+        renderA4Document();
+    }
+
+    function setMarginPreset(mm) {
+        ['mTop', 'mRight', 'mBottom', 'mLeft'].forEach((id) => {
+            document.getElementById(id).value = mm;
+        });
+        renderA4Document();
+    }
+
+    function getDocStyle() {
+        return {
+            fontSize: parseFloat(document.getElementById('docFontSizeNum').value) || 14,
+            mTop: parseFloat(document.getElementById('mTop').value) || 15,
+            mRight: parseFloat(document.getElementById('mRight').value) || 15,
+            mBottom: parseFloat(document.getElementById('mBottom').value) || 15,
+            mLeft: parseFloat(document.getElementById('mLeft').value) || 15,
+        };
+    }
+
+    function buildMarksheetPageHtml(ev, exam, style, overrideName, overrideRoll, overrideFather, overrideClass) {
+        const name = overrideName ?? ev.name ?? '—';
+        const roll = overrideRoll ?? ev.roll ?? '—';
+        const father = overrideFather ?? ev.father ?? '';
+        const cls = overrideClass ?? exam.className ?? '';
+        const principalLabel = document.getElementById('fPrincipalLabel').value || 'অধ্যক্ষের স্বাক্ষর';
+        const statusColor = ev.isPromoted ? '#b45309' : (ev.failCount > 0 ? '#b91c1c' : '#15803d');
+
+        return `
+            <div class="a4-page" style="padding:${style.mTop}mm ${style.mRight}mm ${style.mBottom}mm ${style.mLeft}mm; font-size:${style.fontSize}px;">
+                <div class="a4-frame">
+                    <div>
+                        <div class="a4-inst-header">
+                            <img src="/logo.png" alt="Logo" style="width:62px; height:62px;">
+                            <div class="a4-inst-title">
+                                <h2>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h2>
+                                <p>নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা · EIIN: ১১৮৭৭৮</p>
+                                <p style="color:#14532d; font-weight:700;">${esc(exam.examName || 'বার্ষিক পরীক্ষা')} - ${esc(exam.year || '২০২৬')} | একাডেমিক ট্রান্সক্রিপ্ট</p>
+                            </div>
+                            <table style="border-collapse:collapse; font-size:0.7em; text-align:center; border:1px solid #166534;">
+                                <tr><th style="border:1px solid #166534; padding:1px 4px;">LG</th><th style="border:1px solid #166534; padding:1px 4px;">GP</th></tr>
+                                <tr><td style="border:1px solid #166534; padding:1px 4px;">A+</td><td style="border:1px solid #166534; padding:1px 4px;">5.0</td></tr>
+                                <tr><td style="border:1px solid #166534; padding:1px 4px;">A</td><td style="border:1px solid #166534; padding:1px 4px;">4.0</td></tr>
+                                <tr><td style="border:1px solid #166534; padding:1px 4px;">A-</td><td style="border:1px solid #166534; padding:1px 4px;">3.5</td></tr>
+                                <tr><td style="border:1px solid #166534; padding:1px 4px;">B</td><td style="border:1px solid #166534; padding:1px 4px;">3.0</td></tr>
+                                <tr><td style="border:1px solid #166534; padding:1px 4px;">C</td><td style="border:1px solid #166534; padding:1px 4px;">2.0</td></tr>
+                                <tr><td style="border:1px solid #166534; padding:1px 4px;">D</td><td style="border:1px solid #166534; padding:1px 4px;">1.0</td></tr>
+                                <tr><td style="border:1px solid #166534; padding:1px 4px;">F</td><td style="border:1px solid #166534; padding:1px 4px;">0.0</td></tr>
+                            </table>
+                        </div>
+
+                        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-weight:700; padding:6px 4px; border-bottom:1.5px solid #166534; margin-bottom:10px;">
+                            <span>নাম: ${esc(name)}</span>
+                            ${father ? `<span>পিতা: ${esc(father)}</span>` : ''}
+                            <span>শ্রেণি: ${esc(cls)}</span>
+                            <span>রোল: ${bnNum(roll)}</span>
+                        </div>
+
+                        <table class="a4-ms-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:7%;">নং</th>
+                                    <th style="width:40%; text-align:left; padding-left:10px;">বিষয়ের নাম</th>
+                                    <th style="width:12%;">পূর্ণমান</th>
+                                    <th style="width:15%;">প্রাপ্ত নম্বর</th>
+                                    <th style="width:13%;">লেটার গ্রেড</th>
+                                    <th style="width:13%;">গ্রেড পয়েন্ট</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${ev.subjects.map((sub, i) => `
+                                    <tr>
+                                        <td>${bnNum(i + 1)}</td>
+                                        <td style="text-align:left; padding-left:10px; font-weight:600;">${esc(sub.name)}</td>
+                                        <td>${bnNum(sub.fullMarks)}</td>
+                                        <td style="font-weight:700;">${esc(sub.obtained)}</td>
+                                        <td style="font-weight:700; color:${sub.isFail ? '#b91c1c' : '#166534'};">${esc(sub.grade)}</td>
+                                        <td>${bnNum(sub.gp)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+
+                        <div class="a4-summary-grid">
+                            <div>ফলাফল: <span style="color:${statusColor};">${esc(ev.statusBn)}</span></div>
+                            <div>মোট নম্বর: ${bnNum(ev.totalObtained)} / ${bnNum(ev.totalFullMarks)}</div>
+                            <div>GPA: ${bnNum(ev.gpa.toFixed(2))}</div>
+                            <div>মেধাক্রম: ${ev.meritRank ? bnNum(ev.meritRank) : '—'}</div>
+                        </div>
+                    </div>
+
+                    <div class="a4-sign-row">
+                        <div class="a4-sign-box"><div class="a4-sign-line">শ্রেণি শিক্ষকের স্বাক্ষর</div></div>
+                        <div class="a4-sign-box"><div class="a4-sign-line">অভিভাবকের স্বাক্ষর</div></div>
+                        <div class="a4-sign-box"><div class="a4-sign-line">${esc(principalLabel.split(',')[0] || 'অধ্যক্ষের স্বাক্ষর')}</div></div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderA4Document() {
+        const container = document.getElementById('a4PagesContainer');
+        const docType = document.getElementById('docTypeSelect').value;
+        const batchMode = document.getElementById('docBatchMode').value === 'batch';
+        const style = getDocStyle();
+
+        const memoNo = document.getElementById('docMemoNo').value;
+        const dateText = document.getElementById('docDateText').value;
+        const fName = document.getElementById('fName').value || 'মোঃ আব্দুল্লাহ আল মামুন';
+        const fRoll = document.getElementById('fRoll').value || '০১';
+        const fFather = document.getElementById('fFather').value || 'মোঃ আব্দুর রহমান';
+        const fMother = document.getElementById('fMother').value || 'মোছাঃ আমেনা বেগম';
+        const fClass = document.getElementById('fClass').value || 'দাখিল';
+        const fSession = document.getElementById('fSession').value || '২০২৫-২০২৬';
+        const fDob = document.getElementById('fDob').value || '২০১০-০৫-১২';
+        const fReg = document.getElementById('fReg').value || '—';
+        const fGpa = document.getElementById('fGpa').value || '৫.০০';
+        const fAddress = document.getElementById('fAddress').value || 'নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা';
+        const fPrincipal = document.getElementById('fPrincipalLabel').value || 'অধ্যক্ষ';
+        const fRemark = document.getElementById('fRemark').value || '';
+
+        if (docType === 'marksheet') {
+            const exam = getActiveExam();
+            const computed = recomputeExamClient(exam);
+            if (batchMode) {
+                if (!computed.evaluatedRows.length) {
+                    container.innerHTML = `<div class="a4-page" style="padding:20mm;"><p>রেজাল্ট শিটে কোনো শিক্ষার্থী পাওয়া যায়নি।</p></div>`;
+                    return;
+                }
+                container.innerHTML = computed.evaluatedRows.map((ev) => buildMarksheetPageHtml(ev, exam, style)).join('');
+                return;
+            }
+
+            const idx = parseInt(document.getElementById('docRecordSelect').value, 10);
+            const source = document.getElementById('docSourceSelect').value;
+            let ev = (source === 'results' && !Number.isNaN(idx)) ? computed.evaluatedRows[idx] : null;
+
+            if (!ev) {
+                // Build sample single marksheet using exam subjects if user came from students/documents sheet
+                const subCols = (exam.columns || []).filter((c) => c.isSubject);
+                ev = {
+                    name: fName,
+                    roll: fRoll,
+                    father: fFather,
+                    totalObtained: subCols.length * 80,
+                    totalFullMarks: subCols.reduce((a, b) => a + (Number(b.fullMarks) || 100), 0),
+                    gpa: parseFloat(enNum(fGpa)) || 5.0,
+                    meritRank: 1,
+                    failCount: 0,
+                    isPromoted: false,
+                    statusBn: 'উত্তীর্ণ',
+                    subjects: subCols.map((s) => ({
+                        name: cleanSubTitle(s.label),
+                        fullMarks: Number(s.fullMarks) || 100,
+                        obtained: '৮০',
+                        grade: 'A+',
+                        gp: '5.00',
+                        isFail: false,
+                    })),
+                };
+            }
+            container.innerHTML = buildMarksheetPageHtml(ev, exam, style, fName, fRoll, fFather, fClass);
+            return;
+        }
+
+        const isTestimonial = docType === 'testimonial';
+        const title = isTestimonial ? 'প্রশংসা পত্র (TESTIMONIAL)' : 'প্রত্যায়ন পত্র (ATTESTATION CERTIFICATE)';
+        const bodyHtml = isTestimonial
+            ? `এই মর্মে প্রত্যয়ন ও প্রশংসা করা যাচ্ছে যে, <strong>${esc(fName)}</strong>, পিতা: <strong>${esc(fFather)}</strong>, মাতা: <strong>${esc(fMother)}</strong>, ঠিকানা: ${esc(fAddress)} — অত্র <strong>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</strong>-এর একজন নিয়মিত শিক্ষার্থী ছিল। সে অত্র প্রতিষ্ঠান থেকে <strong>${esc(fClass)}</strong> শ্রেণির পরীক্ষায় (শিক্ষাবর্ষ: ${esc(fSession)}, রোল নং: <strong>${bnNum(fRoll)}</strong>, রেজিস্ট্রেশন নং: ${esc(fReg)}) অংশগ্রহণ করে <strong>GPA ${esc(fGpa)}</strong> অর্জনপূর্বক উত্তীর্ণ হয়েছে। নথিপত্র অনুযায়ী তার জন্ম তারিখ <strong>${esc(fDob)}</strong>।<br><br>${esc(fRemark)}<br><br>আমি তার জীবনের সার্বিক মঙ্গল ও উজ্জ্বল ভবিষ্যৎ কামনা করি।`
+            : `এই মর্মে প্রত্যয়ন করা যাচ্ছে যে, <strong>${esc(fName)}</strong>, পিতা: <strong>${esc(fFather)}</strong>, মাতা: <strong>${esc(fMother)}</strong>, গ্রাম/ঠিকানা: ${esc(fAddress)} — অত্র <strong>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</strong>-এর <strong>${esc(fClass)}</strong> শ্রেণির (শিক্ষাবর্ষ: ${esc(fSession)}) একজন নিয়মিত শিক্ষার্থী। তার শ্রেণি রোল নম্বর <strong>${bnNum(fRoll)}</strong> এবং রেজিস্ট্রেশন/আইডি নং <strong>${esc(fReg)}</strong>। প্রতিষ্ঠানের ভর্তি রেজিস্টার অনুযায়ী তার জন্ম তারিখ <strong>${esc(fDob)}</strong>।<br><br>${esc(fRemark)}<br><br>উক্ত শিক্ষার্থীর চরিত্র ও নৈতিকতা সম্পর্কে আমাদের জানা মতে কোনো বিরূপ তথ্য নেই। আমি তার সর্বাঙ্গীণ উন্নতি কামনা করি।`;
+
+        container.innerHTML = `
+            <div class="a4-page" style="padding:${style.mTop}mm ${style.mRight}mm ${style.mBottom}mm ${style.mLeft}mm; font-size:${style.fontSize}px;">
+                <div class="cert-frame">
+                    <div>
+                        <div class="a4-inst-header">
+                            <img src="/logo.png" alt="Logo" style="width:68px; height:68px;">
+                            <div class="a4-inst-title">
+                                <h2>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h2>
+                                <p>ডাকঘর: নলতা শরীফ, উপজেলা: কালিগঞ্জ, জেলা: সাতক্ষীরা</p>
+                                <p>স্থাপিত: ১৯৮০ খ্রি. · EIIN: ১১৮৭৭৮ · ওয়েবসাইট: nadufm.edu.bd</p>
+                            </div>
+                            <div style="width:68px;"></div>
+                        </div>
+
+                        <div class="a4-memo-row">
+                            <span>স্মারক নং: ${esc(memoNo)}</span>
+                            <span>তারিখ: ${esc(dateText)}</span>
+                        </div>
+
+                        <div class="a4-doc-badge">${title}</div>
+
+                        <div class="a4-body-text">${bodyHtml}</div>
+                    </div>
+
+                    <div class="a4-sign-row" style="margin-top:64px;">
+                        <div class="a4-sign-box">
+                            <div class="a4-sign-line">প্রস্তুতকারীর স্বাক্ষর</div>
+                        </div>
+                        <div class="a4-sign-box" style="min-width:220px;">
+                            <div class="a4-sign-line">${esc(fPrincipal)}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function setDocExportStatus(msg, isErr) {
+        const el = document.getElementById('docExportStatus');
+        if (!el) return;
+        if (!msg) {
+            el.style.display = 'none';
+            return;
+        }
+        el.style.display = 'block';
+        el.textContent = msg;
+        el.style.background = isErr ? '#fef2f2' : '#f0fdf4';
+        el.style.color = isErr ? '#b91c1c' : '#15803d';
+        el.style.border = isErr ? '1px solid #fecaca' : '1px solid #bbf7d0';
+    }
+
+    function printA4() {
+        try {
+            window.focus();
+            window.print();
+        } catch (err) {
+            setDocExportStatus('সরাসরি প্রিন্ট ডায়ালগ খোলা যায়নি, অনুগ্রহ করে PDF ডাউনলোড ব্যবহার করুন।', true);
+        }
+    }
+
+    async function downloadA4Pdf() {
+        const container = document.getElementById('a4PagesContainer');
+        const btn = document.getElementById('btnDownloadA4Pdf');
+        if (!container) return;
+        const docType = document.getElementById('docTypeSelect').value;
+        const filename = `${docType}-a4-${Date.now()}.pdf`;
+        if (btn) btn.disabled = true;
+        try {
+            if (!window.NadufmExport) {
+                throw new Error('ডকুমেন্ট এক্সপোর্ট স্ক্রিপ্ট লোড হয়নি।');
+            }
+            await window.NadufmExport.exportElementToA4Pdf({
+                element: container,
+                filename,
+                marginMm: 0,
+                onStatus: (msg, isErr) => {
+                    setDocExportStatus(msg, isErr);
+                    showToast(msg, isErr);
+                },
+            });
+        } catch (err) {
+            const msg = err?.message || 'PDF তৈরি করতে সমস্যা হয়েছে।';
+            setDocExportStatus(msg, true);
+            showToast(msg, true);
+        } finally {
+            if (btn) btn.disabled = false;
+        }
+    }
+
+    async function downloadA4Word() {
+        const container = document.getElementById('a4PagesContainer');
+        const btn = document.getElementById('btnDownloadA4Word');
+        if (!container) return;
+        const style = getDocStyle();
+        const docType = document.getElementById('docTypeSelect').value;
+        const filename = `${docType}-a4-${Date.now()}.doc`;
+        const cssText = `
+            @page Section1 {
+                size: 210mm 297mm;
+                margin: ${style.mTop}mm ${style.mRight}mm ${style.mBottom}mm ${style.mLeft}mm;
+            }
+            div.Section1 {
+                page: Section1;
+                font-family: "SolaimanLipi", "Kalpurush", "Hind Siliguri", Arial, sans-serif;
+                font-size: ${style.fontSize}px;
+                color: #0f172a;
+            }
+            .a4-frame { border: 2px solid #166534; padding: 14px 18px; }
+            .cert-frame { border: 3px double #14532d; padding: 20px 24px; }
+            .a4-inst-header { border-bottom: 2px solid #166534; padding-bottom: 8px; margin-bottom: 12px; text-align: center; }
+            .a4-doc-badge { text-align: center; font-size: 1.18em; font-weight: bold; color: #14532d; text-decoration: underline; margin: 12px 0; }
+            .a4-memo-row { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 12px; }
+            .a4-body-text { line-height: 1.85; text-align: justify; }
+            table.a4-ms-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+            table.a4-ms-table th, table.a4-ms-table td { border: 1px solid #166534; padding: 6px; text-align: center; }
+            table.a4-ms-table th { background-color: #166534; color: #ffffff; }
+            .a4-summary-grid { border: 1px solid #166534; padding: 8px; margin-top: 12px; font-weight: bold; }
+            .a4-sign-row { margin-top: 40px; text-align: center; }
+        `;
+        if (btn) btn.disabled = true;
+        try {
+            if (!window.NadufmExport) {
+                throw new Error('ডকুমেন্ট এক্সপোর্ট স্ক্রিপ্ট লোড হয়নি।');
+            }
+            await window.NadufmExport.exportElementToWord({
+                element: container,
+                filename,
+                title: docType,
+                cssText,
+                onStatus: (msg, isErr) => {
+                    setDocExportStatus(msg, isErr);
+                    showToast(msg, isErr);
+                },
+            });
+        } catch (err) {
+            const msg = err?.message || 'Word ফাইল তৈরি করতে সমস্যা হয়েছে।';
+            setDocExportStatus(msg, true);
+            showToast(msg, true);
+        } finally {
+            if (btn) btn.disabled = false;
+        }
+    }
+
+    function renderAll() {
+        renderStudentsSection();
+        renderResultsSection();
+        renderDocumentsSection();
+        populateDocRecordPicker();
+    }
+
+    // Initialize today's date in Bengali format and render
+    document.getElementById('docDateText').value = bnNum(new Date().toISOString().slice(0, 10));
+    renderAll();
+    const initialTab = <%- JSON.stringify(initialTab || 'students') %>;
+    if (initialTab && initialTab !== 'students' && typeof switchTab === 'function') {
+        switchTab(initialTab);
+    }
+</script>
+</body>
+</html>

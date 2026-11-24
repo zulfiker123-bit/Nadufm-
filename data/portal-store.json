@@ -1,0 +1,592 @@
+{
+  "notices": [
+    {
+      "id": 1,
+      "type": "headline",
+      "notice_date": "২০২৬-০২-০১",
+      "subject": "নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসায় ২০২৬ শিক্ষাবর্ষে ভর্তি কার্যক্রম চলছে।",
+      "description": "",
+      "link": "",
+      "is_new": "no"
+    },
+    {
+      "id": 2,
+      "type": "headline",
+      "notice_date": "২০২৬-০২-০১",
+      "subject": "সকল শ্রেণির নিয়মিত ক্লাস সকাল ১০:০০ ঘটিকা হতে যথারীতি চলমান রয়েছে।",
+      "description": "",
+      "link": "",
+      "is_new": "no"
+    },
+    {
+      "id": 3,
+      "type": "notice",
+      "notice_date": "২৫ জানুয়ারি ২০২৬",
+      "subject": "২০২৬ শিক্ষাবর্ষের ক্লাস রুটিন ও একাডেমিক ক্যালেন্ডার প্রকাশ প্রসঙ্গে।",
+      "description": "নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসার সকল শ্রেণির শিক্ষার্থী ও সম্মানিত অভিভাবকবৃন্দের অবগতির জন্য জানানো যাচ্ছে যে, ২০২৬ শিক্ষাবর্ষের বার্ষিক একাডেমিক ক্যালেন্ডার ও ছুটির তালিকা ওয়েবসাইটে প্রকাশ করা হয়েছে। সকল শিক্ষার্থীকে যথাসময়ে শ্রেণিকক্ষে উপস্থিত থাকার জন্য নির্দেশ প্রদান করা হলো।",
+      "link": "calendar.php",
+      "is_new": "yes"
+    },
+    {
+      "id": 4,
+      "type": "notice",
+      "notice_date": "১৫ জানুয়ারি ২০২৬",
+      "subject": "ইবতেদায়ী থেকে ফাজিল শ্রেণি পর্যন্ত নতুন শিক্ষার্থী ভর্তি বিজ্ঞপ্তি।",
+      "description": "আগ্রহী শিক্ষার্থীদের মাদ্রাসা অফিস থেকে অথবা ওয়েবসাইটের শিক্ষার্থী কর্ণার থেকে ভর্তি ফরম সংগ্রহ করে প্রয়োজনীয় কাগজপত্রসহ জমা দেওয়ার জন্য অনুরোধ করা যাচ্ছে।",
+      "link": "",
+      "is_new": "yes"
+    },
+    {
+      "id": 5,
+      "type": "notice",
+      "notice_date": "১০ জানুয়ারি ২০২৬",
+      "subject": "উপবৃত্তি আবেদন ও ইউনিক আইডি সংক্রান্ত জরুরি বিজ্ঞপ্তি।",
+      "description": "যে সকল শিক্ষার্থীর জন্ম নিবন্ধন ও পিতা-মাতার এনআইডি তথ্য এখনো জমা দেওয়া হয়নি, তাদের আগামী ৭ কর্মদিবসের মধ্যে অফিস কক্ষে জমা দেওয়ার জন্য বলা হলো।",
+      "link": "",
+      "is_new": "no"
+    },
+    {
+      "id": 6,
+      "type": "notice",
+      "notice_date": "০৫ জানুয়ারি ২০২৬",
+      "subject": "মাদ্রাসার ২০২৬ সালের ছুটির তালিকা প্রকাশ।",
+      "description": "গণপ্রজাতন্ত্রী বাংলাদেশ সরকারের শিক্ষা মন্ত্রণালয় ও মাদ্রাসা শিক্ষা অধিদপ্তরের নির্দেশনা অনুযায়ী ২০২৬ সালের ছুটির তালিকা প্রকাশ করা হলো।",
+      "link": "holidays.php",
+      "is_new": "no"
+    },
+    {
+      "id": 7,
+      "type": "notice",
+      "notice_date": "২৮ ডিসেম্বর ২০২৫",
+      "subject": "বার্ষিক পরীক্ষার ফলাফল ও মেধাতালিকা প্রকাশ সংক্রান্ত বিজ্ঞপ্তি।",
+      "description": "অত্র মাদ্রাসার বার্ষিক পরীক্ষার ফলাফল ও মেধাতালিকা অনলাইন রেজাল্ট পোর্টালে প্রকাশ করা হয়েছে। শিক্ষার্থীরা রোল নম্বর দিয়ে ফলাফল সংগ্রহ করতে পারবে।",
+      "link": "merit-list.php",
+      "is_new": "no"
+    }
+  ],
+  "teachers": [
+    {
+      "id": "t_1",
+      "name": "মোহাম্মদ রমিজ উদ্দীন",
+      "designation": "অধ্যক্ষ",
+      "index_no": "K2004885",
+      "subject": "আরবি",
+      "mpo_date": "২০২১-০৪-০১",
+      "mobile": "01719568538",
+      "photo": "principal.jpg",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_2",
+      "name": "মুহা: জয়নুল ওয়ারা",
+      "designation": "উপাধ্যক্ষ",
+      "index_no": "K363442",
+      "subject": "আরবি",
+      "mpo_date": "১৯৯৩-০৮-১৫",
+      "mobile": "01779511848",
+      "photo": "joynul.jpg",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_3",
+      "name": "মো: রফিকুল ইসলাম",
+      "designation": "সহকারি অধ্যাপক (আরবি)",
+      "index_no": "K074217",
+      "subject": "আরবি",
+      "mpo_date": "২০০১-০৪-০১",
+      "mobile": "01719518665",
+      "photo": "islam.jpg",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_4",
+      "name": "মো: ইলিয়াছ হোসেন",
+      "designation": "প্রভাষক (আরবি)",
+      "index_no": "K580455",
+      "subject": "আরবি",
+      "mpo_date": "২০০১-০৬-০১",
+      "mobile": "01916480590",
+      "photo": "elias.png",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_5",
+      "name": "মো: ওসমান গণি",
+      "designation": "প্রভাষক (আরবি)",
+      "index_no": "K580456",
+      "subject": "আরবি",
+      "mpo_date": "২০০১-০৬-০১",
+      "mobile": "01919839617",
+      "photo": "osman.jpg",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_6",
+      "name": "সুরাইয়া আক্তার",
+      "designation": "প্রভাষক ( অর্থনীতি)",
+      "index_no": "K580457",
+      "subject": "অর্থনীতি",
+      "mpo_date": "২০০১-০৬-০১",
+      "mobile": "01818281527",
+      "photo": "suraiya.jpg",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_7",
+      "name": "শিরিনা আক্তার",
+      "designation": "প্রভাষক (বাংলা)",
+      "index_no": "K2021817",
+      "subject": "বাংলা",
+      "mpo_date": "২০০৮-০১-০১",
+      "mobile": "01721057569",
+      "photo": "shirina.jpg",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_8",
+      "name": "মো: শুভ্র রেজা",
+      "designation": "প্রভাষক (ইংরেজি)",
+      "index_no": "K2021999",
+      "subject": "ইংরেজি",
+      "mpo_date": "২০০৯-০১-০১",
+      "mobile": "01740644474",
+      "photo": "shuvroreza.jpg",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_9",
+      "name": "মাছুম বিল্লাহ",
+      "designation": "প্রভাষক (আরবি)",
+      "index_no": "M0041148",
+      "subject": "আরবি",
+      "mpo_date": "২০২৩-১০-০১",
+      "mobile": "01515",
+      "photo": "sobuj.png",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_10",
+      "name": "মাসুদ পারভেজ",
+      "designation": "প্রভাষক (আইসিটি)",
+      "index_no": "M0057163",
+      "subject": "আইসিটি",
+      "mpo_date": "২০২৪-০৯-০১",
+      "mobile": "01827332223",
+      "photo": "masud.png",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_11",
+      "name": "জি. এম. মুজিবর রহমান ফরিদী",
+      "designation": "সহকারি শিক্ষক (মৌলভী)",
+      "index_no": "K074216",
+      "subject": "আরবি",
+      "mpo_date": "১৯৮৬-০৩-০১",
+      "mobile": "01750917462",
+      "photo": "mujibor.jpg",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_12",
+      "name": "মো: মাহমুদুন্নবী",
+      "designation": "সহকারি শিক্ষক (মৌলভী)",
+      "index_no": "K363439",
+      "subject": "আরবি",
+      "mpo_date": "১৯৯৩-৯-০১",
+      "mobile": "01727043976",
+      "photo": "mithu.jpg",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_13",
+      "name": "জুলফিকার রহমান",
+      "designation": "সহকারি শিক্ষক (মৌলভী)",
+      "index_no": "M0041854",
+      "subject": "ইসলামিক স্টাডিজ",
+      "mpo_date": "২০২৩-১০-০১",
+      "mobile": "01767792249",
+      "photo": "zulfiker.jpg",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_14",
+      "name": "মাসুম বিল্লাহ  (২)",
+      "designation": "সহকারি শিক্ষক (মৌলভী)",
+      "index_no": "M0064387",
+      "subject": "আরবি",
+      "mpo_date": "২০২৫-০৯-০১",
+      "mobile": "01767978224",
+      "photo": "masum.png",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_15",
+      "name": "এম. নাজমুল হোসাইন",
+      "designation": "সহকারি শিক্ষক (শারীরিক শিক্ষা)",
+      "index_no": "M0063941",
+      "subject": "শারীরিক শিক্ষা",
+      "mpo_date": "২০২৫-০৯-০১",
+      "mobile": "01942083278",
+      "photo": "nazmul.png",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_16",
+      "name": "বাশিরুন নাহার",
+      "designation": "সহকারি শিক্ষক (আইসিটি)",
+      "index_no": "N2123446",
+      "subject": "আইসিটি",
+      "mpo_date": "২০১৯-০৭-০১",
+      "mobile": "01941241215",
+      "photo": "basirun.jpg",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_17",
+      "name": "আশিকুর রহমান",
+      "designation": "সহকারি শিক্ষক (গণিত)",
+      "index_no": "N2128342",
+      "subject": "গণিত",
+      "mpo_date": "২০১৯-০৭-০১",
+      "mobile": "01949235572",
+      "photo": "ashik.jpg",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_18",
+      "name": "সাবনাজ পারভীন",
+      "designation": "সহকারি শিক্ষক (কৃষি)",
+      "index_no": "M0041153",
+      "subject": "কৃষি শিক্ষা",
+      "mpo_date": "২০২৩-১০-০১",
+      "mobile": "01312808789",
+      "photo": "sabnaj.png",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_19",
+      "name": "শংকর দেব নাথ",
+      "designation": "সহকারি শিক্ষক (সমাজ বিজ্ঞান)",
+      "index_no": "N2128343",
+      "subject": "সমাজ বিজ্ঞান",
+      "mpo_date": "২০১৯-০৭-০১",
+      "mobile": "01724716812",
+      "photo": "babu.jpg",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_20",
+      "name": "মারুফ হোসেন",
+      "designation": "সহকারি শিক্ষক (ইংরেজি)",
+      "index_no": "M0041160",
+      "subject": "ইংরেজি",
+      "mpo_date": "২০২৩-১০-০১",
+      "mobile": "01781649450",
+      "photo": "maruf.jpg",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_21",
+      "name": "ফরিদা পারভীন",
+      "designation": "সহকারি শিক্ষক (বাংলা)",
+      "index_no": "M0041034",
+      "subject": "বাংলা",
+      "mpo_date": "২০২৩-১০-০১",
+      "mobile": "01770748343",
+      "photo": "forida.png",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_22",
+      "name": "সাদিয়া সুলতানা",
+      "designation": "সহকারি শিক্ষক (গার্হস্থ্য)",
+      "index_no": "M0063931",
+      "subject": "গার্হস্থ্য শিক্ষা",
+      "mpo_date": "২০২৫-০৯-০১",
+      "mobile": "01990834509",
+      "photo": "sadiya.png",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_23",
+      "name": "মো: গোলাম রব্বানী",
+      "designation": "দাখিল ক্বারী",
+      "index_no": "K074223",
+      "subject": "তাজবিদ/আরবি",
+      "mpo_date": "১৯৮৬-০৩-০১",
+      "mobile": "01928222143",
+      "photo": "rabbani.jpg",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_24",
+      "name": "মোস্তফা রফিকুল হাসান",
+      "designation": "ইবতেদায়ী প্রধান",
+      "index_no": "K074224",
+      "subject": "আরবি",
+      "mpo_date": "১৯৮৬-০৩-০১",
+      "mobile": "01911837972",
+      "photo": "Satkhira.jpg",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_25",
+      "name": "সাদিয়া আহছানী",
+      "designation": "ইবতেদায়ী ক্বারী",
+      "index_no": "N2112451",
+      "subject": "তাজবিদ",
+      "mpo_date": "২০১৫-০৭-০১",
+      "mobile": "01950670038",
+      "photo": "sadiyaahsani.png",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_26",
+      "name": "মো: রমজান আলী",
+      "designation": "অফিস সহকারী",
+      "index_no": "K369473",
+      "subject": "প্রশাসন",
+      "mpo_date": "১৯৯৭-০৩-০১",
+      "mobile": "01925043975",
+      "photo": "ramzan.jpg",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_27",
+      "name": "মোঃ হাসানুজ্জামান",
+      "designation": "হিসাব সহকারী",
+      "index_no": "M0016867",
+      "subject": "হিসাব শাখা",
+      "mpo_date": "২০২১-১০-০১",
+      "mobile": "01923518218",
+      "photo": "hasan.png",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_28",
+      "name": "মোঃ হৃদয় আহছান",
+      "designation": "কম্পিউটার অপারেটর",
+      "index_no": "M0016870",
+      "subject": "কম্পিউটার শাখা",
+      "mpo_date": "২০২১-১০-০১",
+      "mobile": "01983128139",
+      "photo": "mim.png",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_29",
+      "name": "তৌফিক আহম্মেদ",
+      "designation": "ল্যাব অপারেটর",
+      "index_no": "M0076844",
+      "subject": "কম্পিউটার ল্যাব",
+      "mpo_date": "চলমান",
+      "mobile": "01827227347",
+      "photo": "towfiq.png",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_30",
+      "name": "এএসএম শাহরিয়র হোসেন",
+      "designation": "ল্যাব এসিসটেন্ট",
+      "index_no": "M0076843",
+      "subject": "বিজ্ঞান ল্যাব",
+      "mpo_date": "চলমান",
+      "mobile": "01985314158",
+      "photo": "sahriar.png",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_31",
+      "name": "সামছুর রহমান",
+      "designation": "পরিচ্ছন্নতা কর্মী",
+      "index_no": "K369475",
+      "subject": "অফিস সেবা",
+      "mpo_date": "১৯৯৭-০৩-০১",
+      "mobile": "01949221251",
+      "photo": "pion.jpg",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_32",
+      "name": "ইরানি পারভীন",
+      "designation": "আয়া",
+      "index_no": "M0014541",
+      "subject": "সেবা",
+      "mpo_date": "২০২১-০৪-০১",
+      "mobile": "01969263668",
+      "photo": "irani.png",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_33",
+      "name": "মোঃ মিজানুর রহমান",
+      "designation": "নিরাপত্তা কর্মী",
+      "index_no": "M0014543",
+      "subject": "নিরাপত্তা",
+      "mpo_date": "২০২১-০৪-০১",
+      "mobile": "01750309693",
+      "photo": "mizanur.png",
+      "showInCarousel": true
+    },
+    {
+      "id": "t_34",
+      "name": "মোঃ জহিরুল ইসলাম",
+      "designation": "নৈশ প্রহরী",
+      "index_no": "M0016869",
+      "subject": "নিরাপত্তা",
+      "mpo_date": "২০২১-১০-০১",
+      "mobile": "01911995620",
+      "photo": "zohir.png",
+      "showInCarousel": true
+    }
+  ],
+  "admissions": [],
+  "routines": [
+    {
+      "id": "r_1",
+      "className": "ইবতেদায়ী (১ম - ৫ম)",
+      "day": "রবিবার - বৃহস্পতিবার",
+      "time": "১০:০০ - ১০:৪৫",
+      "subject": "কুরআন মাজিদ ও তাজবিদ",
+      "teacher": "মাও: গোলাম রব্বানী",
+      "room": "ভবন-১"
+    },
+    {
+      "id": "r_2",
+      "className": "দাখিল (৬ষ্ঠ - ১০ম)",
+      "day": "রবিবার - বৃহস্পতিবার",
+      "time": "১০:৪৫ - ১১:৩০",
+      "subject": "আরবি ১ম ও ২য় পত্র",
+      "teacher": "মাও: রফিকুল ইসলাম",
+      "room": "কক্ষ-১০৪"
+    },
+    {
+      "id": "r_3",
+      "className": "আলিম (১ম ও ২য় বর্ষ)",
+      "day": "রবিবার - বৃহস্পতিবার",
+      "time": "১১:৩০ - ১২:১৫",
+      "subject": "বাংলা ও ইংরেজি",
+      "teacher": "শিরিনা আক্তার / শুভ্র রেজা",
+      "room": "কক্ষ-২০২"
+    },
+    {
+      "id": "r_4",
+      "className": "ফাজিল (স্নাতক)",
+      "day": "রবিবার - বৃহস্পতিবার",
+      "time": "১২:১৫ - ০১:০০",
+      "subject": "আল-ফিকহ ও উসুলুল ফিকহ",
+      "teacher": "অধ্যক্ষ মোহাম্মদ রমিজ উদ্দীন",
+      "room": "ফাজিল হল"
+    }
+  ],
+  "syllabus": [
+    {
+      "id": "s_1",
+      "className": "ইবতেদায়ী (১ম - ৫ম)",
+      "examTerm": "বার্ষিক পরীক্ষা ২০২৬",
+      "subject": "কুরআন, আরবি, বাংলা, ইংরেজি, গণিত",
+      "topics": "বোর্ড নির্ধারিত সম্পূর্ণ পাঠ্যবই (১ম থেকে শেষ অধ্যায়)",
+      "note": "মৌখিক ও লিখিত মূল্যায়ন"
+    },
+    {
+      "id": "s_2",
+      "className": "দাখিল (ষষ্ঠ - দশম)",
+      "examTerm": "বার্ষিক / নির্বাচনী ২০২৬",
+      "subject": "কুরআন, হাদিস, আকাইদ, আরবি, বাংলা, ইংরেজি, গণিত, বিজ্ঞান",
+      "topics": "বাংলাদেশ মাদ্রাসা শিক্ষা বোর্ড (BMEB) ও NCTB নির্ধারিত সিলেবাস",
+      "note": "সৃজনশীল ও বহুনির্বাচনি"
+    },
+    {
+      "id": "s_3",
+      "className": "আলিম ও ফাজিল",
+      "examTerm": "বোর্ড ও বিশ্ববিদ্যালয় ২০২৬",
+      "subject": "সকল আবশ্যিক ও ঐচ্ছিক বিষয়",
+      "topics": "BMED এবং ইসলামি আরবি বিশ্ববিদ্যালয় (IAU) অনুমোদিত পাঠ্যক্রম",
+      "note": "ব্যবহারিক ও ইনকোর্সসহ"
+    }
+  ],
+  "fees": [
+    {
+      "id": "f_1",
+      "className": "ইবতেদায়ী (১ম - ৫ম)",
+      "feeTitle": "মাসিক বেতন ও সেশন ফি",
+      "amount": "৩০০",
+      "period": "মাসিক",
+      "note": "অফিস কক্ষ / নির্ধারিত রশিদে পরিশোধযোগ্য"
+    },
+    {
+      "id": "f_2",
+      "className": "দাখিল (৬ষ্ঠ - ৮ম)",
+      "feeTitle": "মাসিক টিউশন ফি",
+      "amount": "৪০০",
+      "period": "মাসিক",
+      "note": "মাসের ১০ তারিখের মধ্যে পরিশোধযোগ্য"
+    },
+    {
+      "id": "f_3",
+      "className": "দাখিল (৯ম - ১০ম)",
+      "feeTitle": "টিউশন ও পরীক্ষা ফি",
+      "amount": "৫০০",
+      "period": "মাসিক",
+      "note": "বোর্ড রেজিস্ট্রেশন ও ফরম ফিলাপ পৃথক"
+    },
+    {
+      "id": "f_4",
+      "className": "আলিম ও ফাজিল",
+      "feeTitle": "টিউশন ও সেশন ফি",
+      "amount": "৬০০",
+      "period": "মাসিক",
+      "note": "উপবৃত্তিপ্রাপ্ত শিক্ষার্থীদের নিয়ম অনুযায়ী ছাড় প্রযোজ্য"
+    }
+  ],
+  "registrations": [
+    {
+      "id": "reg_1",
+      "className": "দাখিল (অষ্টম ও নবম শ্রেণি)",
+      "examYear": "২০২৬",
+      "deadline": "চলমান (অফিস নোটিশ অনুযায়ী)",
+      "feeAmount": "বোর্ড নির্ধারিত ফি",
+      "instructions": "জন্ম নিবন্ধন, পূর্ববর্তী পাসের নম্বরপত্র ও ২ কপি পাসপোর্ট ছবি অফিস কক্ষে জমা দিন।"
+    },
+    {
+      "id": "reg_2",
+      "className": "আলিম ১ম বর্ষ",
+      "examYear": "২০২৬-২০২৭",
+      "deadline": "চলমান",
+      "feeAmount": "বোর্ড নির্ধারিত ফি",
+      "instructions": "দাখিল মূল নম্বরপত্র, প্রশংসাপত্র ও অনলাইন e-SIF ফরম জমা দিতে হবে।"
+    }
+  ],
+  "studentStats": [
+    {
+      "id": "st_1",
+      "className": "ইবতেদায়ী (১ম - ৫ম)",
+      "boys": 145,
+      "girls": 130
+    },
+    {
+      "id": "st_2",
+      "className": "দাখিল (৬ষ্ঠ - ৮ম)",
+      "boys": 168,
+      "girls": 152
+    },
+    {
+      "id": "st_3",
+      "className": "দাখিল (৯ম - ১০ম)",
+      "boys": 112,
+      "girls": 98
+    },
+    {
+      "id": "st_4",
+      "className": "আলিম (১ম ও ২য় বর্ষ)",
+      "boys": 84,
+      "girls": 76
+    },
+    {
+      "id": "st_5",
+      "className": "ফাজিল (স্নাতক)",
+      "boys": 62,
+      "girls": 48
+    }
+  ]
+}

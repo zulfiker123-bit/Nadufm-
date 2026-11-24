@@ -1,0 +1,80 @@
+<% if (!isEmbedded) { %>
+<footer class="app-footer">
+    <div class="app-footer-inner">
+        <p class="app-footer-title">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</p>
+        <p class="app-footer-meta">নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা · EIIN: ১১৮৭৭৮ · © ২০২৬ সর্বস্বত্ব সংরক্ষিত</p>
+    </div>
+</footer>
+
+<nav class="mobile-bottom-nav" aria-label="মোবাইল নেভিগেশন">
+    <a href="/index.php" class="mobile-tab" data-nav-match="/">
+        <i class="fas fa-home" aria-hidden="true"></i>
+        <span>হোম</span>
+    </a>
+    <a href="/#notice-section" class="mobile-tab" data-nav-match="#notice">
+        <i class="fas fa-bell" aria-hidden="true"></i>
+        <span>নোটিশ</span>
+    </a>
+    <a href="/result.php" class="mobile-tab" data-nav-match="/result">
+        <i class="fas fa-award" aria-hidden="true"></i>
+        <span>ফলাফল</span>
+    </a>
+    <a href="/student.php" class="mobile-tab" data-nav-match="/student">
+        <i class="fas fa-user-graduate" aria-hidden="true"></i>
+        <span>শিক্ষার্থী</span>
+    </a>
+    <button type="button" class="mobile-tab" onclick="openAppDrawer()">
+        <i class="fas fa-th-large" aria-hidden="true"></i>
+        <span>মেনু</span>
+    </button>
+</nav>
+
+<div id="appDrawerBackdrop" class="app-drawer-backdrop" onclick="closeAppDrawer()" aria-hidden="true"></div>
+<aside id="appDrawerSheet" class="app-drawer-sheet" aria-label="সব সেবা ও মেনু" role="dialog" aria-modal="true" hidden>
+    <div class="app-drawer-handle"></div>
+    <div class="app-drawer-header">
+        <div>
+            <h3>সব সেবা ও মডিউল</h3>
+            <p>নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা</p>
+        </div>
+        <button type="button" class="app-drawer-close" onclick="closeAppDrawer()" aria-label="মেনু বন্ধ করুন">
+            <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+    </div>
+    <div class="app-drawer-body">
+        <div class="app-drawer-group">
+            <h4>একাডেমিক ও শিক্ষার্থী সেবা</h4>
+            <div class="app-drawer-grid">
+                <a href="/result.php" class="app-drawer-item"><i class="fas fa-poll"></i><span>অনলাইন ফলাফল</span></a>
+                <a href="/merit-list.php" class="app-drawer-item"><i class="fas fa-trophy"></i><span>মেধা তালিকা</span></a>
+                <a href="/admission.php" class="app-drawer-item"><i class="fas fa-user-plus"></i><span>অনলাইন ভর্তি</span></a>
+                <a href="/admit.php" class="app-drawer-item"><i class="fas fa-id-card"></i><span>এডমিট কার্ড</span></a>
+                <a href="/routine.php" class="app-drawer-item"><i class="fas fa-clock"></i><span>ক্লাস ও পরীক্ষার রুটিন</span></a>
+                <a href="/syllabus.php" class="app-drawer-item"><i class="fas fa-book-open"></i><span>সিলেবাস</span></a>
+                <a href="/calendar.php" class="app-drawer-item"><i class="fas fa-calendar-alt"></i><span>শিক্ষাপঞ্জি ২০২৬</span></a>
+                <a href="/holidays.php" class="app-drawer-item"><i class="fas fa-umbrella-beach"></i><span>ছুটির তালিকা</span></a>
+                <a href="/fees.php" class="app-drawer-item"><i class="fas fa-wallet"></i><span>ফি পরিশোধ</span></a>
+                <a href="/registration.php" class="app-drawer-item"><i class="fas fa-clipboard-check"></i><span>রেজিস্ট্রেশন</span></a>
+            </div>
+        </div>
+        <div class="app-drawer-group">
+            <h4>প্রতিষ্ঠান ও প্রশাসন</h4>
+            <div class="app-drawer-grid">
+                <a href="/about.php" class="app-drawer-item"><i class="fas fa-school"></i><span>আমাদের সম্পর্কে</span></a>
+                <a href="/teacher-list.php" class="app-drawer-item"><i class="fas fa-chalkboard-teacher"></i><span>শিক্ষক-কর্মচারী</span></a>
+                <a href="/governingbody.php" class="app-drawer-item"><i class="fas fa-users"></i><span>গভর্নিং বডি</span></a>
+                <a href="/morehistory.php" class="app-drawer-item"><i class="fas fa-landmark"></i><span>প্রতিষ্ঠানের ইতিহাস</span></a>
+                <a href="/presidentspeech.php" class="app-drawer-item"><i class="fas fa-user-tie"></i><span>সভাপতির বাণী</span></a>
+                <a href="/principalspeech.php" class="app-drawer-item"><i class="fas fa-microphone-alt"></i><span>অধ্যক্ষের বাণী</span></a>
+                <a href="/contact.php" class="app-drawer-item"><i class="fas fa-phone-alt"></i><span>যোগাযোগ</span></a>
+                <a href="/dashboard.php" class="app-drawer-item"><i class="fas fa-user-shield"></i><span>অ্যাডমিন প্যানেল</span></a>
+            </div>
+        </div>
+    </div>
+</aside>
+<% } %>
+
+<script src="/script.js"></script>
+<% if (!isEmbedded) { %><script src="/pwa.js" defer></script><% } %>
+</body>
+</html>

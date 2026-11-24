@@ -1,0 +1,234 @@
+<%- include('partials/header') %>
+
+<style>
+    #academic-calendar-section {
+        padding: 30px;
+        background: #f8fcf9;
+        font-family: 'Noto Sans Bengali', Arial, sans-serif;
+        color: #333;
+    }
+
+    .calendar-container {
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin-bottom: 30px;
+    }
+
+    .calendar-header {
+        background: linear-gradient(135deg, #00b, #004d40);
+        color: white;
+        padding: 25px 20px;
+        text-align: center;
+        border-bottom: 2px solid #004d40;
+    }
+
+    .calendar-header h1 { margin: 0; font-size: 32px; font-weight: 700; letter-spacing: 0.5px; }
+    .calendar-header p { margin-top: 8px; font-size: 18px; opacity: 0.9; }
+
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        padding: 25px;
+    }
+
+    .month-card {
+        background: #fdfdfd;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .month-card:hover { transform: translateY(-5px); }
+
+    .month-card h3 {
+        background-color: #e0f2f1;
+        color: #004d40;
+        padding: 12px 15px;
+        margin: 0;
+        font-size: 20px;
+        text-align: center;
+        border-bottom: 1px solid #b2dfdb;
+    }
+
+    .event-list { list-style: none; padding: 15px; margin: 0; }
+    .event-list li {
+        padding: 10px 0;
+        border-bottom: 1px dashed #eee;
+        display: flex;
+        align-items: flex-start;
+        font-size: 15px;
+    }
+    .event-list li:last-child { border-bottom: none; }
+    .event-date { font-weight: 700; color: #00796b; min-width: 80px; flex-shrink: 0; }
+    .event-description { flex-grow: 1; margin-left: 10px; }
+
+    .holiday .event-date { color: #d32f2f; }
+    .exam .event-date { color: #f57c00; }
+    .important .event-date { color: #303f9f; }
+
+    .calendar-legend {
+        text-align: center;
+        margin-top: 30px;
+        padding: 15px;
+        background-color: #e0f2f1;
+        border-radius: 8px;
+        color: #004d40;
+        font-size: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+    }
+    .legend-item { display: flex; align-items: center; }
+    .legend-box {
+        width: 20px; height: 20px; border-radius: 4px; margin-right: 8px; border: 1px solid rgba(0,0,0,0.1);
+    }
+    .legend-holiday .legend-box { background-color: #d32f2f; }
+    .legend-exam .legend-box { background-color: #f57c00; }
+    .legend-important .legend-box { background-color: #303f9f; }
+
+    @media (max-width: 768px) {
+        .calendar-header h1 { font-size: 26px; }
+        .calendar-header p { font-size: 16px; }
+        .calendar-grid { padding: 15px; gap: 15px; }
+        .month-card h3 { font-size: 18px; }
+        .event-list li { font-size: 14px; }
+        .event-date { min-width: 70px; }
+    }
+</style>
+
+<main>
+    <section id="academic-calendar-section">
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <h1>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসার শিক্ষাপঞ্জি ২০২৬</h1>
+                <p>শিক্ষাবর্ষের গুরুত্বপূর্ণ তারিখসমূহ: ছুটি, পরীক্ষা ও অন্যান্য ইভেন্ট</p>
+            </div>
+
+            <div class="calendar-grid">
+                <div class="month-card">
+                    <h3>জানুয়ারি ২০২৬</h3>
+                    <ul class="event-list">
+                        <li class="holiday"><span class="event-date">১৭ জানুয়ারি:</span> <span class="event-description">শবে মেরাজ (১ দিন)</span></li>
+                    </ul>
+                </div>
+
+                <div class="month-card">
+                    <h3>ফেব্রুয়ারি ২০২৬</h3>
+                    <ul class="event-list">
+                        <li class="holiday"><span class="event-date">০৪-০৫ ফেব্রুয়ারি:</span> <span class="event-description">শবে বরাত (২ দিন)</span></li>
+                        <li class="holiday"><span class="event-date">১৫ ফেব্রুয়ারি - ২৬ মার্চ:</span> <span class="event-description">পবিত্র রমজান, শবে কদর, ইদুল ফিতর ও স্বাধীনতা দিবস (৩০ দিন)</span></li>
+                    </ul>
+                </div>
+
+                <div class="month-card">
+                    <h3>মার্চ ২০২৬</h3>
+                    <ul class="event-list">
+                        <li class="holiday"><span class="event-date">১৫ ফেব্রুয়ারি - ২৬ মার্চ:</span> <span class="event-description">পবিত্র রমজান, শবে কদর, ইদুল ফিতর ও স্বাধীনতা দিবস (৩০ দিন)</span></li>
+                    </ul>
+                </div>
+
+                <div class="month-card">
+                    <h3>এপ্রিল ২০২৬</h3>
+                    <ul class="event-list">
+                        <li class="holiday"><span class="event-date">১৪ এপ্রিল:</span> <span class="event-description">বাংলা নববর্ষ (১ দিন)</span></li>
+                    </ul>
+                </div>
+
+                <div class="month-card">
+                    <h3>মে ২০২৬</h3>
+                    <ul class="event-list">
+                        <li class="holiday"><span class="event-date">০১ মে:</span> <span class="event-description">মে দিবস ও বুদ্ধ পূর্ণিমা (০ দিন - শুক্রবার)</span></li>
+                        <li class="holiday"><span class="event-date">২৪ মে - ১১ জুন:</span> <span class="event-description">পবিত্র ঈদুল আজহা ও গ্রীষ্মকালীন অবকাশ (১৫ দিন)</span></li>
+                    </ul>
+                </div>
+
+                <div class="month-card">
+                    <h3>জুন ২০২৬</h3>
+                    <ul class="event-list">
+                        <li class="holiday"><span class="event-date">২৪ মে - ১১ জুন:</span> <span class="event-description">পবিত্র ঈদুল আজহা ও গ্রীষ্মকালীন অবকাশ (১৫ দিন)</span></li>
+                        <li class="important"><span class="event-date">২৫ জুন - ১২ জুলাই:</span> <span class="event-description"><strong>অর্ধ-বার্ষিক পরীক্ষা</strong></span></li>
+                        <li class="holiday"><span class="event-date">১৬ জুন:</span> <span class="event-description">হিজরি নববর্ষ (১ দিন)</span></li>
+                        <li class="holiday"><span class="event-date">২৬ জুন:</span> <span class="event-description">পবিত্র আশুরা (০ দিন - শুক্রবার)</span></li>
+                    </ul>
+                </div>
+
+                <div class="month-card">
+                    <h3>জুলাই ২০২৬</h3>
+                    <ul class="event-list">
+                        <li class="important"><span class="event-date">২৫ জুন - ১২ জুলাই:</span> <span class="event-description"><strong>অর্ধ-বার্ষিক পরীক্ষা</strong></span></li>
+                        <li class="holiday"><span class="event-date">০৫ আগস্ট:</span> <span class="event-description">জুলাই গণঅভ্যুত্থান দিবস (১ দিন)</span></li>
+                    </ul>
+                </div>
+
+                <div class="month-card">
+                    <h3>আগস্ট ২০২৬</h3>
+                    <ul class="event-list">
+                        <li class="holiday"><span class="event-date">১২ আগস্ট:</span> <span class="event-description">আখেরি চাহার সোম্বা (১ দিন)</span></li>
+                        <li class="holiday"><span class="event-date">২৬-২৭ আগস্ট:</span> <span class="event-description">পবিত্র ঈদে মিলাদুন্নবী (সা.) (২ দিন)</span></li>
+                    </ul>
+                </div>
+
+                <div class="month-card">
+                    <h3>সেপ্টেম্বর ২০২৬</h3>
+                    <ul class="event-list">
+                        <li class="holiday"><span class="event-date">০৪ সেপ্টেম্বর:</span> <span class="event-description">জন্মাষ্টমী (০ দিন - শুক্রবার)</span></li>
+                        <li class="holiday"><span class="event-date">২৪ সেপ্টেম্বর:</span> <span class="event-description">ফাতেহা-ই-ইয়াজদাহম (১ দিন)</span></li>
+                    </ul>
+                </div>
+
+                <div class="month-card">
+                    <h3>অক্টোবর ২০২৬</h3>
+                    <ul class="event-list">
+                        <li class="holiday"><span class="event-date">২০-২২ অক্টোবর:</span> <span class="event-description">দুর্গাপূজা (৩ দিন)</span></li>
+                        <li class="exam"><span class="event-date">১১ অক্টোবর - ১০ নভেম্বর:</span> <span class="event-description"><strong>দাখিল নির্বাচনী পরীক্ষা</strong></span></li>
+                    </ul>
+                </div>
+
+                <div class="month-card">
+                    <h3>নভেম্বর ২০২৬</h3>
+                    <ul class="event-list">
+                        <li class="exam"><span class="event-date">১১ অক্টোবর - ১০ নভেম্বর:</span> <span class="event-description"><strong>দাখিল নির্বাচনী পরীক্ষা</strong></span></li>
+                        <li class="exam"><span class="event-date">১৯ নভেম্বর - ১০ ডিসেম্বর:</span> <span class="event-description"><strong>বার্ষিক ও আলিম নির্বাচনী পরীক্ষা</strong></span></li>
+                    </ul>
+                </div>
+
+                <div class="month-card">
+                    <h3>ডিসেম্বর ২০২৬</h3>
+                    <ul class="event-list">
+                        <li class="exam"><span class="event-date">১৯ নভেম্বর - ১০ ডিসেম্বর:</span> <span class="event-description"><strong>বার্ষিক ও আলিম নির্বাচনী পরীক্ষা</strong></span></li>
+                        <li class="holiday"><span class="event-date">১৩ - ২৪ ডিসেম্বর:</span> <span class="event-description">বিজয় দিবস, যিশু খ্রিস্টের জন্মদিন ও শীতকালীন অবকাশ (১০ দিন)</span></li>
+                        <li class="important"><span class="event-date">মোট ছুটি:</span> <span class="event-description">৭০ দিন</span></li>
+                        <li class="important"><span class="event-date">সংরক্ষিত ছুটি:</span> <span class="event-description">প্রতিষ্ঠান প্রধানের সংরক্ষিত ০৩ দিন</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="calendar-legend">
+                <span class="legend-item legend-holiday"><span class="legend-box"></span>ছুটি</span>
+                <span class="legend-item legend-exam"><span class="legend-box"></span>পরীক্ষা</span>
+                <span class="legend-item legend-important"><span class="legend-box"></span>গুরুত্বপূর্ণ তারিখ</span>
+            </div>
+
+            <div class="note" style="margin: 25px; font-size: 15px; color: #555;">
+                <p><strong>বিশেষ দ্রষ্টব্য:</strong></p>
+                <ul>
+                    <li>চাঁদ দেখার ওপর ভিত্তি করে ধর্মীয় ছুটির তারিখ পরিবর্তিত হতে পারে।</li>
+                    <li>হাওড় অঞ্চলে ধান কাটার সুবিধার্থে মার্চ-এপ্রিল মাসে ১০ দিন পর্যন্ত শ্রেণি কার্যক্রম বন্ধ রাখা যাবে, যা গ্রীষ্মকালীন ছুটি থেকে সমন্বয় করতে হবে।</li>
+                    <li>জাতীয় দিবসগুলোতে (যেমন ২১ ফেব্রুয়ারি, ২৬ মার্চ, ১৬ ডিসেম্বর) ক্লাস বন্ধ থাকলেও নির্ধারিত বিষয়াভিত্তিক কর্মসূচি পালন করতে হবে।</li>
+                </ul>
+            </div>
+        </div>
+        <%- include('partials/importantsite1') %>
+    </section>
+
+    <%- include('partials/sidebar') %>
+</main>
+
+<%- include('partials/footer') %>

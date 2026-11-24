@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= subject %></title>
+    <link rel="icon" href="/pwa-192x192.png" type="image/png" sizes="192x192">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#28a745">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="NADUFM">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Hind Siliguri', sans-serif; background: #f0f2f5; }
+        .letterhead { background: white; max-width: 800px; margin: 30px auto; padding: 50px; min-height: 1000px; box-shadow: 0 0 20px rgba(0,0,0,0.1); border-top: 8px solid #059669; position: relative; }
+        .details { line-height: 1.8; font-size: 1.15rem; text-align: justify; white-space: pre-line; margin-top: 30px; color: #1a1a1a; }
+        @media print { .no-print { display: none; } .letterhead { margin: 0; box-shadow: none; border: none; width: 100%; } }
+    </style>
+</head>
+<body>
+
+    <div class="no-print flex justify-center gap-4 py-6">
+        <a href="/index.php" class="bg-gray-600 text-white px-6 py-2 rounded-full font-bold shadow hover:bg-gray-700">← মূল পাতায় যান</a>
+        <button onclick="window.print()" class="bg-emerald-600 text-white px-8 py-2 rounded-full font-bold shadow hover:bg-emerald-700">প্রিন্ট / PDF ডাউনলোড</button>
+    </div>
+
+    <div class="letterhead">
+        <div class="flex justify-between items-center border-b-2 border-emerald-800 pb-6 mb-8">
+            <img src="/logo.png" alt="Logo" class="w-20 h-20">
+            <div class="text-center">
+                <h1 class="text-2xl font-bold text-emerald-900 leading-tight">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h1>
+                <p class="text-xs text-gray-600 font-semibold uppercase tracking-widest mt-1">Nalta Ahsania Darul Ulum Fazil Degree Madrasah</p>
+                <p class="text-sm text-emerald-700 font-medium">নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা</p>
+            </div>
+            <div class="w-20"></div>
+        </div>
+
+        <div class="flex justify-between mb-10 text-gray-700 font-bold">
+            <p>স্মারক: NADUFM/<%= new Date().getFullYear() %>/<%= noticeId %></p>
+            <p>তারিখ: <%= date %></p>
+        </div>
+
+        <div class="text-center mb-10">
+            <h2 class="text-xl font-bold border-b-2 border-black inline-block pb-1">বিষয়: <%= subject %></h2>
+        </div>
+
+        <div class="details"><%= description %></div>
+
+        <div class="mt-40 text-right">
+            <div class="inline-block text-center">
+                <div class="w-48 border-t border-black mb-1"></div>
+                <p class="font-bold text-lg">অধ্যক্ষ</p>
+                <p class="text-sm text-gray-700">নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা</p>
+            </div>
+        </div>
+    </div>
+    <script src="/pwa.js" defer></script>
+</body>
+</html>

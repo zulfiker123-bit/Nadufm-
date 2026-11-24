@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>অ্যাডমিন ড্যাশবোর্ড - <%= institutionName %></title>
+    <link rel="shortcut icon" href="/logo.png" type="image/x-icon">
+    <link rel="icon" href="/pwa-192x192.png" type="image/png" sizes="192x192">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#14532d">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="NADUFM Admin">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --bg: #f6f8f7;
+            --surface: #ffffff;
+            --border: rgba(15, 23, 42, 0.08);
+            --brand: #15803d;
+            --brand-dark: #14532d;
+            --text: #0f172a;
+            --text-muted: #475569;
+            --radius: 16px;
+            --topbar-h: 58px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Hind Siliguri', 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Single Crisp Topbar */
+        .adm-topbar {
+            height: var(--topbar-h);
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-shrink: 0;
+            z-index: 30;
+        }
+
+        .adm-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .adm-logo {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .adm-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--brand-dark);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .adm-back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            min-height: 38px;
+            padding: 0 13px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: #f0fdf4;
+            color: var(--brand-dark);
+            font-family: inherit;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background-color 0.15s ease;
+        }
+
+        .adm-back-btn:hover {
+            background: #dcfce7;
+        }
+
+        .adm-home-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            min-height: 38px;
+            padding: 0 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: background-color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .adm-home-btn:hover {
+            background: #f1f5f9;
+            border-color: rgba(15, 23, 42, 0.16);
+        }
+
+        /* Dashboard Button Grid Container */
+        .dash-shell {
+            flex: 1;
+            overflow-y: auto;
+            padding: 28px 20px 44px 20px;
+        }
+
+        .dash-inner {
+            max-width: 1120px;
+            margin: 0 auto;
+        }
+
+        .dash-head {
+            margin-bottom: 20px;
+        }
+
+        .dash-inst {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .dash-heading {
+            font-size: 1.38rem;
+            font-weight: 700;
+            color: var(--brand-dark);
+            line-height: 1.3;
+        }
+
+        .dash-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 14px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .dash-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 16px;
+            min-height: 122px;
+            text-align: left;
+            font-family: inherit;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .dash-btn:hover {
+            transform: translateY(-2px);
+            border-color: rgba(21, 128, 61, 0.38);
+            box-shadow: 0 8px 20px -6px rgba(15, 23, 42, 0.08);
+        }
+
+        .dash-btn:active {
+            transform: scale(0.975);
+        }
+
+        .dash-btn-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            flex-shrink: 0;
+        }
+
+        .ic-green { background: #f0fdf4; color: #15803d; }
+        .ic-blue { background: #eff6ff; color: #1d4ed8; }
+        .ic-amber { background: #fffbeb; color: #b45309; }
+        .ic-slate { background: #f1f5f9; color: #334155; }
+        .ic-teal { background: #f0fdfa; color: #0f766e; }
+        .ic-indigo { background: #eef2ff; color: #4338ca; }
+
+        .dash-btn-title {
+            display: block;
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.3;
+        }
+
+        .dash-btn-meta {
+            display: block;
+            font-size: 0.81rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-top: 3px;
+            line-height: 1.3;
+        }
+
+        /* Active Workspace */
+        .adm-workspace {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .adm-frame {
+            width: 100%;
+            flex: 1;
+            min-height: 0;
+            border: none;
+            background: var(--bg);
+            display: block;
+        }
+
+        .is-hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 640px) {
+            .adm-topbar {
+                padding: 0 12px;
+            }
+            .dash-shell {
+                padding: 18px 12px 32px 12px;
+            }
+            .dash-heading {
+                font-size: 1.2rem;
+            }
+            .dash-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 10px;
+            }
+            .dash-btn {
+                padding: 15px 13px;
+                min-height: 112px;
+                gap: 10px;
+            }
+            .dash-btn-title {
+                font-size: 0.92rem;
+            }
+            .dash-btn-meta {
+                font-size: 0.77rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <% const currentMod = modules.find(function(m) { return m.id === activeFeature; }); %>
+
+    <header class="adm-topbar">
+        <div class="adm-left">
+            <button type="button" id="backToGridBtn" class="adm-back-btn <%= currentMod ? '' : 'is-hidden' %>">
+                <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                <span>ড্যাশবোর্ড</span>
+            </button>
+            <img src="/logo.png" alt="মাদ্রাসা লোগো" id="brandLogo" class="adm-logo <%= currentMod ? 'is-hidden' : '' %>" referrerpolicy="no-referrer">
+            <span class="adm-title" id="topbarTitle"><%= currentMod ? currentMod.label : 'অ্যাডমিন ড্যাশবোর্ড' %></span>
+        </div>
+        <a href="/index.php" class="adm-home-btn">
+            <i class="fas fa-external-link-alt" aria-hidden="true"></i>
+            <span>ওয়েবসাইট</span>
+        </a>
+    </header>
+
+    <main id="view-grid" class="dash-shell <%= currentMod ? 'is-hidden' : '' %>">
+        <div class="dash-inner">
+            <div class="dash-head">
+                <p class="dash-inst"><%= institutionName %></p>
+                <h1 class="dash-heading">সকল ফিচার পরিচালনা</h1>
+            </div>
+
+            <div class="dash-grid" role="list" aria-label="ফিচার বাটন তালিকা">
+                <% modules.forEach(function(mod) { %>
+                    <button type="button" class="dash-btn" data-feature="<%= mod.id %>" role="listitem">
+                        <span class="dash-btn-icon <%= mod.tone %>">
+                            <i class="<%= mod.icon %>" aria-hidden="true"></i>
+                        </span>
+                        <div>
+                            <span class="dash-btn-title"><%= mod.label %></span>
+                            <span class="dash-btn-meta"><%= mod.meta %></span>
+                        </div>
+                    </button>
+                <% }); %>
+            </div>
+        </div>
+    </main>
+
+    <section id="view-workspace" class="adm-workspace <%= currentMod ? '' : 'is-hidden' %>">
+        <iframe
+            id="workspaceFrame"
+            class="adm-frame"
+            src="<%= currentMod ? currentMod.src : 'about:blank' %>"
+            title="অ্যাডমিন ওয়ার্কস্পেস"
+        ></iframe>
+    </section>
+
+    <script>
+        (function () {
+            var modulesMap = <%- JSON.stringify(modules.reduce(function(acc, m) { acc[m.id] = m; return acc; }, {})) %>;
+            var gridEl = document.getElementById('view-grid');
+            var workspaceEl = document.getElementById('view-workspace');
+            var frameEl = document.getElementById('workspaceFrame');
+            var backBtn = document.getElementById('backToGridBtn');
+            var brandLogo = document.getElementById('brandLogo');
+            var topbarTitle = document.getElementById('topbarTitle');
+
+            function openFeature(featureId, pushHistory) {
+                var mod = featureId ? modulesMap[featureId] : null;
+                if (!mod) {
+                    gridEl.classList.remove('is-hidden');
+                    workspaceEl.classList.add('is-hidden');
+                    backBtn.classList.add('is-hidden');
+                    brandLogo.classList.remove('is-hidden');
+                    topbarTitle.textContent = 'অ্যাডমিন ড্যাশবোর্ড';
+                    frameEl.setAttribute('src', 'about:blank');
+                    if (pushHistory) {
+                        history.pushState({ feature: '' }, '', '/dashboard.php');
+                    }
+                    return;
+                }
+
+                gridEl.classList.add('is-hidden');
+                workspaceEl.classList.remove('is-hidden');
+                backBtn.classList.remove('is-hidden');
+                brandLogo.classList.add('is-hidden');
+                topbarTitle.textContent = mod.label;
+                if (frameEl.getAttribute('src') !== mod.src) {
+                    frameEl.setAttribute('src', mod.src);
+                }
+                if (pushHistory) {
+                    history.pushState({ feature: mod.id }, '', '/dashboard.php?feature=' + encodeURIComponent(mod.id));
+                }
+            }
+
+            document.querySelectorAll('.dash-btn[data-feature]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    openFeature(btn.getAttribute('data-feature'), true);
+                });
+            });
+
+            backBtn.addEventListener('click', function () {
+                openFeature('', true);
+            });
+
+            window.addEventListener('popstate', function () {
+                var params = new URLSearchParams(window.location.search);
+                openFeature(params.get('feature') || '', false);
+            });
+        })();
+    </script>
+    <script src="/pwa.js" defer></script>
+</body>
+</html>
