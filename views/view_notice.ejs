@@ -1,62 +1,93 @@
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= subject %></title>
-    <link rel="icon" href="/pwa-192x192.png" type="image/png" sizes="192x192">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-    <link rel="manifest" href="/manifest.webmanifest">
-    <meta name="theme-color" content="#28a745">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="NADUFM">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/fonts.css">
-    <style>
-        body { font-family: 'Kalpurush', sans-serif; background: #f0f2f5; }
-        .letterhead { background: white; max-width: 800px; margin: 30px auto; padding: 50px; min-height: 1000px; box-shadow: 0 0 20px rgba(0,0,0,0.1); border-top: 8px solid #059669; position: relative; font-family: 'Nikosh', 'Kalpurush', sans-serif; }
-        .letterhead * { font-family: 'Nikosh', 'Kalpurush', sans-serif; }
-        .details { line-height: 1.8; font-size: 1.15rem; text-align: justify; white-space: pre-line; margin-top: 30px; color: #1a1a1a; }
-        @media print { .no-print { display: none; } .letterhead { margin: 0; box-shadow: none; border: none; width: 100%; } }
-    </style>
-</head>
-<body>
+<%- include('partials/header', { pageTitle: subject + ' - নোটিশ' }) %>
+<style>
+    .notice-toolbar {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        padding: 18px 16px 8px 16px;
+    }
+    .notice-print-btn {
+        background: #15803d;
+        color: #ffffff;
+        padding: 10px 24px;
+        border: none;
+        border-radius: 999px;
+        font-family: inherit;
+        font-size: 0.96rem;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(21, 128, 61, 0.25);
+    }
+    .notice-print-btn:hover { background: #14532d; }
+    .letterhead {
+        background: #ffffff;
+        max-width: 800px;
+        margin: 14px auto 32px auto;
+        padding: 48px;
+        min-height: 920px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+        border-top: 8px solid #059669;
+        border-radius: 8px;
+        font-family: 'Nikosh', 'Kalpurush', sans-serif;
+    }
+    .letterhead * { font-family: 'Nikosh', 'Kalpurush', sans-serif; }
+    .lh-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #065f46;
+        padding-bottom: 18px;
+        margin-bottom: 24px;
+        gap: 12px;
+    }
+    .lh-header img { width: 72px; height: 72px; object-fit: cover; }
+    .lh-center { text-align: center; flex: 1; }
+    .lh-center h1 { font-size: 1.45rem; font-weight: 700; color: #064e3b; margin: 0; }
+    .lh-center .en-sub { font-size: 0.72rem; font-weight: 600; color: #475569; letter-spacing: 0.08em; margin-top: 3px; }
+    .lh-center .addr { font-size: 0.9rem; color: #047857; font-weight: 600; margin-top: 2px; }
+    .lh-meta { display: flex; justify-content: space-between; margin-bottom: 28px; color: #334155; font-weight: 700; font-size: 0.98rem; }
+    .lh-subject { text-align: center; margin-bottom: 28px; }
+    .lh-subject h2 { font-size: 1.2rem; font-weight: 700; border-bottom: 2px solid #0f172a; display: inline-block; padding-bottom: 4px; margin: 0; }
+    .details { line-height: 1.85; font-size: 1.1rem; text-align: justify; white-space: pre-line; margin-top: 24px; color: #1a1a1a; }
+    .lh-sign { margin-top: 90px; text-align: right; }
+    .lh-sign-box { display: inline-block; text-align: center; }
+    .lh-sign-line { width: 190px; border-top: 1px solid #0f172a; margin-bottom: 6px; }
+    @media (max-width: 640px) { .letterhead { padding: 24px 18px; margin: 12px; min-height: auto; } }
+    @media print { .no-print, .app-topbar, .app-footer, .mobile-bottom-nav { display: none !important; } .letterhead { margin: 0; box-shadow: none; border-radius: 0; max-width: 100%; } }
+</style>
 
-    <div class="no-print flex justify-center gap-4 py-6">
-        <a href="/index.php" class="bg-gray-600 text-white px-6 py-2 rounded-full font-bold shadow hover:bg-gray-700">← মূল পাতায় যান</a>
-        <button onclick="window.print()" class="bg-emerald-600 text-white px-8 py-2 rounded-full font-bold shadow hover:bg-emerald-700">প্রিন্ট / PDF ডাউনলোড</button>
+<div class="no-print notice-toolbar">
+    <button type="button" onclick="window.print()" class="notice-print-btn"><i class="fas fa-print"></i> প্রিন্ট / PDF ডাউনলোড</button>
+</div>
+
+<div class="letterhead">
+    <div class="lh-header">
+        <img src="/logo.png" alt="Logo">
+        <div class="lh-center">
+            <h1>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h1>
+            <p class="en-sub">NALTA AHSANIA DARUL ULUM FAZIL DEGREE MADRASAH</p>
+            <p class="addr">নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা</p>
+        </div>
+        <div style="width:72px;"></div>
     </div>
 
-    <div class="letterhead">
-        <div class="flex justify-between items-center border-b-2 border-emerald-800 pb-6 mb-8">
-            <img src="/logo.png" alt="Logo" class="w-20 h-20">
-            <div class="text-center">
-                <h1 class="text-2xl font-bold text-emerald-900 leading-tight">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h1>
-                <p class="text-xs text-gray-600 font-semibold uppercase tracking-widest mt-1">Nalta Ahsania Darul Ulum Fazil Degree Madrasah</p>
-                <p class="text-sm text-emerald-700 font-medium">নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা</p>
-            </div>
-            <div class="w-20"></div>
-        </div>
+    <div class="lh-meta">
+        <span>স্মারক: NADUFM/<%= new Date().getFullYear() %>/<%= noticeId %></span>
+        <span>তারিখ: <%= date %></span>
+    </div>
 
-        <div class="flex justify-between mb-10 text-gray-700 font-bold">
-            <p>স্মারক: NADUFM/<%= new Date().getFullYear() %>/<%= noticeId %></p>
-            <p>তারিখ: <%= date %></p>
-        </div>
+    <div class="lh-subject">
+        <h2>বিষয়: <%= subject %></h2>
+    </div>
 
-        <div class="text-center mb-10">
-            <h2 class="text-xl font-bold border-b-2 border-black inline-block pb-1">বিষয়: <%= subject %></h2>
-        </div>
+    <div class="details"><%= description %></div>
 
-        <div class="details"><%= description %></div>
-
-        <div class="mt-40 text-right">
-            <div class="inline-block text-center">
-                <div class="w-48 border-t border-black mb-1"></div>
-                <p class="font-bold text-lg">অধ্যক্ষ</p>
-                <p class="text-sm text-gray-700">নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা</p>
-            </div>
+    <div class="lh-sign">
+        <div class="lh-sign-box">
+            <div class="lh-sign-line"></div>
+            <p style="font-weight:700; font-size:1.05rem;">অধ্যক্ষ</p>
+            <p style="font-size:0.88rem; color:#334155;">নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা</p>
         </div>
     </div>
-    <script src="/pwa.js" defer></script>
-</body>
-</html>
+</div>
+<%- include('partials/footer') %>

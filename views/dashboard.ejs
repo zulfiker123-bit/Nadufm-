@@ -13,6 +13,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="NADUFM Admin">
     <link rel="stylesheet" href="/fonts.css">
+    <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         :root {
@@ -44,6 +45,7 @@
             -webkit-font-smoothing: antialiased;
             display: flex;
             flex-direction: column;
+            padding-bottom: 58px;
         }
 
         /* Single Crisp Topbar */
@@ -92,7 +94,7 @@
             min-height: 38px;
             padding: 0 13px;
             border-radius: 10px;
-            border: 1px solid var(--border);
+            border: 1px solid rgba(21, 128, 61, 0.25);
             background: #f0fdf4;
             color: var(--brand-dark);
             font-family: inherit;
@@ -105,29 +107,6 @@
 
         .adm-back-btn:hover {
             background: #dcfce7;
-        }
-
-        .adm-home-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            min-height: 38px;
-            padding: 0 14px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            background: var(--surface);
-            color: var(--text);
-            text-decoration: none;
-            font-size: 0.88rem;
-            font-weight: 600;
-            white-space: nowrap;
-            flex-shrink: 0;
-            transition: background-color 0.15s ease, border-color 0.15s ease;
-        }
-
-        .adm-home-btn:hover {
-            background: #f1f5f9;
-            border-color: rgba(15, 23, 42, 0.16);
         }
 
         .adm-actions {
@@ -163,7 +142,7 @@
         .dash-shell {
             flex: 1;
             overflow-y: auto;
-            padding: 28px 20px 44px 20px;
+            padding: 24px 20px 36px 20px;
         }
 
         .dash-inner {
@@ -172,7 +151,12 @@
         }
 
         .dash-head {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .dash-inst {
@@ -187,6 +171,41 @@
             font-weight: 700;
             color: var(--brand-dark);
             line-height: 1.3;
+        }
+
+        .dash-search-wrap {
+            position: relative;
+            flex: 1 1 240px;
+            max-width: 310px;
+        }
+
+        .dash-search-wrap i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.86rem;
+            pointer-events: none;
+        }
+
+        .dash-search-input {
+            width: 100%;
+            height: 40px;
+            padding: 0 12px 0 34px;
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            border-radius: 11px;
+            background: var(--surface);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .dash-search-input:focus {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.12);
         }
 
         .dash-grid {
@@ -264,6 +283,53 @@
             min-height: 0;
             display: flex;
             flex-direction: column;
+            position: relative;
+            animation: admFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .dash-shell {
+            animation: admFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes admFadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .adm-loader {
+            position: absolute;
+            inset: 0;
+            background: rgba(246, 248, 247, 0.88);
+            backdrop-filter: blur(4px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            z-index: 15;
+            color: var(--brand-dark);
+            font-weight: 600;
+            font-size: 0.94rem;
+            opacity: 1;
+            transition: opacity 0.18s ease;
+        }
+
+        .adm-loader.is-done {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .adm-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(21, 128, 61, 0.18);
+            border-top-color: var(--brand);
+            border-radius: 50%;
+            animation: admSpin 0.7s linear infinite;
+        }
+
+        @keyframes admSpin {
+            to { transform: rotate(360deg); }
         }
 
         .adm-frame {
@@ -273,6 +339,18 @@
             border: none;
             background: var(--bg);
             display: block;
+        }
+
+        .adm-back-btn,
+        .adm-logout-btn,
+        .dash-btn {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .adm-back-btn:active,
+        .adm-logout-btn:active {
+            transform: scale(0.96);
         }
 
         .is-hidden {
@@ -313,18 +391,14 @@
 
     <header class="adm-topbar">
         <div class="adm-left">
-            <button type="button" id="backToGridBtn" class="adm-back-btn <%= currentMod ? '' : 'is-hidden' %>">
-                <i class="fas fa-arrow-left" aria-hidden="true"></i>
-                <span>ড্যাশবোর্ড</span>
-            </button>
-            <img src="/logo.png" alt="মাদ্রাসা লোগো" id="brandLogo" class="adm-logo <%= currentMod ? 'is-hidden' : '' %>" referrerpolicy="no-referrer">
+            <img src="/logo.png" alt="মাদ্রাসা লোগো" id="brandLogo" class="adm-logo" referrerpolicy="no-referrer">
             <span class="adm-title" id="topbarTitle"><%= currentMod ? currentMod.label : 'অ্যাডমিন ড্যাশবোর্ড' %></span>
         </div>
         <div class="adm-actions">
-            <a href="/index.php" class="adm-home-btn">
-                <i class="fas fa-external-link-alt" aria-hidden="true"></i>
-                <span>ওয়েবসাইট</span>
-            </a>
+            <button type="button" id="backToGridBtn" class="adm-back-btn <%= currentMod ? '' : 'is-hidden' %>">
+                <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                <span>পিছনে যান</span>
+            </button>
             <form method="POST" action="/admin-logout" style="margin:0;">
                 <button type="submit" class="adm-logout-btn" title="অ্যাডমিন প্যানেল থেকে লগআউট করুন">
                     <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
@@ -334,11 +408,18 @@
         </div>
     </header>
 
+    <div id="nadufmTopProgress" class="nadufm-top-progress" aria-hidden="true"></div>
     <main id="view-grid" class="dash-shell <%= currentMod ? 'is-hidden' : '' %>">
         <div class="dash-inner">
             <div class="dash-head">
-                <p class="dash-inst"><%= institutionName %></p>
-                <h1 class="dash-heading">সকল ফিচার পরিচালনা</h1>
+                <div>
+                    <p class="dash-inst"><%= institutionName %></p>
+                    <h1 class="dash-heading">সকল ফিচার পরিচালনা</h1>
+                </div>
+                <div class="dash-search-wrap">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                    <input type="search" id="dashQuickSearch" class="dash-search-input" placeholder="মডিউল খুঁজুন..." aria-label="ড্যাশবোর্ড মডিউল খুঁজুন">
+                </div>
             </div>
 
             <div class="dash-grid" role="list" aria-label="ফিচার বাটন তালিকা">
@@ -358,13 +439,87 @@
     </main>
 
     <section id="view-workspace" class="adm-workspace <%= currentMod ? '' : 'is-hidden' %>">
+        <div id="workspaceLoader" class="adm-loader <%= currentMod ? '' : 'is-done' %>">
+            <div class="adm-spinner" aria-hidden="true"></div>
+            <span>লোড হচ্ছে...</span>
+        </div>
         <iframe
             id="workspaceFrame"
+            name="nadufm-dashboard-frame"
             class="adm-frame"
             src="<%= currentMod ? currentMod.src : 'about:blank' %>"
             title="অ্যাডমিন ওয়ার্কস্পেস"
         ></iframe>
     </section>
+
+    <nav class="mobile-bottom-nav" aria-label="মূল নেভিগেশন">
+        <a href="/index.php" class="mobile-tab">
+            <i class="fas fa-home" aria-hidden="true"></i>
+            <span>হোম</span>
+        </a>
+        <a href="/#notice-section" class="mobile-tab">
+            <i class="fas fa-bell" aria-hidden="true"></i>
+            <span>নোটিশ</span>
+        </a>
+        <a href="/result.php" class="mobile-tab">
+            <i class="fas fa-award" aria-hidden="true"></i>
+            <span>ফলাফল</span>
+        </a>
+        <a href="/student.php" class="mobile-tab">
+            <i class="fas fa-user-graduate" aria-hidden="true"></i>
+            <span>শিক্ষার্থী</span>
+        </a>
+        <button type="button" class="mobile-tab" onclick="openAppDrawer()">
+            <i class="fas fa-th-large" aria-hidden="true"></i>
+            <span>মেনু</span>
+        </button>
+    </nav>
+
+    <div id="appDrawerBackdrop" class="app-drawer-backdrop" onclick="closeAppDrawer()" aria-hidden="true"></div>
+    <aside id="appDrawerSheet" class="app-drawer-sheet" aria-label="সব সেবা ও মেনু" role="dialog" aria-modal="true" hidden>
+        <div class="app-drawer-handle"></div>
+        <div class="app-drawer-header">
+            <div>
+                <h3>সব সেবা ও মডিউল</h3>
+                <p>নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা</p>
+            </div>
+            <button type="button" class="app-drawer-close" onclick="closeAppDrawer()" aria-label="মেনু বন্ধ করুন">
+                <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div class="app-drawer-body">
+            <div class="app-drawer-group">
+                <h4>একাডেমিক ও শিক্ষার্থী সেবা</h4>
+                <div class="app-drawer-grid">
+                    <a href="/result.php" class="app-drawer-item"><i class="fas fa-poll"></i><span>অনলাইন ফলাফল</span></a>
+                    <a href="/merit-list.php" class="app-drawer-item"><i class="fas fa-trophy"></i><span>মেধা তালিকা</span></a>
+                    <a href="/admission.php" class="app-drawer-item"><i class="fas fa-user-plus"></i><span>অনলাইন ভর্তি</span></a>
+                    <a href="/admit.php" class="app-drawer-item"><i class="fas fa-id-card"></i><span>এডমিট কার্ড</span></a>
+                    <a href="/id-card.php" class="app-drawer-item"><i class="fas fa-id-badge"></i><span>শিক্ষার্থী আইডি কার্ড</span></a>
+                    <a href="/student-search.php" class="app-drawer-item"><i class="fas fa-certificate"></i><span>শিক্ষার্থী তথ্য ও সনদ</span></a>
+                    <a href="/routine.php" class="app-drawer-item"><i class="fas fa-clock"></i><span>ক্লাস ও পরীক্ষার রুটিন</span></a>
+                    <a href="/syllabus.php" class="app-drawer-item"><i class="fas fa-book-open"></i><span>সিলেবাস</span></a>
+                    <a href="/calendar.php" class="app-drawer-item"><i class="fas fa-calendar-alt"></i><span>শিক্ষাপঞ্জি ২০২৬</span></a>
+                    <a href="/holidays.php" class="app-drawer-item"><i class="fas fa-umbrella-beach"></i><span>ছুটির তালিকা</span></a>
+                    <a href="/fees.php" class="app-drawer-item"><i class="fas fa-wallet"></i><span>ফি পরিশোধ</span></a>
+                    <a href="/registration.php" class="app-drawer-item"><i class="fas fa-clipboard-check"></i><span>রেজিস্ট্রেশন</span></a>
+                </div>
+            </div>
+            <div class="app-drawer-group">
+                <h4>প্রতিষ্ঠান ও প্রশাসন</h4>
+                <div class="app-drawer-grid">
+                    <a href="/about.php" class="app-drawer-item"><i class="fas fa-school"></i><span>আমাদের সম্পর্কে</span></a>
+                    <a href="/teacher-list.php" class="app-drawer-item"><i class="fas fa-chalkboard-teacher"></i><span>শিক্ষক-কর্মচারী</span></a>
+                    <a href="/governingbody.php" class="app-drawer-item"><i class="fas fa-users"></i><span>গভর্নিং বডি</span></a>
+                    <a href="/morehistory.php" class="app-drawer-item"><i class="fas fa-landmark"></i><span>প্রতিষ্ঠানের ইতিহাস</span></a>
+                    <a href="/presidentspeech.php" class="app-drawer-item"><i class="fas fa-user-tie"></i><span>সভাপতির বাণী</span></a>
+                    <a href="/principalspeech.php" class="app-drawer-item"><i class="fas fa-microphone-alt"></i><span>অধ্যক্ষের বাণী</span></a>
+                    <a href="/contact.php" class="app-drawer-item"><i class="fas fa-phone-alt"></i><span>যোগাযোগ</span></a>
+                    <a href="/dashboard.php" class="app-drawer-item"><i class="fas fa-user-shield"></i><span>অ্যাডমিন প্যানেল</span></a>
+                </div>
+            </div>
+        </div>
+    </aside>
 
     <script>
         (function () {
@@ -372,9 +527,26 @@
             var gridEl = document.getElementById('view-grid');
             var workspaceEl = document.getElementById('view-workspace');
             var frameEl = document.getElementById('workspaceFrame');
+            var loaderEl = document.getElementById('workspaceLoader');
             var backBtn = document.getElementById('backToGridBtn');
-            var brandLogo = document.getElementById('brandLogo');
             var topbarTitle = document.getElementById('topbarTitle');
+            var dashSearch = document.getElementById('dashQuickSearch');
+
+            if (frameEl && loaderEl) {
+                frameEl.addEventListener('load', function () {
+                    loaderEl.classList.add('is-done');
+                });
+            }
+
+            if (dashSearch) {
+                dashSearch.addEventListener('input', function () {
+                    var q = dashSearch.value.trim().toLowerCase();
+                    document.querySelectorAll('.dash-btn[data-feature]').forEach(function (btn) {
+                        var txt = (btn.textContent || '').toLowerCase();
+                        btn.style.display = (!q || txt.indexOf(q) !== -1) ? 'flex' : 'none';
+                    });
+                });
+            }
 
             function openFeature(featureId, pushHistory) {
                 var mod = featureId ? modulesMap[featureId] : null;
@@ -382,8 +554,8 @@
                     gridEl.classList.remove('is-hidden');
                     workspaceEl.classList.add('is-hidden');
                     backBtn.classList.add('is-hidden');
-                    brandLogo.classList.remove('is-hidden');
                     topbarTitle.textContent = 'অ্যাডমিন ড্যাশবোর্ড';
+                    if (loaderEl) loaderEl.classList.add('is-done');
                     frameEl.setAttribute('src', 'about:blank');
                     if (pushHistory) {
                         history.pushState({ feature: '' }, '', '/dashboard.php');
@@ -394,9 +566,9 @@
                 gridEl.classList.add('is-hidden');
                 workspaceEl.classList.remove('is-hidden');
                 backBtn.classList.remove('is-hidden');
-                brandLogo.classList.add('is-hidden');
                 topbarTitle.textContent = mod.label;
                 if (frameEl.getAttribute('src') !== mod.src) {
+                    if (loaderEl) loaderEl.classList.remove('is-done');
                     frameEl.setAttribute('src', mod.src);
                 }
                 if (pushHistory) {
@@ -420,6 +592,7 @@
             });
         })();
     </script>
+    <script src="/script.js"></script>
     <script src="/pwa.js" defer></script>
 </body>
 </html>
