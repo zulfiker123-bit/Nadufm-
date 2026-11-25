@@ -544,6 +544,99 @@
         .status-fail { color: #b91c1c; font-weight: 700; }
         .status-abs { color: #64748b; font-weight: 600; }
 
+        /* Per-Class Result Upload Grid */
+        .class-upload-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .class-upload-row {
+            background: var(--surface-subtle);
+            border: 1px solid var(--border);
+            border-radius: 11px;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+            cursor: pointer;
+            transition: border-color 0.15s ease, background-color 0.15s ease;
+        }
+
+        .class-upload-row:hover {
+            border-color: rgba(21, 128, 61, 0.35);
+            background: #f4fbf6;
+        }
+
+        .class-upload-row.is-selected {
+            background: var(--brand-tint);
+            border-color: var(--brand-strong);
+        }
+
+        .class-upload-row.is-dragover {
+            background: #ecfdf3;
+            border-color: var(--brand-strong);
+            border-style: dashed;
+        }
+
+        .class-upload-top {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .class-upload-title {
+            font-size: 0.96rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .class-upload-row.is-selected .class-upload-title {
+            color: var(--brand-dark);
+        }
+
+        .class-upload-meta {
+            font-size: 0.8rem;
+            color: var(--muted);
+            font-variant-numeric: tabular-nums;
+            line-height: 1.35;
+        }
+
+        .class-upload-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .stats-section-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .stats-section-title {
+            margin: 0;
+            font-size: 0.96rem;
+            font-weight: 700;
+            color: var(--brand);
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .stats-overall-meta {
+            font-size: 0.82rem;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
         .empty-state {
             text-align: center;
             padding: 36px 20px;
@@ -911,7 +1004,7 @@
             <div class="card-head">
                 <div>
                     <h2 class="card-title"><i class="fas fa-award" aria-hidden="true"></i> রেজাল্ট ও অটো GPA ব্যবস্থাপনা</h2>
-                    <p class="card-sub">শ্রেণি অনুযায়ী রেজাল্ট শিট নির্বাচন করুন, Excel আপলোড করুন, মেধাক্রম ও প্রমোশন নিয়ন্ত্রণ করে সংরক্ষণ করুন।</p>
+                    <p class="card-sub">প্রতিটি শ্রেণির জন্য আলাদা Excel ফাইল আপলোড করুন — আপলোডেই স্বয়ংক্রিয়ভাবে GPA, মেধাক্রম ও পরিসংখ্যান তৈরি হবে।</p>
                 </div>
                 <div class="btn-group">
                     <span id="resultsDirtyNote" class="dirty-note"><i class="fas fa-circle" style="font-size:0.5rem;" aria-hidden="true"></i> অসংরক্ষিত পরিবর্তন</span>
@@ -922,26 +1015,9 @@
                 </div>
             </div>
 
-            <!-- Class-wise Exam Tabs / Quick Switcher -->
-            <div class="class-filter-wrap" style="padding-top:0;">
-                <div class="class-filter-bar" id="examClassTabsBar" role="tablist" aria-label="শ্রেণি ভিত্তিক রেজাল্ট শিট"></div>
-                <div class="btn-group">
-                    <button type="button" class="btn btn-dark btn-sm" onclick="createNewExam()"><i class="fas fa-plus-circle" aria-hidden="true"></i> নতুন শ্রেণি / পরীক্ষা</button>
-                    <button type="button" class="btn btn-danger-outline btn-sm" onclick="deleteCurrentExam()"><i class="fas fa-trash" aria-hidden="true"></i> শিট মুছুন</button>
-                </div>
-            </div>
-
-            <div class="grid-4" style="margin-bottom: 14px;">
+            <div class="grid-2" style="margin-bottom: 14px;">
                 <div class="field">
-                    <label>সক্রিয় পরীক্ষা / রেজাল্ট শিট</label>
-                    <select id="activeExamSelect" onchange="switchActiveExam(this.value)"></select>
-                </div>
-                <div class="field">
-                    <label>শ্রেণি (পাবলিক রেজাল্টে প্রদর্শিত)</label>
-                    <select id="examClassId" onchange="updateExamMeta()"></select>
-                </div>
-                <div class="field">
-                    <label>পরীক্ষার নাম</label>
+                    <label>পরীক্ষার নাম (নির্বাচিত শ্রেণির জন্য)</label>
                     <input type="text" id="examNameInput" oninput="updateExamMeta()">
                 </div>
                 <div class="field">
@@ -950,23 +1026,11 @@
                 </div>
             </div>
 
-            <div class="upload-zone" id="resultsDropZone">
-                <div class="upload-zone-info">
-                    <div class="upload-zone-icon"><i class="fas fa-file-upload" aria-hidden="true"></i></div>
-                    <div>
-                        <div style="font-weight: 700; font-size: 0.96rem;">নির্বাচিত শ্রেণির রেজাল্ট Excel আপলোড করুন</div>
-                        <div style="font-size: 0.82rem; color: var(--muted);">হেডার উদাহরণ: <code>রোল</code>, <code>শিক্ষার্থীর নাম</code>, <code>কুরআন মাজিদ (100)</code>, <code>আরবি (100)</code> — আপলোডেই স্বয়ংক্রিয় GPA হিসাব হবে।</div>
-                    </div>
-                </div>
-                <div class="btn-group">
-                    <input type="file" id="resultsFileInput" class="upload-file-input" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain" onchange="uploadExcelFile('results')">
-                    <button type="button" id="resultsUploadBtn" class="btn btn-primary" onclick="triggerFileSelect('results')"><i class="fas fa-upload" aria-hidden="true"></i> ফাইল নির্বাচন ও আপলোড</button>
-                </div>
-            </div>
+            <div class="class-upload-grid" id="classResultUploadGrid" aria-label="প্রতি শ্রেণির আলাদা রেজাল্ট Excel আপলোড"></div>
             <div id="resultsUploadStatus" class="upload-status-box"></div>
 
             <details class="adv-details">
-                <summary><i class="fas fa-cog" aria-hidden="true"></i> পাস নম্বর, প্রমোশন নিয়ম, বিষয় পূর্ণমান ও ফিল্ড ম্যাপিং</summary>
+                <summary><i class="fas fa-cog" aria-hidden="true"></i> পাস নম্বর, প্রমোশন নিয়ম, বিষয় পূর্ণমান ও ফিল্ড ম্যাপিং (<span id="advConfigClassLabel"></span>)</summary>
                 <div class="grid-3" style="margin-bottom: 12px;">
                     <div class="field">
                         <label>পাস নম্বর শতকরা হার (%)</label>
@@ -998,8 +1062,14 @@
             </details>
         </div>
 
-        <!-- Live Stats -->
-        <div class="stats-bar" id="resultStatsBar"></div>
+        <!-- পরিসংখ্যান সেকশন -->
+        <div id="resultStatsSection">
+            <div class="stats-section-head">
+                <h3 class="stats-section-title"><i class="fas fa-chart-pie" aria-hidden="true"></i> পরিসংখ্যান — <span id="statsSelectedClassTitle"></span></h3>
+                <span class="stats-overall-meta" id="statsOverallSummary"></span>
+            </div>
+            <div class="stats-bar" id="resultStatsBar"></div>
+        </div>
 
         <!-- Result & Merit Data Table -->
         <div class="card">
@@ -1345,9 +1415,9 @@
     }
 
     function getActiveExam() {
-        const id = state.results.activeExamId;
-        const exams = state.results.exams || {};
-        return exams[id] || Object.values(exams)[0];
+        const id = state.results?.activeExamId;
+        const exams = state.results?.exams || {};
+        return exams[id] || Object.values(exams)[0] || ensureClassExamRecord('6');
     }
 
     function recomputeExamClient(exam) {
@@ -1586,7 +1656,6 @@
     function initDropZones() {
         [
             { id: 'studentsDropZone', target: 'students' },
-            { id: 'resultsDropZone', target: 'results' },
             { id: 'documentsDropZone', target: 'documents' },
         ].forEach(({ id, target }) => {
             const zone = document.getElementById(id);
@@ -1847,68 +1916,219 @@
         }
     }
 
-    // ============ RESULTS SECTION ============
+    // ============ RESULTS SECTION (PER-CLASS UPLOAD + STATS) ============
     function formatClassLabelClient(name, classId) {
         const raw = String(name || (classId && state.classMap?.[classId]?.name) || '').trim();
         if (!raw || raw === 'custom') return 'নির্ধারিত শ্রেণি';
         return /(?:শ্রেণি|শ্রেণী)$/.test(raw) ? raw : `${raw} শ্রেণি`;
     }
 
-    function renderExamSelectors() {
-        const exams = Object.values(state.results.exams || {});
-        const active = getActiveExam();
-
-        // Class-wise quick tab buttons for uploaded exams
-        const barEl = document.getElementById('examClassTabsBar');
-        if (barEl) {
-            barEl.innerHTML = `<span class="class-filter-label"><i class="fas fa-layer-group" aria-hidden="true"></i> শ্রেণি ভিত্তিক শিট:</span>` +
-                exams.map((ex) => {
-                    const isAct = ex.id === active.id;
-                    const clsLabel = formatClassLabelClient(ex.className, ex.classId);
-                    return `<button type="button" role="tab" aria-selected="${isAct}" class="class-seg-btn ${isAct ? 'active' : ''}" data-exam-id="${esc(ex.id)}" onclick="switchActiveExam(this.dataset.examId)">${esc(clsLabel)} (${bnNum((ex.rows || []).length)})</button>`;
-                }).join('');
-        }
-
-        document.getElementById('activeExamSelect').innerHTML = exams.map((ex) => {
-            const clsLabel = formatClassLabelClient(ex.className, ex.classId);
-            const exName = String(ex.examName || 'বার্ষিক পরীক্ষা').trim();
-            const exYear = String(ex.year || '').trim();
-            const label = `${clsLabel} — ${exName}${exYear ? ` (${exYear})` : ''} (${bnNum((ex.rows || []).length)} জন)`;
-            return `<option value="${esc(ex.id)}" ${ex.id === active.id ? 'selected' : ''}>${esc(label)}</option>`;
-        }).join('');
-
-        const cmEntries = Object.entries(state.classMap || {});
-        document.getElementById('examClassId').innerHTML = cmEntries.map(([k, v]) => {
-            const clsLabel = formatClassLabelClient(v.name, k);
-            return `<option value="${esc(k)}" ${String(active.classId) === String(k) ? 'selected' : ''}>${esc(clsLabel)}</option>`;
-        }).join('') + `<option value="custom" ${active.classId === 'custom' ? 'selected' : ''}>কাস্টম শ্রেণি</option>`;
-
-        document.getElementById('examNameInput').value = active.examName || 'বার্ষিক পরীক্ষা';
-        document.getElementById('examYearInput').value = active.year || '২০২৬';
-        document.getElementById('examPassPercent').value = active.passPercent || 33;
-        document.getElementById('examMaxPromoteFail').value = String(active.maxPromoteFail ?? 0);
-        document.getElementById('examPromoLabel').value = active.promotionLabel || 'বিশেষ বিবেচনায় প্রমোটেড';
+    function getExamForClass(classId) {
+        const cid = String(classId || '').trim();
+        const exams = Object.values(state.results?.exams || {});
+        const matching = exams.filter((ex) => String(ex.classId || '').trim() === cid);
+        if (!matching.length) return null;
+        return matching.find((ex) => Array.isArray(ex.rows) && ex.rows.length > 0) || matching[0];
     }
 
-    function switchActiveExam(examId) {
-        state.results.activeExamId = examId;
+    function ensureClassExamRecord(classId) {
+        const cid = String(classId || '6').trim();
+        let ex = getExamForClass(cid);
+        if (ex) return ex;
+        const className = String(state.classMap?.[cid]?.name || 'ষষ্ঠ').trim();
+        const examName = String(document.getElementById('examNameInput')?.value || 'বার্ষিক পরীক্ষা').trim() || 'বার্ষিক পরীক্ষা';
+        const year = String(document.getElementById('examYearInput')?.value || '২০২৬').trim() || '২০২৬';
+        const examId = `exam_class_${cid}`;
+        ex = {
+            id: examId,
+            title: `${formatClassLabelClient(className, cid)} — ${examName}`,
+            classId: cid,
+            className,
+            examName,
+            year,
+            passPercent: 33,
+            maxPromoteFail: 0,
+            promotionLabel: 'বিশেষ বিবেচনায় প্রমোটেড',
+            columns: [
+                { key: 'roll', label: 'রোল', isSubject: false, fullMarks: 0 },
+                { key: 'name', label: 'শিক্ষার্থীর নাম', isSubject: false, fullMarks: 0 },
+                { key: 'father', label: 'পিতার নাম', isSubject: false, fullMarks: 0 },
+                { key: 'sub_quran', label: 'কুরআন মাজিদ (100)', isSubject: true, fullMarks: 100 },
+                { key: 'sub_arabic', label: 'আরবি (100)', isSubject: true, fullMarks: 100 },
+                { key: 'sub_bangla', label: 'বাংলা (100)', isSubject: true, fullMarks: 100 },
+                { key: 'sub_english', label: 'ইংরেজি (100)', isSubject: true, fullMarks: 100 },
+                { key: 'sub_math', label: 'গণিত (100)', isSubject: true, fullMarks: 100 },
+            ],
+            mapping: { roll: 'roll', name: 'name', father: 'father', id: '' },
+            rows: [],
+            updatedAt: null,
+        };
+        if (!state.results.exams) state.results.exams = {};
+        state.results.exams[examId] = ex;
+        return ex;
+    }
+
+    function selectClassResult(classId) {
+        const ex = ensureClassExamRecord(classId);
+        state.results.activeExamId = ex.id;
         renderResultsSection();
+    }
+
+    function triggerClassResultUpload(classId, ev) {
+        if (ev) ev.stopPropagation();
+        const inp = document.getElementById('classResultFile_' + classId);
+        if (inp) inp.click();
+    }
+
+    async function uploadClassResultExcel(classId, droppedFile) {
+        const cid = String(classId || '6').trim();
+        const inp = document.getElementById('classResultFile_' + cid);
+        const btn = document.getElementById('classUploadBtn_' + cid);
+        const selectedFile = droppedFile || (inp && inp.files && inp.files[0]);
+        if (!selectedFile) return;
+
+        const existing = getExamForClass(cid);
+        const examId = existing?.id || `exam_class_${cid}`;
+        const className = String(existing?.className || state.classMap?.[cid]?.name || 'ষষ্ঠ').trim();
+        const examName = String(document.getElementById('examNameInput')?.value || existing?.examName || 'বার্ষিক পরীক্ষা').trim();
+        const year = String(document.getElementById('examYearInput')?.value || existing?.year || '২০২৬').trim();
+
+        const fd = new FormData();
+        fd.append('file', selectedFile);
+        fd.append('target', 'results');
+        fd.append('examId', examId);
+        fd.append('classId', cid);
+        fd.append('className', className);
+        fd.append('examName', examName);
+        fd.append('year', year);
+        fd.append('passPercent', existing?.passPercent || 33);
+        fd.append('maxPromoteFail', existing?.maxPromoteFail || 0);
+        fd.append('promotionLabel', existing?.promotionLabel || 'বিশেষ বিবেচনায় প্রমোটেড');
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> আপলোড হচ্ছে...';
+        }
+        const clsLabel = formatClassLabelClient(className, cid);
+        setUploadStatus('results', `${clsLabel}: "${selectedFile.name}" আপলোড ও GPA হিসাব হচ্ছে...`, 'loading');
+
+        try {
+            const res = await fetch('/api/excel/upload', { method: 'POST', body: fd });
+            const rawText = await res.text();
+            let data = {};
+            try {
+                data = JSON.parse(rawText);
+            } catch {
+                throw new Error('সার্ভার থেকে সঠিক উত্তর পাওয়া যায়নি। ফাইল ফরম্যাট যাচাই করুন।');
+            }
+            if (!res.ok) throw new Error(data.error || 'আপলোড ব্যর্থ হয়েছে');
+            applyState(data.state);
+            if (inp) inp.value = '';
+            setUploadStatus('results', `${clsLabel}: ${data.message}`, 'success');
+            showToast(`${clsLabel} — ${data.message}`);
+        } catch (err) {
+            setUploadStatus('results', err.message || 'আপলোড ব্যর্থ হয়েছে', 'error');
+            showToast(err.message || 'আপলোড ব্যর্থ হয়েছে', true);
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-upload" aria-hidden="true"></i> Excel আপলোড';
+            }
+        }
+    }
+
+    async function clearClassResult(classId, ev) {
+        if (ev) ev.stopPropagation();
+        const ex = getExamForClass(classId);
+        if (!ex || !(ex.rows || []).length) return;
+        try {
+            const res = await fetch('/api/excel/results/' + encodeURIComponent(ex.id), { method: 'DELETE' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+            applyState(data.state);
+            showToast(data.message);
+        } catch (err) {
+            showToast(err.message || 'মুছে ফেলা সম্ভব হয়নি।', true);
+        }
+    }
+
+    function renderClassResultUploadGrid() {
+        const gridEl = document.getElementById('classResultUploadGrid');
+        if (!gridEl) return;
+        const active = getActiveExam();
+        const activeCid = String(active?.classId || '');
+        const classEntries = Object.entries(state.classMap || {});
+
+        gridEl.innerHTML = classEntries.map(([cid, info]) => {
+            const ex = getExamForClass(cid);
+            const clsLabel = formatClassLabelClient(info.name, cid);
+            const rowCount = (ex?.rows || []).length;
+            const isSelected = activeCid === String(cid);
+            let metaText = 'এখনো Excel আপলোড হয়নি';
+            if (rowCount > 0) {
+                const computed = recomputeExamClient(ex);
+                metaText = `${bnNum(rowCount)} জন শিক্ষার্থী · পাস ${bnNum(computed.stats.passRate)}%`;
+            }
+            return `
+                <div class="class-upload-row ${isSelected ? 'is-selected' : ''}" data-class-id="${esc(cid)}" onclick="selectClassResult('${esc(cid)}')">
+                    <div class="class-upload-top">
+                        <span class="class-upload-title">${esc(clsLabel)}</span>
+                        <span class="class-upload-meta">${rowCount > 0 ? bnNum(rowCount) + ' জন' : 'খালি'}</span>
+                    </div>
+                    <div class="class-upload-meta">${esc(metaText)}</div>
+                    <div class="class-upload-actions">
+                        <input type="file" id="classResultFile_${esc(cid)}" class="upload-file-input" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain" onchange="uploadClassResultExcel('${esc(cid)}')">
+                        <button type="button" id="classUploadBtn_${esc(cid)}" class="btn btn-primary btn-sm" onclick="triggerClassResultUpload('${esc(cid)}', event)">
+                            <i class="fas fa-upload" aria-hidden="true"></i> ${rowCount > 0 ? 'নতুন Excel' : 'Excel আপলোড'}
+                        </button>
+                        ${rowCount > 0 ? `
+                            <button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation(); selectClassResult('${esc(cid)}')">দেখুন</button>
+                            <button type="button" class="btn btn-danger-outline btn-sm" onclick="clearClassResult('${esc(cid)}', event)" title="এই শ্রেণির রেজাল্ট মুছুন"><i class="fas fa-trash" aria-hidden="true"></i></button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        gridEl.querySelectorAll('.class-upload-row').forEach((card) => {
+            const cid = card.getAttribute('data-class-id');
+            card.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                card.classList.add('is-dragover');
+            });
+            card.addEventListener('dragleave', () => {
+                card.classList.remove('is-dragover');
+            });
+            card.addEventListener('drop', (e) => {
+                e.preventDefault();
+                card.classList.remove('is-dragover');
+                const file = e.dataTransfer?.files?.[0];
+                if (file && cid) uploadClassResultExcel(cid, file);
+            });
+        });
+    }
+
+    function renderExamMetaInputs() {
+        const active = getActiveExam();
+        const clsLabel = formatClassLabelClient(active?.className, active?.classId);
+        const advLbl = document.getElementById('advConfigClassLabel');
+        if (advLbl) advLbl.textContent = clsLabel;
+        document.getElementById('examNameInput').value = active?.examName || 'বার্ষিক পরীক্ষা';
+        document.getElementById('examYearInput').value = active?.year || '২০২৬';
+        document.getElementById('examPassPercent').value = active?.passPercent || 33;
+        document.getElementById('examMaxPromoteFail').value = String(active?.maxPromoteFail ?? 0);
+        document.getElementById('examPromoLabel').value = active?.promotionLabel || 'বিশেষ বিবেচনায় প্রমোটেড';
     }
 
     function updateExamMeta() {
         const exam = getActiveExam();
-        const cid = document.getElementById('examClassId').value;
-        exam.classId = cid;
-        if (state.classMap && state.classMap[cid]) {
-            exam.className = String(state.classMap[cid].name || '').trim();
-        }
+        if (!exam) return;
         exam.examName = document.getElementById('examNameInput').value;
         exam.year = document.getElementById('examYearInput').value;
-        const clsLabel = formatClassLabelClient(exam.className, cid);
+        const clsLabel = formatClassLabelClient(exam.className, exam.classId);
         exam.title = `${clsLabel} — ${String(exam.examName || 'বার্ষিক পরীক্ষা').trim()}`;
         markDirty('results', true);
-        renderExamSelectors();
-        renderResultsTable();
+        renderResultsTableAndStats();
     }
 
     function updatePromoConfig() {
@@ -1917,6 +2137,7 @@
         exam.maxPromoteFail = Number(document.getElementById('examMaxPromoteFail').value) || 0;
         exam.promotionLabel = document.getElementById('examPromoLabel').value || 'বিশেষ বিবেচনায় প্রমোটেড';
         markDirty('results', true);
+        renderClassResultUploadGrid();
         renderResultsTableAndStats();
     }
 
@@ -1933,6 +2154,7 @@
             }
         });
         markDirty('results', true);
+        renderClassResultUploadGrid();
         renderResultsTableAndStats();
         showToast(val === true ? 'সকল ফেলকৃত শিক্ষার্থীকে প্রমোটেড করা হয়েছে।' : 'ম্যানুয়াল প্রমোশন রিসেট হয়েছে।');
     }
@@ -1944,41 +2166,8 @@
         if (!ev) return;
         exam.rows[rowIndex]._promoted = !ev.isPromoted;
         markDirty('results', true);
+        renderClassResultUploadGrid();
         renderResultsTableAndStats();
-    }
-
-    async function createNewExam() {
-        const usedIds = new Set(Object.values(state.results.exams || {}).map((ex) => String(ex.classId || '')));
-        const preferredOrder = ['6', '7', '8', '9', '10', '11', '12', '5', '4', '3', '2', '1', '0'];
-        const nextClassId = preferredOrder.find((id) => state.classMap?.[id] && !usedIds.has(id))
-            || Object.keys(state.classMap || {}).find((id) => !usedIds.has(id))
-            || '6';
-        try {
-            const res = await fetch('/api/excel/results/create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ classId: nextClassId, examName: 'বার্ষিক পরীক্ষা', year: '২০২৬' }),
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error);
-            applyState(data.state);
-            showToast(data.message);
-        } catch (err) {
-            showToast(err.message, true);
-        }
-    }
-
-    async function deleteCurrentExam() {
-        const exam = getActiveExam();
-        try {
-            const res = await fetch('/api/excel/results/' + encodeURIComponent(exam.id), { method: 'DELETE' });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error);
-            applyState(data.state);
-            showToast(data.message);
-        } catch (err) {
-            showToast(err.message, true);
-        }
     }
 
     function renderResultSubjectsAndMapping() {
@@ -2034,6 +2223,7 @@
         exam.columns.forEach((c) => { row[c.key] = ''; });
         exam.rows.push(row);
         markDirty('results', true);
+        renderClassResultUploadGrid();
         renderResultsTableAndStats();
     }
 
@@ -2041,6 +2231,7 @@
         const exam = getActiveExam();
         exam.rows.splice(rowIndex, 1);
         markDirty('results', true);
+        renderClassResultUploadGrid();
         renderResultsTableAndStats();
     }
 
@@ -2048,6 +2239,7 @@
         const exam = getActiveExam();
         exam.rows[rowIndex][colKey] = val;
         markDirty('results', true);
+        renderClassResultUploadGrid();
         renderResultsTableAndStats();
     }
 
@@ -2070,6 +2262,19 @@
         const exam = getActiveExam();
         const computed = recomputeExamClient(exam);
         const s = computed.stats;
+        const clsLabel = formatClassLabelClient(exam?.className, exam?.classId);
+
+        const titleEl = document.getElementById('statsSelectedClassTitle');
+        if (titleEl) titleEl.textContent = clsLabel;
+
+        const allExams = Object.values(state.results?.exams || {}).filter((ex) => Array.isArray(ex.rows) && ex.rows.length > 0);
+        const overallEl = document.getElementById('statsOverallSummary');
+        if (overallEl) {
+            const totalUploadedStudents = allExams.reduce((acc, ex) => acc + ex.rows.length, 0);
+            overallEl.textContent = allExams.length > 0
+                ? `সকল শ্রেণি (${bnNum(allExams.length)}টি): মোট ${bnNum(totalUploadedStudents)} জন`
+                : 'এখনো কোনো শ্রেণির ফলাফল আপলোড হয়নি';
+        }
 
         document.getElementById('resultStatsBar').innerHTML = `
             <div class="stat-box"><div class="stat-box-label">মোট শিক্ষার্থী</div><div class="stat-box-val">${bnNum(s.total)}</div></div>
@@ -2088,7 +2293,8 @@
         const q = String(document.getElementById('resultsSearchInput')?.value || '').trim().toLowerCase();
 
         if (!exam.rows || exam.rows.length === 0) {
-            container.innerHTML = `<div class="empty-state"><i class="fas fa-poll-h" aria-hidden="true"></i><p>এই শ্রেণির রেজাল্ট শিটে কোনো শিক্ষার্থী নেই। উপরে Excel আপলোড করুন অথবা <strong>নতুন শিক্ষার্থী</strong> যোগ করুন।</p></div>`;
+            const clsLabel = formatClassLabelClient(exam.className, exam.classId);
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-poll-h" aria-hidden="true"></i><p>${esc(clsLabel)}-এর রেজাল্ট শিটে এখনো কোনো শিক্ষার্থী নেই। উপরের <strong>${esc(clsLabel)}</strong> কার্ড থেকে Excel আপলোড করুন অথবা <strong>নতুন শিক্ষার্থী</strong> যোগ করুন।</p></div>`;
             return;
         }
 
@@ -2220,7 +2426,8 @@
     }
 
     function renderResultsSection() {
-        renderExamSelectors();
+        renderClassResultUploadGrid();
+        renderExamMetaInputs();
         renderResultSubjectsAndMapping();
         renderResultsTableAndStats();
     }

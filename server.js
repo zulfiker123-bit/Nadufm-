@@ -1072,19 +1072,26 @@ app.post('/api/excel/upload', requireAdminApi, verifySameOrigin, (req, res) => {
         updatedAt: now,
       };
     } else if (target === 'results') {
-      const examId = String(req.body.examId || store.results.activeExamId || `exam_${Date.now()}`);
+      const classId = String(req.body.classId || '6').trim();
+      let examId = String(req.body.examId || '').trim();
+      if (!examId) {
+        const matchedExisting = Object.values(store.results.exams || {}).find(
+          (ex) => String(ex.classId || '') === classId
+        );
+        examId = matchedExisting?.id || `exam_class_${classId}`;
+      }
       const existing = store.results.exams[examId] || {};
       const detectedCols = detectResultColumns(parsed.columns);
       const mappingGuess = autoDetectStudentMapping(parsed.columns);
-      const classId = String(req.body.classId ?? existing.classId ?? '6');
-      const className = String(req.body.className ?? existing.className ?? (classMap[classId]?.name || 'ষষ্ঠ')).trim();
+      const resolvedClassId = String(req.body.classId ?? existing.classId ?? classId);
+      const className = String(req.body.className ?? existing.className ?? (classMap[resolvedClassId]?.name || 'ষষ্ঠ')).trim();
       const examName = String(req.body.examName ?? existing.examName ?? 'বার্ষিক পরীক্ষা').trim();
       const year = String(req.body.year ?? existing.year ?? '২০২৬').trim();
 
       store.results.exams[examId] = {
         id: examId,
-        title: String(req.body.title || `${formatClassLabel(className, classId)} — ${examName}`),
-        classId,
+        title: String(req.body.title || `${formatClassLabel(className, resolvedClassId)} — ${examName}`),
+        classId: resolvedClassId,
         className,
         examName,
         year,
@@ -1212,15 +1219,22 @@ app.delete('/api/excel/results/:examId', requireAdminApi, verifySameOrigin, (req
   const store = loadExcelStore();
   const examId = String(req.params.examId || '');
   const keys = Object.keys(store.results.exams || {});
-  if (keys.length <= 1) {
-    return res.status(400).json({ error: 'সর্বনিম্ন একটি রেজাল্ট শিট থাকা প্রয়োজন।' });
+  if (!store.results.exams?.[examId]) {
+    return res.status(404).json({ error: 'নির্বাচিত শ্রেণির রেজাল্ট শিট পাওয়া যায়নি।' });
   }
-  delete store.results.exams[examId];
-  if (store.results.activeExamId === examId) {
-    store.results.activeExamId = Object.keys(store.results.exams)[0];
+  if (keys.length <= 1) {
+    store.results.exams[examId].rows = [];
+    store.results.exams[examId].updatedAt = null;
+  } else {
+    delete store.results.exams[examId];
+    if (store.results.activeExamId === examId) {
+      const remaining = Object.values(store.results.exams || {});
+      const withRows = remaining.find((ex) => Array.isArray(ex.rows) && ex.rows.length > 0);
+      store.results.activeExamId = (withRows || remaining[0]).id;
+    }
   }
   saveExcelStore(store);
-  res.json({ message: 'রেজাল্ট শিট মুছে ফেলা হয়েছে।', state: serializeExcelState(store) });
+  res.json({ message: 'শ্রেণির রেজাল্ট ডেটা মুছে ফেলা হয়েছে।', state: serializeExcelState(store) });
 });
 
 app.get('/api/excel/template/:type', requireAdminApi, (req, res) => {
