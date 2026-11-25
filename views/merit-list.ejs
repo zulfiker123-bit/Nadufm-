@@ -196,6 +196,67 @@
     .merit-doc-link.alt { background: #f8fafc; color: #0f172a; border-color: rgba(15, 23, 42, 0.16); }
     .merit-doc-link.alt:hover { background: #1e293b; color: #ffffff; border-color: #1e293b; }
 
+    .merit-group-tabs {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+    }
+
+    .merit-group-tab {
+        min-height: 38px;
+        padding: 0 14px;
+        border-radius: 9px;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        background: #f8faf9;
+        color: #0f172a;
+        font-family: inherit;
+        font-size: 0.88rem;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .merit-group-tab.active {
+        background: #14532d;
+        color: #ffffff;
+        border-color: #14532d;
+    }
+
+    .merit-section-block {
+        margin-bottom: 24px;
+    }
+
+    .merit-section-block:last-of-type {
+        margin-bottom: 0;
+    }
+
+    .merit-section-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 10px 14px;
+        margin-bottom: 12px;
+        border-radius: 10px;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        color: #14532d;
+        font-size: 1.02rem;
+        font-weight: 700;
+    }
+
+    .merit-section-heading.science {
+        background: #eff6ff;
+        border-color: #bfdbfe;
+        color: #1e3a8a;
+    }
+
+    .merit-section-heading.science + .merit-summary-bar + .merit-table-wrap table.merit-table th {
+        background: #1e3a8a;
+    }
+
     @page {
         size: A4 portrait;
         margin: 12mm;
@@ -251,78 +312,110 @@
             </a>
         </form>
 
-        <% if (meritData && meritData.length > 0) {
-            const _totalStudents = meritData.length;
-            const _passedStudents = meritData.filter(function(r) { return !r.absent && (r.fail === 0 || r.isPromoted); }).length;
-            const _passPct = _totalStudents > 0 ? Math.round((_passedStudents / _totalStudents) * 1000) / 10 : 0;
+        <%
+            const _sciList = (typeof scienceMeritData !== 'undefined' && Array.isArray(scienceMeritData)) ? scienceMeritData : [];
+            const _othList = (typeof otherMeritData !== 'undefined' && Array.isArray(otherMeritData)) ? otherMeritData : [];
+            const _hasBothGroups = _sciList.length > 0 && _othList.length > 0;
+            const _sections = [];
+            if (_hasBothGroups) {
+                _sections.push({ key: 'other', title: 'সাধারণ / অন্যান্য বিভাগের মেধা তালিকা', isScienceSection: false, rows: _othList });
+                _sections.push({ key: 'science', title: 'বিজ্ঞান বিভাগের মেধা তালিকা', isScienceSection: true, rows: _sciList });
+            } else if (_sciList.length > 0) {
+                _sections.push({ key: 'science', title: 'বিজ্ঞান বিভাগের মেধা তালিকা', isScienceSection: true, rows: _sciList });
+            } else if (meritData && meritData.length > 0) {
+                _sections.push({ key: 'all', title: '', isScienceSection: false, rows: meritData });
+            }
         %>
-        <div class="merit-summary-bar">
-            <div class="merit-summary-item">
-                <span class="merit-summary-lbl">শ্রেণি</span>
-                <span class="merit-summary-val"><%= selectedName || 'নির্ধারিত শ্রেণি' %></span>
+        <% if (_sections.length > 0) { %>
+            <% if (_hasBothGroups) { %>
+                <div class="merit-group-tabs no-print" role="tablist" aria-label="বিভাগ অনুযায়ী মেধা তালিকা">
+                    <button type="button" class="merit-group-tab active" data-group-filter="all" onclick="filterMeritGroup('all')">উভয় তালিকা (পৃথক)</button>
+                    <button type="button" class="merit-group-tab" data-group-filter="other" onclick="filterMeritGroup('other')">সাধারণ / অন্যান্য বিভাগ (<%= convertToBengali(_othList.length) %> জন)</button>
+                    <button type="button" class="merit-group-tab" data-group-filter="science" onclick="filterMeritGroup('science')">বিজ্ঞান বিভাগ (<%= convertToBengali(_sciList.length) %> জন)</button>
+                </div>
+            <% } %>
+            <% const _mEmbed = isEmbedded ? '&embed=1' : ''; %>
+            <% const _mClsQuery = encodeURIComponent(selectedClass || (selectedExamId ? 'excel:' + selectedExamId : '') || selectedName || ''); %>
+            <% _sections.forEach(function(sec) {
+                const _totalStudents = sec.rows.length;
+                const _passedStudents = sec.rows.filter(function(r) { return !r.absent && (r.fail === 0 || r.isPromoted); }).length;
+                const _passPct = _totalStudents > 0 ? Math.round((_passedStudents / _totalStudents) * 1000) / 10 : 0;
+            %>
+            <div class="merit-section-block" data-merit-group="<%= sec.key %>">
+                <% if (sec.title) { %>
+                    <div class="merit-section-heading <%= sec.isScienceSection ? 'science' : '' %>">
+                        <span><i class="fas <%= sec.isScienceSection ? 'fa-atom' : 'fa-users' %>" aria-hidden="true"></i> <%= sec.title %></span>
+                        <span style="font-size:0.86rem;">মোট <%= convertToBengali(_totalStudents) %> জন</span>
+                    </div>
+                <% } %>
+                <div class="merit-summary-bar">
+                    <div class="merit-summary-item">
+                        <span class="merit-summary-lbl"><%= sec.isScienceSection ? 'বিভাগ' : 'শ্রেণি' %></span>
+                        <span class="merit-summary-val"><%= sec.isScienceSection ? 'বিজ্ঞান (' + (selectedName || 'নির্ধারিত শ্রেণি') + ')' : (selectedName || 'নির্ধারিত শ্রেণি') %></span>
+                    </div>
+                    <div class="merit-summary-item">
+                        <span class="merit-summary-lbl">মোট শিক্ষার্থী</span>
+                        <span class="merit-summary-val"><%= convertToBengali(_totalStudents) %> জন</span>
+                    </div>
+                    <div class="merit-summary-item">
+                        <span class="merit-summary-lbl">উত্তীর্ণ / প্রমোটেড</span>
+                        <span class="merit-summary-val"><%= convertToBengali(_passedStudents) %> জন</span>
+                    </div>
+                    <div class="merit-summary-item">
+                        <span class="merit-summary-lbl">পাসের হার</span>
+                        <span class="merit-summary-val"><%= convertToBengali(_passPct) %>%</span>
+                    </div>
+                </div>
+                <div class="merit-table-wrap">
+                    <table class="merit-table">
+                        <thead>
+                            <tr>
+                                <th>মেধাক্রম</th>
+                                <th>রোল</th>
+                                <th style="text-align: left;">শিক্ষার্থীর নাম</th>
+                                <th>প্রাপ্ত নম্বর</th>
+                                <th>GPA</th>
+                                <th>গড় (%)</th>
+                                <th>ফলাফল</th>
+                                <th class="no-print">ডকুমেন্ট</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% let rank = 1; sec.rows.forEach(function(row) {
+                                const _mRoll = encodeURIComponent(row.roll || '');
+                                const _dispName = row.displayName || (row.isScience ? (row.name + ' (বিজ্ঞান)') : row.name);
+                            %>
+                            <tr class="<%= row.absent ? 'absent-row' : '' %>">
+                                <td class="rank-num"><%= row.absent ? '—' : convertToBengali(row.meritRank || rank++) %></td>
+                                <td><%= convertToBengali(row.roll) %></td>
+                                <td style="text-align: left; font-weight: 600;"><%= _dispName %></td>
+                                <td style="font-weight: 700;"><%= row.absent ? 'Abs' : convertToBengali(row.total) %></td>
+                                <td style="font-weight: 700;"><%= convertToBengali(Number(row.gpa || 0).toFixed(2)) %></td>
+                                <td><%= convertToBengali(Math.round(row.pct * 100) / 100) %>%</td>
+                                <td>
+                                    <% if (row.absent) { %>
+                                        <span class="status-abs">Abs</span>
+                                    <% } else if (row.isPromoted) { %>
+                                        <span class="status-promoted"><%= row.statusBn || 'প্রমোটেড' %> (<%= convertToBengali(row.fail) %>টি)</span>
+                                    <% } else if (row.fail > 0) { %>
+                                        <span class="status-fail">অকৃতকার্য (<%= convertToBengali(row.fail) %>টি)</span>
+                                    <% } else { %>
+                                        <span class="status-pass">উত্তীর্ণ</span>
+                                    <% } %>
+                                </td>
+                                <td class="no-print">
+                                    <div class="merit-doc-links">
+                                        <a href="/result.php?class=<%= _mClsQuery %>&roll=<%= _mRoll %><%= _mEmbed %>" class="merit-doc-link" title="মার্কশিট দেখুন">মার্কশিট</a>
+                                        <a href="/student-search.php?class=<%= _mClsQuery %>&roll=<%= _mRoll %>&doc=attestation<%= _mEmbed %>" class="merit-doc-link alt" title="তথ্য, আইডি কার্ড, প্রত্যায়ন ও প্রশংসা পত্র">সনদ ও তথ্য</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="merit-summary-item">
-                <span class="merit-summary-lbl">মোট শিক্ষার্থী</span>
-                <span class="merit-summary-val"><%= convertToBengali(_totalStudents) %> জন</span>
-            </div>
-            <div class="merit-summary-item">
-                <span class="merit-summary-lbl">উত্তীর্ণ / প্রমোটেড</span>
-                <span class="merit-summary-val"><%= convertToBengali(_passedStudents) %> জন</span>
-            </div>
-            <div class="merit-summary-item">
-                <span class="merit-summary-lbl">পাসের হার</span>
-                <span class="merit-summary-val"><%= convertToBengali(_passPct) %>%</span>
-            </div>
-        </div>
-        <div class="merit-table-wrap">
-            <table class="merit-table">
-                <thead>
-                    <tr>
-                        <th>মেধাক্রম</th>
-                        <th>রোল</th>
-                        <th style="text-align: left;">শিক্ষার্থীর নাম</th>
-                        <th>প্রাপ্ত নম্বর</th>
-                        <th>GPA</th>
-                        <th>গড় (%)</th>
-                        <th>ফলাফল</th>
-                        <th class="no-print">ডকুমেন্ট</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% const _mEmbed = isEmbedded ? '&embed=1' : ''; %>
-                    <% const _mClsQuery = encodeURIComponent(selectedClass || (selectedExamId ? 'excel:' + selectedExamId : '') || selectedName || ''); %>
-                    <% let rank = 1; meritData.forEach(function(row) {
-                        const _mRoll = encodeURIComponent(row.roll || '');
-                    %>
-                    <tr class="<%= row.absent ? 'absent-row' : '' %>">
-                        <td class="rank-num"><%= row.absent ? '—' : convertToBengali(row.meritRank || rank++) %></td>
-                        <td><%= convertToBengali(row.roll) %></td>
-                        <td style="text-align: left; font-weight: 600;"><%= row.name %></td>
-                        <td style="font-weight: 700;"><%= convertToBengali(row.total) %></td>
-                        <td style="font-weight: 700;"><%= convertToBengali(Number(row.gpa || 0).toFixed(2)) %></td>
-                        <td><%= convertToBengali(Math.round(row.pct * 100) / 100) %>%</td>
-                        <td>
-                            <% if (row.absent) { %>
-                                <span class="status-abs">অনুপস্থিত</span>
-                            <% } else if (row.isPromoted) { %>
-                                <span class="status-promoted"><%= row.statusBn || 'প্রমোটেড' %> (<%= convertToBengali(row.fail) %>টি)</span>
-                            <% } else if (row.fail > 0) { %>
-                                <span class="status-fail">অকৃতকার্য (<%= convertToBengali(row.fail) %>টি)</span>
-                            <% } else { %>
-                                <span class="status-pass">উত্তীর্ণ</span>
-                            <% } %>
-                        </td>
-                        <td class="no-print">
-                            <div class="merit-doc-links">
-                                <a href="/result.php?class=<%= _mClsQuery %>&roll=<%= _mRoll %><%= _mEmbed %>" class="merit-doc-link" title="মার্কশিট দেখুন">মার্কশিট</a>
-                                <a href="/student-search.php?class=<%= _mClsQuery %>&roll=<%= _mRoll %>&doc=attestation<%= _mEmbed %>" class="merit-doc-link alt" title="তথ্য, আইডি কার্ড, প্রত্যায়ন ও প্রশংসা পত্র">সনদ ও তথ্য</a>
-                            </div>
-                        </td>
-                    </tr>
-                    <% }); %>
-                </tbody>
-            </table>
-        </div>
+            <% }); %>
         <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-top: 20px;" class="no-print">
             <button type="button" onclick="window.print()" class="merit-btn">
                 <i class="fas fa-print" aria-hidden="true"></i>
@@ -339,6 +432,16 @@
         </div>
         <div id="meritExportStatus" class="no-print" style="display:none; margin-top:12px; padding:9px 13px; border-radius:9px; font-size:0.88rem; font-weight:600; text-align:center;"></div>
         <script>
+            function filterMeritGroup(groupKey) {
+                document.querySelectorAll('.merit-group-tab').forEach(function(btn) {
+                    btn.classList.toggle('active', btn.getAttribute('data-group-filter') === groupKey);
+                });
+                document.querySelectorAll('.merit-section-block').forEach(function(sec) {
+                    var g = sec.getAttribute('data-merit-group');
+                    sec.style.display = (groupKey === 'all' || g === groupKey) ? 'block' : 'none';
+                });
+            }
+
             function setMeritStatus(msg, isErr) {
                 var st = document.getElementById('meritExportStatus');
                 if (!st) return;

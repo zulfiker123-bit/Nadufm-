@@ -170,9 +170,23 @@ export function bnToEnNumber(str) {
   });
 }
 
+export function isScienceGroupText(raw) {
+  const txt = String(raw || '').trim();
+  if (!txt) return false;
+  return /বিজ্ঞান|science|\bsci\b/i.test(txt);
+}
+
+export function formatStudentNameWithGroup(name, isScience) {
+  const base = String(name || '').trim();
+  if (!base) return '—';
+  if (!isScience) return base;
+  if (/\(\s*বিজ্ঞান\s*\)/i.test(base)) return base;
+  return `${base} (বিজ্ঞান)`;
+}
+
 export function getGradeInfo(mark, fullMark, isFailed = false) {
   if (isFailed || fullMark <= 0) return ['F', '0.00'];
-  const percentage = (mark / fullMark) * 100;
+  const percentage = Math.round(((mark / fullMark) * 100) * 1e6) / 1e6;
   if (percentage >= 80) return ['A+', '5.00'];
   if (percentage >= 70) return ['A', '4.00'];
   if (percentage >= 60) return ['A-', '3.50'];

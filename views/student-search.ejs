@@ -492,13 +492,41 @@
     let currentStudent = null;
     let activeDocTab = 'profile';
 
+    function isScienceGroupClient(raw) {
+        const s = String(raw || '').trim().toLowerCase();
+        if (!s) return false;
+        return s.includes('বিজ্ঞান') || s.includes('science') || s === 'sci';
+    }
+
+    function formatStudentNameClient(name, isScience) {
+        const clean = String(name || '').trim() || '—';
+        if (!isScience) return clean;
+        if (/\(?\s*(বিজ্ঞান|science)\s*\)?/i.test(clean)) return clean;
+        return clean + ' (বিজ্ঞান)';
+    }
+
     function normalizeRecord(raw) {
+        const rs = raw.resultSummary || null;
+        const groupText = raw.group || raw.groupLabel || (rs && rs.groupLabel) || '';
+        const nameBnRaw = raw.name_bn || raw.name_en || '—';
+        const isScience = Boolean(
+            raw.isScience
+            || (rs && rs.isScience)
+            || isScienceGroupClient(groupText)
+            || isScienceGroupClient(nameBnRaw)
+        );
+        const displayName = raw.displayName
+            || (rs && rs.displayName)
+            || formatStudentNameClient(nameBnRaw, isScience);
         return {
             roll: raw.roll || '',
             rollBn: raw.rollBn || (raw.roll ? bnNum(raw.roll) : ''),
             id: raw.id || raw.reg_no || '',
             reg_no: raw.reg_no || raw.id || raw.birth_reg || '',
-            name_bn: raw.name_bn || raw.name_en || '—',
+            name_bn: nameBnRaw,
+            displayName,
+            isScience,
+            group: groupText,
             name_en: raw.name_en || '',
             class_name: raw.class_name || raw.student_class || '',
             classKey: raw.classKey || '',
@@ -514,11 +542,11 @@
             upazila: raw.upazila || '',
             district: raw.district || '',
             session: raw.session || '২০২৫-২০২৬',
-            gpa: raw.gpa || (raw.resultSummary && raw.resultSummary.gpa ? Number(raw.resultSummary.gpa).toFixed(2) : ''),
-            meritRank: raw.meritRank || (raw.resultSummary ? raw.resultSummary.meritRank : null),
+            gpa: raw.gpa || (rs && rs.gpa ? Number(rs.gpa).toFixed(2) : ''),
+            meritRank: raw.meritRank || (rs ? rs.meritRank : null),
             remark: raw.remark || '',
             photo: pickerLib.safePhotoUrl(raw.photo),
-            resultSummary: raw.resultSummary || null,
+            resultSummary: rs,
             p_school: raw.p_school || '',
             p_reg: raw.p_reg || '',
             timestamp: raw.timestamp || '',
@@ -593,7 +621,7 @@
         tbody.innerHTML = list.map((item, idx) => `
             <tr>
                 <td><strong>${esc(item.rollBn || '—')}</strong></td>
-                <td>${esc(item.name_bn)}</td>
+                <td>${esc(item.displayName || item.name_bn)}</td>
                 <td>${esc(item.class_name || '—')}</td>
                 <td>${esc(item.father_bn || '—')}</td>
                 <td>${esc(item.id || '—')}</td>
@@ -614,11 +642,12 @@
         const linkBar = document.getElementById('hubStudentLinkBar');
         if (linkBar) {
             const rs = currentStudent.resultSummary;
+            const meritTag = rs && rs.meritRank ? (' · মেধাক্রম: ' + bnNum(rs.meritRank) + (rs.isScience ? ' (বিজ্ঞান)' : '')) : '';
             const resText = rs
-                ? ('রেজাল্ট সংযুক্ত (' + (rs.examName || 'পরীক্ষা') + ' · GPA: ' + bnNum(Number(rs.gpa || 0).toFixed(2)) + (rs.meritRank ? ' · মেধাক্রম: ' + bnNum(rs.meritRank) : '') + ')')
+                ? ('রেজাল্ট সংযুক্ত (' + (rs.examName || 'পরীক্ষা') + ' · GPA: ' + bnNum(Number(rs.gpa || 0).toFixed(2)) + meritTag + ')')
                 : 'শিক্ষার্থী তথ্য সংযুক্ত (রেজাল্ট শিট এখনো আপলোড হয়নি)';
             linkBar.innerHTML =
-                '<span><strong>' + esc(currentStudent.name_bn) + '</strong> · শ্রেণি: ' + esc(currentStudent.class_name || '—') + ' · রোল: ' + esc(currentStudent.rollBn || '—') + '</span>' +
+                '<span><strong>' + esc(currentStudent.displayName || currentStudent.name_bn) + '</strong> · শ্রেণি: ' + esc(currentStudent.class_name || '—') + ' · রোল: ' + esc(currentStudent.rollBn || '—') + '</span>' +
                 '<span class="hub-link-meta">' + esc(resText) + '</span>';
         }
         document.getElementById('multiple-results').style.display = 'none';
@@ -861,7 +890,7 @@
                             </table>
                         </div>
                         <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-weight:700; border-bottom:1.5px solid #166534; padding:6px 4px; margin-bottom:10px;">
-                            <span>নাম: ${esc(st.name_bn)}</span>
+                            <span>নাম: ${esc(rs.displayName || st.displayName || st.name_bn)}</span>
                             ${st.father_bn ? `<span>পিতা: ${esc(st.father_bn)}</span>` : ''}
                             <span>শ্রেণি: ${esc(st.class_name || rs.className || '—')}</span>
                             <span>রোল: ${esc(st.rollBn || '—')}</span>
@@ -870,7 +899,7 @@
                             <thead>
                                 <tr>
                                     <th style="width:7%;">নং</th>
-                                    <th style="width:41%; text-align:left; padding-left:10px;">বিষয়ের নাম</th>
+                                    <th style="width:41%; text-align:left; padding-left:10px;">বিষয়ের নাম (পূর্ণমান)</th>
                                     <th style="width:12%;">পূর্ণমান</th>
                                     <th style="width:14%;">প্রাপ্ত নম্বর</th>
                                     <th style="width:13%;">লেটার গ্রেড</th>
@@ -881,9 +910,9 @@
                                 ${rs.subjects.map((sub, i) => `
                                     <tr>
                                         <td>${bnNum(i + 1)}</td>
-                                        <td style="text-align:left; padding-left:10px; font-weight:600;">${esc(sub.name)}</td>
+                                        <td style="text-align:left; padding-left:10px; font-weight:600;">${esc(sub.name)} (${bnNum(sub.fullMarks)})</td>
                                         <td>${bnNum(sub.fullMarks)}</td>
-                                        <td style="font-weight:700;">${esc(sub.obtained)}</td>
+                                        <td style="font-weight:700;">${esc(sub.obtained === 'Abs' ? 'Abs' : bnNum(sub.obtained))}</td>
                                         <td style="font-weight:700; color:${sub.isFail ? '#b91c1c' : '#166534'};">${esc(sub.grade)}</td>
                                         <td>${bnNum(sub.gp)}</td>
                                     </tr>
@@ -894,7 +923,7 @@
                             <div>ফলাফল: <span style="color:${rs.isPromoted ? '#b45309' : (rs.failCount > 0 ? '#b91c1c' : '#15803d')};">${esc(rs.statusBn)}</span></div>
                             <div>মোট নম্বর: ${bnNum(rs.totalObtained)} / ${bnNum(rs.totalFullMarks)}</div>
                             <div>GPA: ${bnNum(Number(rs.gpa || 0).toFixed(2))}</div>
-                            <div>মেধাক্রম: ${rs.meritRank ? bnNum(rs.meritRank) : '—'}</div>
+                            <div>মেধাক্রম: ${rs.meritRank ? (bnNum(rs.meritRank) + (rs.isScience ? ' (বিজ্ঞান)' : '')) : '—'}</div>
                         </div>
                     </div>
                     <div class="signature-area">

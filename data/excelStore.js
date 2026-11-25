@@ -2,7 +2,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as XLSX from 'xlsx';
-import { bnToEnNumber, convertToBengali, getGradeInfo } from './seed.js';
+import {
+  bnToEnNumber,
+  convertToBengali,
+  getGradeInfo,
+  isScienceGroupText,
+  formatStudentNameWithGroup,
+} from './seed.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -66,6 +72,7 @@ function createDefaultStore() {
             name: 'name',
             father: 'father',
             id: '',
+            group: '',
           },
           rows: [],
           updatedAt: null,
@@ -303,6 +310,7 @@ export function autoDetectStudentMapping(columns) {
     name_bn: findKey(['নাম (বাংলা)', 'শিক্ষার্থীর নাম', 'বাংলা নাম', 'name_bn', 'student name', 'নাম', 'name'], ['পিতা', 'মাতা', 'father', 'mother', 'ইংরেজি', 'english']),
     name_en: findKey(['নাম (ইংরেজি)', 'english name', 'name_en']),
     class_name: findKey(['শ্রেণি', 'শ্রেণী', 'class']),
+    group: findKey(['বিভাগ', 'গ্রুপ', 'group', 'department', 'dept', 'stream', 'division', 'শাখা', 'branch']),
     father_bn: findKey(['পিতা', 'বাবা', 'father']),
     mother_bn: findKey(['মাতা', 'মা', 'mother']),
     dob: findKey(['জন্ম তারিখ', 'dob', 'birth']),
@@ -332,8 +340,10 @@ export function detectResultColumns(columns) {
     'father', 'পিতা', 'পিতার নাম', 'father name',
     'mother', 'মাতা', 'মাতার নাম', 'mother name',
     'class', 'শ্রেণি', 'শ্রেণী', 'section', 'শাখা',
+    'group', 'বিভাগ', 'গ্রুপ', 'department', 'dept', 'division', 'stream', 'branch',
     'mobile', 'মোবাইল', 'ফোন', 'phone',
     'reg', 'reg no', 'registration', 'রেজি', 'রেজি নং', 'রেজিস্ট্রেশন', 'রেজিস্ট্রেশন নং',
+    'sl', 'serial', 'ক্রম', 'ক্রমিক', 'ক্রমিক নং', 'মন্তব্য', 'remark', 'remarks', 'note',
   ]);
   return columns.map((col) => {
     const cleanLower = cleanSubjectTitle(col.label).toLowerCase();
@@ -348,7 +358,9 @@ export function detectResultColumns(columns) {
       cleanLower.includes('রোল') ||
       cleanLower.includes('রেজিস্ট্রেশন') ||
       cleanLower.includes('মোবাইল') ||
-      /(?:^|\b)(roll|name|father|mother|class|section|mobile|phone|reg_no|registration)(?:\b|$)/i.test(cleanLower)
+      cleanLower.includes('বিভাগ') ||
+      cleanLower.includes('গ্রুপ') ||
+      /(?:^|\b)(roll|name|father|mother|class|section|group|department|dept|division|stream|mobile|phone|reg_no|registration)(?:\b|$)/i.test(cleanLower)
     );
     const fullMarks = isInfo ? 0 : extractFullMarksFromLabel(col.label);
     return {
@@ -364,6 +376,9 @@ export function cleanSubjectTitle(label) {
   return String(label || '').replace(/\s*\([^)]*\)/g, '').trim();
 }
 
+const SCIENCE_SUBJECT_RE = /পদার্থ|রসায়ন|রসায়ন|জীব\s*বিজ্ঞান|জীববিজ্ঞান|উচ্চতর\s*গণিত|physics|chemistry|biology|higher\s*math/i;
+const EXPLICIT_NON_SCIENCE_RE = /সাধারণ|মানবিক|ব্যবসায়|ব্যবসায়|বাণিজ্য|arts|humanities|commerce|general|মুজাব্বিদ|হিফজ/i;
+
 export function computeResultSheet(exam) {
   const passPercent = Number(exam.passPercent) > 0 ? Number(exam.passPercent) : 33;
   const maxPromoteFail = Number(exam.maxPromoteFail) || 0;
@@ -372,24 +387,41 @@ export function computeResultSheet(exam) {
   const subjectCols = columns.filter((c) => c.isSubject);
   const mapping = exam.mapping || {};
   const rows = Array.isArray(exam.rows) ? exam.rows : [];
+  const fallbackGroupCol = mapping.group
+    || columns.find((c) => !c.isSubject && /বিভাগ|গ্রুপ|group|department|dept|stream|division/i.test(`${c.label} ${c.key}`))?.key
+    || '';
 
   const evaluated = rows.map((row, idx) => {
     const roll = mapping.roll ? String(row[mapping.roll] ?? '').trim() : String(idx + 1);
     const name = mapping.name ? String(row[mapping.name] ?? '').trim() : '';
     const father = mapping.father ? String(row[mapping.father] ?? '').trim() : '';
     const studentId = mapping.id ? String(row[mapping.id] ?? '').trim() : '';
+    const rawGroup = fallbackGroupCol
+      ? String(row[fallbackGroupCol] ?? '').trim()
+      : String(row.group || row['বিভাগ'] || '').trim();
 
     let totalObtained = 0;
     let totalFullMarks = 0;
     let failCount = 0;
     let absentSubjects = 0;
     let totalGp = 0;
+    let hasScienceSubject = false;
     const failedSubjects = [];
     const subjects = [];
 
     for (const sub of subjectCols) {
       const fm = Number(sub.fullMarks) > 0 ? Number(sub.fullMarks) : 100;
       const rawVal = String(row[sub.key] ?? '').trim();
+
+      // Blank cell: skip this subject completely (do not count or show in marksheet)
+      if (rawVal === '') {
+        continue;
+      }
+
+      if (SCIENCE_SUBJECT_RE.test(String(sub.label || ''))) {
+        hasScienceSubject = true;
+      }
+
       const upper = rawVal.toUpperCase();
       const isAbsent = upper === 'A' || upper === 'ABS' || upper === 'ABSENT' || rawVal === 'অনুপস্থিত';
 
@@ -399,15 +431,12 @@ export function computeResultSheet(exam) {
       if (isAbsent) {
         absentSubjects++;
         isFail = true;
-      } else if (rawVal !== '') {
+      } else {
         const parsed = parseFloat(bnToEnNumber(rawVal));
         mark = Number.isNaN(parsed) ? 0 : parsed;
-        if (mark < fm * (passPercent / 100)) {
+        if (Math.round(mark * 10000) < Math.round(fm * passPercent * 100)) {
           isFail = true;
         }
-      } else {
-        // Blank treated as 0 / fail if subject exists
-        isFail = true;
       }
 
       if (isFail) {
@@ -425,7 +454,7 @@ export function computeResultSheet(exam) {
         name: cleanSubjectTitle(sub.label),
         fullMarks: fm,
         rawVal,
-        obtained: isAbsent ? 'অনুপস্থিত' : convertToBengali(mark),
+        obtained: isAbsent ? 'Abs' : convertToBengali(mark),
         numericMark: mark,
         isAbsent,
         isFail,
@@ -434,19 +463,38 @@ export function computeResultSheet(exam) {
       });
     }
 
-    const allAbsent = subjectCols.length > 0 && absentSubjects === subjectCols.length;
+    let isScience = false;
+    if (rawGroup) {
+      if (isScienceGroupText(rawGroup)) {
+        isScience = true;
+      } else if (!EXPLICIT_NON_SCIENCE_RE.test(rawGroup)) {
+        isScience = isScienceGroupText(name) || hasScienceSubject;
+      }
+    } else {
+      isScience = isScienceGroupText(name) || hasScienceSubject;
+    }
+
+    const groupLabel = isScience ? 'বিজ্ঞান' : (rawGroup || 'সাধারণ');
+    const displayName = formatStudentNameWithGroup(name, isScience);
+
+    const attemptedCount = subjects.length;
+    const allAbsent = attemptedCount > 0 && absentSubjects === attemptedCount;
+    const noSubjects = attemptedCount === 0;
     const percentage = totalFullMarks > 0 ? (totalObtained / totalFullMarks) * 100 : 0;
-    const rawGpa = subjectCols.length > 0 ? totalGp / subjectCols.length : 0;
-    const gpa = failCount === 0 && subjectCols.length > 0 ? rawGpa : 0;
+    const rawGpa = attemptedCount > 0 ? totalGp / attemptedCount : 0;
+    const gpa = failCount === 0 && attemptedCount > 0 ? rawGpa : 0;
 
     const manualPromoted = row._promoted === true;
     const manualDemoted = row._promoted === false;
-    const autoPromoted = !manualDemoted && maxPromoteFail > 0 && failCount > 0 && failCount <= maxPromoteFail && !allAbsent;
-    const isPromoted = failCount > 0 && !allAbsent && (manualPromoted || autoPromoted);
+    const autoPromoted = !manualDemoted && maxPromoteFail > 0 && failCount > 0 && failCount <= maxPromoteFail && !allAbsent && !noSubjects;
+    const isPromoted = failCount > 0 && !allAbsent && !noSubjects && (manualPromoted || autoPromoted);
 
     let status = 'Passed';
     let statusBn = 'উত্তীর্ণ';
-    if (allAbsent) {
+    if (noSubjects) {
+      status = 'Absent';
+      statusBn = 'নম্বর নেই';
+    } else if (allAbsent) {
       status = 'Absent';
       statusBn = 'অনুপস্থিত';
     } else if (isPromoted) {
@@ -462,6 +510,9 @@ export function computeResultSheet(exam) {
       raw: row,
       roll,
       name,
+      displayName,
+      isScience,
+      groupLabel,
       father,
       studentId,
       subjects,
@@ -470,7 +521,7 @@ export function computeResultSheet(exam) {
       percentage: Math.round(percentage * 100) / 100,
       failCount,
       failedSubjects,
-      allAbsent,
+      allAbsent: allAbsent || noSubjects,
       gpa: Number(gpa.toFixed(2)),
       rawGpa: Number(rawGpa.toFixed(2)),
       isPromoted,
@@ -480,9 +531,9 @@ export function computeResultSheet(exam) {
     };
   });
 
-  // Merit ranking: Passed -> Promoted -> Failed -> Absent
+  // Merit ranking: Science group and Other groups are ranked separately!
   const rankOrder = { Passed: 0, Promoted: 1, Failed: 2, Absent: 3 };
-  const meritList = evaluated
+  const sortAndRankGroup = (groupItems) => groupItems
     .slice()
     .sort((a, b) => {
       if (rankOrder[a.status] !== rankOrder[b.status]) {
@@ -490,15 +541,21 @@ export function computeResultSheet(exam) {
       }
       if (a.status === 'Passed') {
         if (b.gpa !== a.gpa) return b.gpa - a.gpa;
-        return b.totalObtained - a.totalObtained;
+        if (b.totalObtained !== a.totalObtained) return b.totalObtained - a.totalObtained;
+        return b.percentage - a.percentage;
       }
       if (a.failCount !== b.failCount) return a.failCount - b.failCount;
-      return b.totalObtained - a.totalObtained;
+      if (b.totalObtained !== a.totalObtained) return b.totalObtained - a.totalObtained;
+      return b.percentage - a.percentage;
     })
     .map((item, idx) => ({
       ...item,
-      meritRank: item.status === 'Absent' ? null : idx + 1,
+      meritRank: (item.status === 'Absent' || item.subjects.length === 0) ? null : idx + 1,
     }));
+
+  const scienceMeritList = sortAndRankGroup(evaluated.filter((r) => r.isScience));
+  const otherMeritList = sortAndRankGroup(evaluated.filter((r) => !r.isScience));
+  const meritList = [...otherMeritList, ...scienceMeritList];
 
   // Map merit rank back to evaluatedRows
   const rankById = new Map(meritList.map((m) => [m._id, m.meritRank]));
@@ -516,12 +573,16 @@ export function computeResultSheet(exam) {
   return {
     evaluatedRows,
     meritList,
+    scienceMeritList,
+    otherMeritList,
     stats: {
       total,
       passed,
       promoted,
       failed,
       absent,
+      scienceCount: scienceMeritList.length,
+      otherCount: otherMeritList.length,
       passRate: total > 0 ? Math.round(((passed + promoted) / total) * 1000) / 10 : 0,
     },
   };

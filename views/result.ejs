@@ -547,7 +547,7 @@
                     </table>
 
                     <div class="info-bar">
-                        <span>নাম: <%= studentResult.name %></span>
+                        <span>নাম: <%= studentResult.displayName || studentResult.name %></span>
                         <% if (studentResult.father) { %>
                             <span>পিতা: <%= studentResult.father %></span>
                         <% } %>
@@ -583,7 +583,7 @@
                             %>
                             <tr>
                                 <td><%= convertToBengali(sl++) %></td>
-                                <td style="text-align:left; padding-left:10px; font-weight:600;"><%= s.name %></td>
+                                <td style="text-align:left; padding-left:10px; font-weight:600;"><%= s.name %> (<%= convertToBengali(s.fm) %>)</td>
                                 <td><%= convertToBengali(s.fm) %></td>
                                 <td style="font-weight:700;"><%= s.obtained %></td>
                                 <td><%= convertToBengali(Math.round(s.display_avg * 10) / 10) %></td>
@@ -607,7 +607,7 @@
                         <div>ফলাফল: <span class="<%= css %>"><%= statusText %></span></div>
                         <div>মোট নম্বর: <%= convertToBengali(studentResult.total) %></div>
                         <div>GPA: <%= convertToBengali(Number(gpaVal).toFixed(2)) %></div>
-                        <div>মেধাক্রম: <%= studentResult.meritRank ? convertToBengali(studentResult.meritRank) : '—' %></div>
+                        <div>মেধাক্রম: <%= studentResult.meritRank ? convertToBengali(studentResult.meritRank) + (studentResult.isScience ? ' (বিজ্ঞান)' : '') : '—' %></div>
                     </div>
                 </div>
 

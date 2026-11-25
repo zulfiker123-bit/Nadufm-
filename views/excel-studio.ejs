@@ -1412,6 +1412,7 @@
         { key: 'name_bn', label: 'নাম (বাংলা)' },
         { key: 'name_en', label: 'নাম (ইংরেজি)' },
         { key: 'class_name', label: 'শ্রেণি' },
+        { key: 'group', label: 'বিভাগ / গ্রুপ' },
         { key: 'father_bn', label: 'পিতার নাম' },
         { key: 'mother_bn', label: 'মাতার নাম' },
         { key: 'dob', label: 'জন্ম তারিখ' },
@@ -1430,6 +1431,7 @@
         { key: 'name', label: 'নাম কলাম' },
         { key: 'father', label: 'পিতার নাম কলাম' },
         { key: 'id', label: 'আইডি কলাম' },
+        { key: 'group', label: 'বিভাগ / গ্রুপ কলাম' },
     ];
 
     function bnNum(input) {
@@ -1449,9 +1451,21 @@
         });
     }
 
+    function isScienceTextClient(raw) {
+        return /বিজ্ঞান|science|\bsci\b/i.test(String(raw || '').trim());
+    }
+
+    function formatStudentNameClient(name, isScience) {
+        const base = String(name || '').trim();
+        if (!base) return '—';
+        if (!isScience) return base;
+        if (/\(\s*বিজ্ঞান\s*\)/i.test(base)) return base;
+        return `${base} (বিজ্ঞান)`;
+    }
+
     function getGradeClient(mark, fm, isFail) {
         if (isFail || fm <= 0) return ['F', '0.00'];
-        const p = (mark / fm) * 100;
+        const p = Math.round(((mark / fm) * 100) * 1e6) / 1e6;
         if (p >= 80) return ['A+', '5.00'];
         if (p >= 70) return ['A', '4.00'];
         if (p >= 60) return ['A-', '3.50'];
@@ -1517,6 +1531,9 @@
         return exams[id] || Object.values(exams)[0] || ensureClassExamRecord('6');
     }
 
+    const SCIENCE_SUBJECT_RE_CLIENT = /পদার্থ|রসায়ন|রসায়ন|জীব\s*বিজ্ঞান|জীববিজ্ঞান|উচ্চতর\s*গণিত|physics|chemistry|biology|higher\s*math/i;
+    const EXPLICIT_NON_SCIENCE_RE_CLIENT = /সাধারণ|মানবিক|ব্যবসায়|ব্যবসায়|বাণিজ্য|arts|humanities|commerce|general|মুজাব্বিদ|হিফজ/i;
+
     function recomputeExamClient(exam) {
         const passPercent = Number(exam.passPercent) > 0 ? Number(exam.passPercent) : 33;
         const maxPromoteFail = Number(exam.maxPromoteFail) || 0;
@@ -1525,23 +1542,36 @@
         const subjectCols = cols.filter((c) => c.isSubject);
         const mapping = exam.mapping || {};
         const rows = exam.rows || [];
+        const fallbackGroupCol = mapping.group
+            || cols.find((c) => !c.isSubject && /বিভাগ|গ্রুপ|group|department|dept|stream|division/i.test(`${c.label} ${c.key}`))?.key
+            || '';
 
         const evaluated = rows.map((row, idx) => {
             const roll = mapping.roll ? String(row[mapping.roll] ?? '').trim() : String(idx + 1);
             const name = mapping.name ? String(row[mapping.name] ?? '').trim() : '';
             const father = mapping.father ? String(row[mapping.father] ?? '').trim() : '';
             const studentId = mapping.id ? String(row[mapping.id] ?? '').trim() : '';
+            const rawGroup = fallbackGroupCol
+                ? String(row[fallbackGroupCol] ?? '').trim()
+                : String(row.group || row['বিভাগ'] || '').trim();
 
             let totalObtained = 0;
             let totalFullMarks = 0;
             let failCount = 0;
             let absentSubjects = 0;
             let totalGp = 0;
+            let hasScienceSubject = false;
             const subjects = [];
 
             for (const sub of subjectCols) {
                 const fm = Number(sub.fullMarks) > 0 ? Number(sub.fullMarks) : 100;
                 const rawVal = String(row[sub.key] ?? '').trim();
+                if (rawVal === '') continue; // Blank cell: skip subject
+
+                if (SCIENCE_SUBJECT_RE_CLIENT.test(String(sub.label || ''))) {
+                    hasScienceSubject = true;
+                }
+
                 const up = rawVal.toUpperCase();
                 const isAbsent = up === 'A' || up === 'ABS' || up === 'ABSENT' || rawVal === 'অনুপস্থিত';
                 let mark = 0;
@@ -1550,12 +1580,10 @@
                 if (isAbsent) {
                     absentSubjects++;
                     isFail = true;
-                } else if (rawVal !== '') {
+                } else {
                     const p = parseFloat(enNum(rawVal));
                     mark = Number.isNaN(p) ? 0 : p;
-                    if (mark < fm * (passPercent / 100)) isFail = true;
-                } else {
-                    isFail = true;
+                    if (Math.round(mark * 10000) < Math.round(fm * passPercent * 100)) isFail = true;
                 }
 
                 if (isFail) failCount++;
@@ -1569,7 +1597,7 @@
                     name: cleanSubTitle(sub.label),
                     fullMarks: fm,
                     rawVal,
-                    obtained: isAbsent ? 'অনুপস্থিত' : bnNum(mark),
+                    obtained: isAbsent ? 'Abs' : bnNum(mark),
                     numericMark: mark,
                     isAbsent,
                     isFail,
@@ -1578,19 +1606,37 @@
                 });
             }
 
-            const allAbsent = subjectCols.length > 0 && absentSubjects === subjectCols.length;
+            let isScience = false;
+            if (rawGroup) {
+                if (isScienceTextClient(rawGroup)) {
+                    isScience = true;
+                } else if (!EXPLICIT_NON_SCIENCE_RE_CLIENT.test(rawGroup)) {
+                    isScience = isScienceTextClient(name) || hasScienceSubject;
+                }
+            } else {
+                isScience = isScienceTextClient(name) || hasScienceSubject;
+            }
+            const groupLabel = isScience ? 'বিজ্ঞান' : (rawGroup || 'সাধারণ');
+            const displayName = formatStudentNameClient(name, isScience);
+
+            const attemptedCount = subjects.length;
+            const allAbsent = attemptedCount > 0 && absentSubjects === attemptedCount;
+            const noSubjects = attemptedCount === 0;
             const percentage = totalFullMarks > 0 ? (totalObtained / totalFullMarks) * 100 : 0;
-            const rawGpa = subjectCols.length > 0 ? totalGp / subjectCols.length : 0;
-            const gpa = failCount === 0 && subjectCols.length > 0 ? rawGpa : 0;
+            const rawGpa = attemptedCount > 0 ? totalGp / attemptedCount : 0;
+            const gpa = failCount === 0 && attemptedCount > 0 ? rawGpa : 0;
 
             const manualPromoted = row._promoted === true;
             const manualDemoted = row._promoted === false;
-            const autoPromoted = !manualDemoted && maxPromoteFail > 0 && failCount > 0 && failCount <= maxPromoteFail && !allAbsent;
-            const isPromoted = failCount > 0 && !allAbsent && (manualPromoted || autoPromoted);
+            const autoPromoted = !manualDemoted && maxPromoteFail > 0 && failCount > 0 && failCount <= maxPromoteFail && !allAbsent && !noSubjects;
+            const isPromoted = failCount > 0 && !allAbsent && !noSubjects && (manualPromoted || autoPromoted);
 
             let status = 'Passed';
             let statusBn = 'উত্তীর্ণ';
-            if (allAbsent) {
+            if (noSubjects) {
+                status = 'Absent';
+                statusBn = 'নম্বর নেই';
+            } else if (allAbsent) {
                 status = 'Absent';
                 statusBn = 'অনুপস্থিত';
             } else if (isPromoted) {
@@ -1606,6 +1652,9 @@
                 raw: row,
                 roll,
                 name,
+                displayName,
+                isScience,
+                groupLabel,
                 father,
                 studentId,
                 subjects,
@@ -1613,7 +1662,7 @@
                 totalFullMarks,
                 percentage: Math.round(percentage * 100) / 100,
                 failCount,
-                allAbsent,
+                allAbsent: allAbsent || noSubjects,
                 gpa: Number(gpa.toFixed(2)),
                 isPromoted,
                 status,
@@ -1622,18 +1671,27 @@
         });
 
         const rankOrder = { Passed: 0, Promoted: 1, Failed: 2, Absent: 3 };
-        const meritList = evaluated
+        const sortAndRankGroup = (groupItems) => groupItems
             .slice()
             .sort((a, b) => {
                 if (rankOrder[a.status] !== rankOrder[b.status]) return rankOrder[a.status] - rankOrder[b.status];
                 if (a.status === 'Passed') {
                     if (b.gpa !== a.gpa) return b.gpa - a.gpa;
-                    return b.totalObtained - a.totalObtained;
+                    if (b.totalObtained !== a.totalObtained) return b.totalObtained - a.totalObtained;
+                    return b.percentage - a.percentage;
                 }
                 if (a.failCount !== b.failCount) return a.failCount - b.failCount;
-                return b.totalObtained - a.totalObtained;
+                if (b.totalObtained !== a.totalObtained) return b.totalObtained - a.totalObtained;
+                return b.percentage - a.percentage;
             })
-            .map((item, i) => ({ ...item, meritRank: item.status === 'Absent' ? null : i + 1 }));
+            .map((item, i) => ({
+                ...item,
+                meritRank: (item.status === 'Absent' || item.subjects.length === 0) ? null : i + 1,
+            }));
+
+        const scienceMeritList = sortAndRankGroup(evaluated.filter((r) => r.isScience));
+        const otherMeritList = sortAndRankGroup(evaluated.filter((r) => !r.isScience));
+        const meritList = [...otherMeritList, ...scienceMeritList];
 
         const rankById = new Map(meritList.map((m) => [m._id, m.meritRank]));
         const evaluatedRows = evaluated.map((item) => ({ ...item, meritRank: rankById.get(item._id) ?? null }));
@@ -1647,12 +1705,16 @@
         exam.computed = {
             evaluatedRows,
             meritList,
+            scienceMeritList,
+            otherMeritList,
             stats: {
                 total,
                 passed,
                 promoted,
                 failed,
                 absent,
+                scienceCount: scienceMeritList.length,
+                otherCount: otherMeritList.length,
                 passRate: total > 0 ? Math.round(((passed + promoted) / total) * 1000) / 10 : 0,
             },
         };
@@ -2076,7 +2138,7 @@
                 { key: 'sub_english', label: 'ইংরেজি (100)', isSubject: true, fullMarks: 100 },
                 { key: 'sub_math', label: 'গণিত (100)', isSubject: true, fullMarks: 100 },
             ],
-            mapping: { roll: 'roll', name: 'name', father: 'father', id: '' },
+            mapping: { roll: 'roll', name: 'name', father: 'father', id: '', group: '' },
             rows: [],
             updatedAt: null,
         };
@@ -2546,7 +2608,7 @@
                         <p>${esc(clsLabel)} · ${esc(exam.examName || 'বার্ষিক পরীক্ষা')} (${esc(exam.year || '২০২৬')}) — একাডেমিক ট্রান্সক্রিপ্ট</p>
                     </div>
                     <div class="inline-ms-meta">
-                        <div><strong>শিক্ষার্থীর নাম:</strong> ${esc(selectedEv.name || '—')}</div>
+                        <div><strong>শিক্ষার্থীর নাম:</strong> ${esc(selectedEv.displayName || selectedEv.name || '—')}</div>
                         <div><strong>রোল:</strong> ${bnNum(selectedEv.roll || '—')}</div>
                         <div><strong>শ্রেণি:</strong> ${esc(clsLabel)}</div>
                         ${father ? `<div><strong>পিতার নাম:</strong> ${esc(father)}</div>` : ''}
@@ -2569,7 +2631,7 @@
                                 ${selectedEv.subjects.map((sub, i) => `
                                     <tr>
                                         <td>${bnNum(i + 1)}</td>
-                                        <td style="text-align:left; font-weight:600;">${esc(sub.name)}</td>
+                                        <td style="text-align:left; font-weight:600;">${esc(sub.name)} (${bnNum(sub.fullMarks)})</td>
                                         <td>${bnNum(sub.fullMarks)}</td>
                                         <td style="font-weight:700;">${esc(sub.obtained)}</td>
                                         <td style="font-weight:700; color:${sub.isFail ? '#b91c1c' : '#15803d'};">${esc(sub.grade)}</td>
@@ -2583,7 +2645,7 @@
                         <div class="inline-ms-sum-item"><strong>মোট নম্বর:</strong> ${bnNum(selectedEv.totalObtained)} / ${bnNum(selectedEv.totalFullMarks)}</div>
                         <div class="inline-ms-sum-item"><strong>শতকরা:</strong> ${bnNum(selectedEv.percentage)}%</div>
                         <div class="inline-ms-sum-item"><strong>GPA:</strong> ${bnNum(selectedEv.gpa.toFixed(2))}</div>
-                        <div class="inline-ms-sum-item"><strong>মেধাক্রম:</strong> ${selectedEv.meritRank ? bnNum(selectedEv.meritRank) : '—'}</div>
+                        <div class="inline-ms-sum-item"><strong>মেধাক্রম:</strong> ${selectedEv.meritRank ? bnNum(selectedEv.meritRank) + (selectedEv.isScience ? ' (বিজ্ঞান)' : '') : '—'}</div>
                         <div class="inline-ms-sum-item"><strong>ফলাফল:</strong> <span class="${statusClass}">${esc(selectedEv.statusBn)}</span></div>
                     </div>
                 </div>
@@ -2592,62 +2654,76 @@
         }
 
         if (resultSubView === 'merit') {
-            const list = computed.meritList.filter(matchesFilter);
+            const sciList = (computed.scienceMeritList || []).filter(matchesFilter);
+            const othList = (computed.otherMeritList || []).filter(matchesFilter);
             const clsLabel = formatClassLabelClient(exam.className, exam.classId);
-            if (!list.length) {
+            if (!sciList.length && !othList.length) {
                 container.innerHTML = `<div class="empty-state"><i class="fas fa-filter" aria-hidden="true"></i><p>নির্বাচিত ফিল্টার অনুযায়ী কোনো শিক্ষার্থী পাওয়া যায়নি।</p></div>`;
                 return;
             }
-            container.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; padding:8px 12px; border:1px solid var(--border); border-radius:9px; background:var(--surface-subtle);">
-                    <strong style="color:var(--brand); font-size:0.92rem;"><i class="fas fa-trophy" aria-hidden="true"></i> শ্রেণি ভিত্তিক মেধা তালিকা: ${esc(clsLabel)} — ${esc(exam.examName || 'বার্ষিক পরীক্ষা')}</strong>
-                    <span style="font-size:0.84rem; color:var(--muted);">মোট ${bnNum(list.length)} জন</span>
-                </div>
-                <div class="table-wrap">
-                    <table class="sheet-table">
-                        <thead>
-                            <tr>
-                                <th>মেধাক্রম</th>
-                                <th>রোল</th>
-                                <th style="text-align:left;">শিক্ষার্থীর নাম</th>
-                                <th>মোট প্রাপ্ত নম্বর</th>
-                                <th>পূর্ণমান</th>
-                                <th>শতকরা (%)</th>
-                                <th>GPA</th>
-                                <th>ফেল বিষয়</th>
-                                <th>ফলাফল</th>
-                                <th>ডকুমেন্ট ও প্রিন্ট</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${list.map((m) => {
-                                const origIdx = exam.rows.findIndex((r) => (r._id || '') === m._id);
-                                const safeIdx = origIdx >= 0 ? origIdx : 0;
-                                const statusClass = m.status === 'Passed' ? 'status-pass' : m.status === 'Promoted' ? 'status-promoted' : m.status === 'Failed' ? 'status-fail' : 'status-abs';
-                                return `
+            const buildMeritSectionHtml = (sectionTitle, list, isScienceSec) => {
+                if (!list.length) return '';
+                return `
+                    <div style="margin-bottom:16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; padding:8px 12px; border:1px solid ${isScienceSec ? '#bfdbfe' : 'var(--border)'}; border-radius:9px; background:${isScienceSec ? '#eff6ff' : 'var(--surface-subtle)'};">
+                            <strong style="color:${isScienceSec ? '#1e3a8a' : 'var(--brand)'}; font-size:0.92rem;"><i class="fas ${isScienceSec ? 'fa-atom' : 'fa-trophy'}" aria-hidden="true"></i> ${esc(sectionTitle)}</strong>
+                            <span style="font-size:0.84rem; color:var(--muted);">মোট ${bnNum(list.length)} জন</span>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="sheet-table">
+                                <thead>
                                     <tr>
-                                        <td style="font-weight:700; color:var(--brand);">${m.meritRank ? bnNum(m.meritRank) : '—'}</td>
-                                        <td>${bnNum(m.roll)}</td>
-                                        <td style="text-align:left; font-weight:600;">${esc(m.name || '—')}</td>
-                                        <td style="font-weight:700;">${bnNum(m.totalObtained)}</td>
-                                        <td>${bnNum(m.totalFullMarks)}</td>
-                                        <td>${bnNum(m.percentage)}%</td>
-                                        <td style="font-weight:700;">${bnNum(m.gpa.toFixed(2))}</td>
-                                        <td>${bnNum(m.failCount)}</td>
-                                        <td class="${statusClass}">${esc(m.statusBn)}</td>
-                                        <td style="white-space:nowrap;">
-                                            <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('results', ${safeIdx}, 'marksheet')">মার্কশিট</button>
-                                            <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('results', ${safeIdx}, 'idcard')">আইডি</button>
-                                            <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('results', ${safeIdx}, 'attestation')">প্রত্যায়ন</button>
-                                            <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('results', ${safeIdx}, 'testimonial')">প্রশংসা</button>
-                                        </td>
+                                        <th>মেধাক্রম</th>
+                                        <th>রোল</th>
+                                        <th style="text-align:left;">শিক্ষার্থীর নাম</th>
+                                        <th>মোট প্রাপ্ত নম্বর</th>
+                                        <th>পূর্ণমান</th>
+                                        <th>শতকরা (%)</th>
+                                        <th>GPA</th>
+                                        <th>ফেল বিষয়</th>
+                                        <th>ফলাফল</th>
+                                        <th>ডকুমেন্ট ও প্রিন্ট</th>
                                     </tr>
-                                `;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
+                                </thead>
+                                <tbody>
+                                    ${list.map((m) => {
+                                        const origIdx = exam.rows.findIndex((r) => (r._id || '') === m._id);
+                                        const safeIdx = origIdx >= 0 ? origIdx : 0;
+                                        const statusClass = m.status === 'Passed' ? 'status-pass' : m.status === 'Promoted' ? 'status-promoted' : m.status === 'Failed' ? 'status-fail' : 'status-abs';
+                                        return `
+                                            <tr>
+                                                <td style="font-weight:700; color:var(--brand);">${m.meritRank ? bnNum(m.meritRank) : '—'}</td>
+                                                <td>${bnNum(m.roll)}</td>
+                                                <td style="text-align:left; font-weight:600;">${esc(m.displayName || m.name || '—')}</td>
+                                                <td style="font-weight:700;">${m.allAbsent ? 'Abs' : bnNum(m.totalObtained)}</td>
+                                                <td>${bnNum(m.totalFullMarks)}</td>
+                                                <td>${bnNum(m.percentage)}%</td>
+                                                <td style="font-weight:700;">${bnNum(m.gpa.toFixed(2))}</td>
+                                                <td>${bnNum(m.failCount)}</td>
+                                                <td class="${statusClass}">${esc(m.statusBn)}</td>
+                                                <td style="white-space:nowrap;">
+                                                    <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('results', ${safeIdx}, 'marksheet')">মার্কশিট</button>
+                                                    <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('results', ${safeIdx}, 'idcard')">আইডি</button>
+                                                    <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('results', ${safeIdx}, 'attestation')">প্রত্যায়ন</button>
+                                                    <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('results', ${safeIdx}, 'testimonial')">প্রশংসা</button>
+                                                </td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            };
+
+            const hasBoth = sciList.length > 0 && othList.length > 0;
+            container.innerHTML = hasBoth
+                ? buildMeritSectionHtml(`সাধারণ / অন্যান্য বিভাগের মেধা তালিকা: ${clsLabel} — ${exam.examName || 'বার্ষিক পরীক্ষা'}`, othList, false) +
+                  buildMeritSectionHtml(`বিজ্ঞান বিভাগের মেধা তালিকা: ${clsLabel} — ${exam.examName || 'বার্ষিক পরীক্ষা'}`, sciList, true)
+                : (sciList.length > 0
+                    ? buildMeritSectionHtml(`বিজ্ঞান বিভাগের মেধা তালিকা: ${clsLabel} — ${exam.examName || 'বার্ষিক পরীক্ষা'}`, sciList, true)
+                    : buildMeritSectionHtml(`শ্রেণি ভিত্তিক মেধা তালিকা: ${clsLabel} — ${exam.examName || 'বার্ষিক পরীক্ষা'}`, othList, false));
             return;
         }
 
@@ -2666,7 +2742,7 @@
                     <thead>
                         <tr>
                             <th>ক্রম</th>
-                            ${exam.columns.map((c) => `<th>${esc(c.label)}</th>`).join('')}
+                            ${exam.columns.map((c) => `<th>${c.isSubject ? `${esc(cleanSubTitle(c.label))} (${bnNum(c.fullMarks || 100)})` : esc(c.label)}</th>`).join('')}
                             <th>মোট</th>
                             <th>GPA</th>
                             <th>মেধাক্রম</th>
@@ -2685,9 +2761,9 @@
                                         const cellStyle = sub && sub.isFail ? 'color:#b91c1c; font-weight:700;' : '';
                                         return `<td><input class="cell-input" style="${cellStyle}" value="${esc(exam.rows[idx][c.key] ?? '')}" onchange="updateResultCell(${idx}, '${esc(c.key)}', this.value)"></td>`;
                                     }).join('')}
-                                    <td style="font-weight:700;">${bnNum(ev.totalObtained)}</td>
+                                    <td style="font-weight:700;">${ev.allAbsent ? 'Abs' : bnNum(ev.totalObtained)}</td>
                                     <td style="font-weight:700;">${bnNum(ev.gpa.toFixed(2))}</td>
-                                    <td style="font-weight:700; color:var(--brand);">${ev.meritRank ? bnNum(ev.meritRank) : '—'}</td>
+                                    <td style="font-weight:700; color:var(--brand);">${ev.meritRank ? bnNum(ev.meritRank) + (ev.isScience ? ' (বিজ্ঞান)' : '') : '—'}</td>
                                     <td class="${statusClass}" style="white-space:nowrap;">${esc(ev.statusBn)}</td>
                                     <td style="white-space:nowrap;">
                                         ${ev.failCount > 0 && !ev.allAbsent ? `
@@ -2763,9 +2839,10 @@
     async function exportComputedResultsExcel() {
         const exam = getActiveExam();
         const computed = recomputeExamClient(exam);
-        const headers = [...exam.columns.map((c) => c.label), 'মোট প্রাপ্ত নম্বর', 'পূর্ণমান', 'শতকরা (%)', 'GPA', 'ফেল বিষয়', 'মেধাক্রম', 'ফলাফল'];
+        const headers = [...exam.columns.map((c) => c.label), 'বিভাগ', 'মোট প্রাপ্ত নম্বর', 'পূর্ণমান', 'শতকরা (%)', 'GPA', 'ফেল বিষয়', 'মেধাক্রম', 'ফলাফল'];
         const rows = computed.meritList.map((m) => [
             ...exam.columns.map((c) => m.raw[c.key] ?? ''),
+            m.groupLabel || 'সাধারণ',
             m.totalObtained,
             m.totalFullMarks,
             m.percentage,
@@ -2880,6 +2957,8 @@
                 id: String(rec.id || '').trim(),
                 reg: String(rec.reg || rec.id || '').trim(),
                 name: String(rec.name || '').trim(),
+                group: String(rec.group || '').trim(),
+                isScience: Boolean(rec.isScience || isScienceTextClient(rec.group || rec.name)),
                 father: String(rec.father || '').trim(),
                 mother: String(rec.mother || '').trim(),
                 dob: String(rec.dob || '').trim(),
@@ -2900,9 +2979,10 @@
                 return;
             }
             const cur = byKey.get(key);
-            ['cls', 'roll', 'id', 'reg', 'name', 'father', 'mother', 'dob', 'mobile', 'blood', 'address', 'session', 'gpa', 'remark'].forEach((k) => {
+            ['cls', 'roll', 'id', 'reg', 'name', 'group', 'father', 'mother', 'dob', 'mobile', 'blood', 'address', 'session', 'gpa', 'remark'].forEach((k) => {
                 if (!cur[k] && item[k]) cur[k] = item[k];
             });
+            if (item.isScience) cur.isScience = true;
             if ((!cur.photo || cur.photo === '/logo.png') && item.photo && item.photo !== '/logo.png') {
                 cur.photo = item.photo;
             }
@@ -2922,12 +3002,15 @@
             const roll = getMappedField(row, sm, ['roll', 'id']);
             const name = getMappedField(row, sm, ['name_bn', 'name_en']);
             if (!name && !roll) return;
+            const grp = getMappedField(row, sm, ['group']) || row['বিভাগ'] || row['গ্রুপ'] || '';
             upsert({
                 cls,
                 roll,
                 id: getMappedField(row, sm, ['id', 'reg_no']),
                 reg: getMappedField(row, sm, ['reg_no', 'id']),
                 name,
+                group: grp,
+                isScience: isScienceTextClient(grp || name),
                 father: getMappedField(row, sm, ['father_bn']),
                 mother: getMappedField(row, sm, ['mother_bn']),
                 dob: getMappedField(row, sm, ['dob']),
@@ -2961,6 +3044,8 @@
                     id: ev.studentId,
                     reg: ev.studentId,
                     name: ev.name,
+                    group: ev.groupLabel || '',
+                    isScience: Boolean(ev.isScience),
                     father: ev.father,
                     session: exam.year || '২০২৬',
                     gpa: ev.gpa ? ev.gpa.toFixed(2) : ev.statusBn,
@@ -3211,7 +3296,8 @@
     }
 
     function buildMarksheetPageHtml(ev, exam, style, overrideName, overrideRoll, overrideFather, overrideClass) {
-        const name = overrideName ?? ev.name ?? '—';
+        const rawName = overrideName ?? ev.name ?? '—';
+        const name = formatStudentNameClient(rawName, Boolean(ev.isScience));
         const roll = overrideRoll ?? ev.roll ?? '—';
         const father = overrideFather ?? ev.father ?? '';
         const cls = overrideClass ?? exam.className ?? '';
@@ -3263,7 +3349,7 @@
                                 ${ev.subjects.map((sub, i) => `
                                     <tr>
                                         <td>${bnNum(i + 1)}</td>
-                                        <td style="text-align:left; padding-left:10px; font-weight:600;">${esc(sub.name)}</td>
+                                        <td style="text-align:left; padding-left:10px; font-weight:600;">${esc(sub.name)} (${bnNum(sub.fullMarks)})</td>
                                         <td>${bnNum(sub.fullMarks)}</td>
                                         <td style="font-weight:700;">${esc(sub.obtained)}</td>
                                         <td style="font-weight:700; color:${sub.isFail ? '#b91c1c' : '#166534'};">${esc(sub.grade)}</td>
@@ -3277,7 +3363,7 @@
                             <div>ফলাফল: <span style="color:${statusColor};">${esc(ev.statusBn)}</span></div>
                             <div>মোট নম্বর: ${bnNum(ev.totalObtained)} / ${bnNum(ev.totalFullMarks)}</div>
                             <div>GPA: ${bnNum(ev.gpa.toFixed(2))}</div>
-                            <div>মেধাক্রম: ${ev.meritRank ? bnNum(ev.meritRank) : '—'}</div>
+                            <div>মেধাক্রম: ${ev.meritRank ? bnNum(ev.meritRank) + (ev.isScience ? ' (বিজ্ঞান)' : '') : '—'}</div>
                         </div>
                     </div>
 

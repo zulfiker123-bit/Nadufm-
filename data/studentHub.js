@@ -1,4 +1,4 @@
-import { classMap, bnToEnNumber, convertToBengali } from './seed.js';
+import { classMap, bnToEnNumber, convertToBengali, formatStudentNameWithGroup, isScienceGroupText } from './seed.js';
 import { computeResultSheet } from './excelStore.js';
 
 const CLASS_ALIASES = [
@@ -130,6 +130,12 @@ export function getUnifiedStudents(excelStore, portalStore) {
       name_en: String(record.name_en || '').trim(),
       class_name: cls.label || String(record.class_name || '').trim(),
       classKey: cls.key,
+      group: String(record.group || '').trim(),
+      isScience: Boolean(record.isScience || isScienceGroupText(record.group) || isScienceGroupText(record.name_bn)),
+      displayName: formatStudentNameWithGroup(
+        record.name_bn || record.name_en || '',
+        Boolean(record.isScience || isScienceGroupText(record.group) || isScienceGroupText(record.name_bn))
+      ),
       father_bn: String(record.father_bn || '').trim(),
       mother_bn: String(record.mother_bn || '').trim(),
       dob: String(record.dob || '').trim(),
@@ -169,6 +175,7 @@ export function getUnifiedStudents(excelStore, portalStore) {
       name_bn: nameBn,
       name_en: getRowField(row, sMap, ['name_en'], ['name_en']),
       class_name: clsRaw,
+      group: getRowField(row, sMap, ['group'], ['group', 'বিভাগ', 'গ্রুপ']),
       father_bn: getRowField(row, sMap, ['father_bn'], ['father_bn', 'father', 'পিতার_নাম']),
       mother_bn: getRowField(row, sMap, ['mother_bn'], ['mother_bn', 'mother', 'মাতার_নাম']),
       dob: getRowField(row, sMap, ['dob'], ['dob', 'জন্ম_তারিখ']),
@@ -248,6 +255,8 @@ export function getUnifiedStudents(excelStore, portalStore) {
         id: ev.studentId,
         name_bn: ev.name,
         class_name: examClassName || exam.classId,
+        group: ev.groupLabel || '',
+        isScience: ev.isScience,
         father_bn: ev.father,
         session: exam.year || '২০২৬',
         gpa: ev.gpa ? ev.gpa.toFixed(2) : '',
@@ -260,6 +269,9 @@ export function getUnifiedStudents(excelStore, portalStore) {
           year: exam.year || '২০২৬',
           classId: exam.classId || '',
           className: examClassName,
+          isScience: ev.isScience,
+          groupLabel: ev.groupLabel || 'সাধারণ',
+          displayName: ev.displayName || ev.name,
           totalObtained: ev.totalObtained,
           totalFullMarks: ev.totalFullMarks,
           percentage: ev.percentage,
