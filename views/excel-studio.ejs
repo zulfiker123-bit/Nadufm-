@@ -1053,8 +1053,8 @@
                     </div>
                 </div>
                 <div class="btn-group">
-                    <input type="file" id="studentsFileInput" class="upload-file-input" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain" onchange="uploadExcelFile('students')">
-                    <button type="button" id="studentsUploadBtn" class="btn btn-primary" onclick="triggerFileSelect('students')"><i class="fas fa-upload" aria-hidden="true"></i> ফাইল নির্বাচন ও আপলোড</button>
+                    <input type="file" id="studentsFileInput" class="upload-file-input" onchange="uploadExcelFile('students', this.files && this.files[0])">
+                    <label for="studentsFileInput" id="studentsUploadBtn" class="btn btn-primary" style="margin:0;"><i class="fas fa-upload" aria-hidden="true"></i> ফাইল নির্বাচন ও আপলোড</label>
                 </div>
             </div>
             <div id="studentsUploadStatus" class="upload-status-box"></div>
@@ -1115,8 +1115,13 @@
                 </div>
             </div>
 
+            <div id="perClassFileInputsPool" class="upload-file-input" aria-hidden="true">
+                <% Object.entries((initialState && initialState.classMap) || {}).forEach(([cid]) => { %>
+                    <input type="file" id="classResultFile_<%= cid %>" tabindex="-1" onchange="uploadClassResultExcel('<%= cid %>', this.files && this.files[0], this)">
+                <% }); %>
+            </div>
+            <div id="resultsUploadStatus" class="upload-status-box" style="margin-bottom: 10px;"></div>
             <div class="class-upload-grid" id="classResultUploadGrid" aria-label="প্রতি শ্রেণির আলাদা রেজাল্ট Excel আপলোড"></div>
-            <div id="resultsUploadStatus" class="upload-status-box"></div>
 
             <details class="adv-details">
                 <summary><i class="fas fa-cog" aria-hidden="true"></i> পাস নম্বর, প্রমোশন নিয়ম, বিষয় পূর্ণমান ও ফিল্ড ম্যাপিং (<span id="advConfigClassLabel"></span>)</summary>
@@ -1214,8 +1219,8 @@
                     </div>
                 </div>
                 <div class="btn-group">
-                    <input type="file" id="documentsFileInput" class="upload-file-input" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain" onchange="uploadExcelFile('documents')">
-                    <button type="button" id="documentsUploadBtn" class="btn btn-primary" onclick="triggerFileSelect('documents')"><i class="fas fa-upload" aria-hidden="true"></i> ফাইল নির্বাচন ও আপলোড</button>
+                    <input type="file" id="documentsFileInput" class="upload-file-input" onchange="uploadExcelFile('documents', this.files && this.files[0])">
+                    <label for="documentsFileInput" id="documentsUploadBtn" class="btn btn-primary" style="margin:0;"><i class="fas fa-upload" aria-hidden="true"></i> ফাইল নির্বাচন ও আপলোড</label>
                 </div>
             </div>
             <div id="documentsUploadStatus" class="upload-status-box"></div>
@@ -1679,6 +1684,13 @@
         }
     }
 
+    function isSupportedSpreadsheetFile(file) {
+        const name = String(file?.name || '').trim().toLowerCase();
+        if (!name) return true;
+        if (!name.includes('.')) return true;
+        return /\.(xlsx|xls|xlsm|xlsb|csv|tsv|ods|txt)$/i.test(name);
+    }
+
     function triggerFileSelect(target) {
         const input = document.getElementById(target + 'FileInput');
         if (input) input.click();
@@ -1694,6 +1706,12 @@
             showToast('প্রথমে একটি .xlsx, .xls অথবা .csv ফাইল নির্বাচন করুন।', true);
             return;
         }
+        if (!isSupportedSpreadsheetFile(selectedFile)) {
+            if (input) input.value = '';
+            setUploadStatus(target, 'অনুগ্রহ করে সঠিক Excel (.xlsx, .xls) অথবা .csv ফাইল নির্বাচন করুন।', 'error');
+            showToast('সঠিক Excel বা CSV ফাইল নির্বাচন করুন।', true);
+            return;
+        }
 
         const fd = new FormData();
         fd.append('file', selectedFile);
@@ -1702,7 +1720,7 @@
         if (target === 'results') {
             const exam = getActiveExam();
             fd.append('examId', exam.id);
-            fd.append('classId', exam.classId || '6');
+            fd.append('classId', exam.classId ?? '6');
             fd.append('className', exam.className || '');
             fd.append('examName', exam.examName || 'বার্ষিক পরীক্ষা');
             fd.append('year', exam.year || '২০২৬');
@@ -1712,13 +1730,18 @@
         }
 
         if (btn) {
-            btn.disabled = true;
+            btn.style.pointerEvents = 'none';
+            btn.style.opacity = '0.7';
             btn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> আপলোড হচ্ছে...';
         }
         setUploadStatus(target, `"${selectedFile.name}" আপলোড ও সংরক্ষণ হচ্ছে...`, 'loading');
 
         try {
-            const res = await fetch('/api/excel/upload', { method: 'POST', body: fd });
+            const res = await fetch('/api/excel/upload', {
+                method: 'POST',
+                body: fd,
+                credentials: 'same-origin',
+            });
             const rawText = await res.text();
             let data = {};
             try {
@@ -1735,11 +1758,13 @@
             setUploadStatus(target, data.message, 'success');
             showToast(data.message);
         } catch (err) {
+            if (input) input.value = '';
             setUploadStatus(target, err.message || 'আপলোড ব্যর্থ হয়েছে', 'error');
             showToast(err.message || 'আপলোড ব্যর্থ হয়েছে', true);
         } finally {
             if (btn) {
-                btn.disabled = false;
+                btn.style.pointerEvents = '';
+                btn.style.opacity = '';
                 btn.innerHTML = '<i class="fas fa-upload" aria-hidden="true"></i> ফাইল নির্বাচন ও আপলোড';
             }
         }
@@ -2067,18 +2092,43 @@
         renderResultsSection();
     }
 
-    function triggerClassResultUpload(classId, ev) {
-        if (ev) ev.stopPropagation();
-        const inp = document.getElementById('classResultFile_' + classId);
-        if (inp) inp.click();
+    function ensureClassFileInput(classId) {
+        const cid = String(classId ?? '6').trim();
+        let inp = document.getElementById('classResultFile_' + cid);
+        if (!inp) {
+            const pool = document.getElementById('perClassFileInputsPool');
+            if (pool) {
+                inp = document.createElement('input');
+                inp.type = 'file';
+                inp.id = 'classResultFile_' + cid;
+                inp.tabIndex = -1;
+                inp.onchange = function () {
+                    uploadClassResultExcel(cid, this.files && this.files[0], this);
+                };
+                pool.appendChild(inp);
+            }
+        }
+        return inp;
     }
 
-    async function uploadClassResultExcel(classId, droppedFile) {
-        const cid = String(classId || '6').trim();
-        const inp = document.getElementById('classResultFile_' + cid);
+    async function uploadClassResultExcel(classId, droppedFile, inputEl) {
+        const cid = String(classId ?? '6').trim();
+        const inp = inputEl || document.getElementById('classResultFile_' + cid);
         const btn = document.getElementById('classUploadBtn_' + cid);
         const selectedFile = droppedFile || (inp && inp.files && inp.files[0]);
-        if (!selectedFile) return;
+
+        if (!selectedFile) {
+            setUploadStatus('results', 'কোনো ফাইল পাওয়া যায়নি। আবার একটি .xlsx, .xls বা .csv ফাইল নির্বাচন করুন।', 'error');
+            showToast('কোনো ফাইল নির্বাচন করা হয়নি।', true);
+            return;
+        }
+
+        if (!isSupportedSpreadsheetFile(selectedFile)) {
+            if (inp) inp.value = '';
+            setUploadStatus('results', `"${selectedFile.name}" সঠিক Excel বা CSV ফাইল নয় (.xlsx, .xls, .csv আপলোড করুন)।`, 'error');
+            showToast('সঠিক Excel বা CSV ফাইল নির্বাচন করুন।', true);
+            return;
+        }
 
         const existing = getExamForClass(cid);
         const examId = existing?.id || `exam_class_${cid}`;
@@ -2099,14 +2149,20 @@
         fd.append('promotionLabel', existing?.promotionLabel || 'বিশেষ বিবেচনায় প্রমোটেড');
 
         if (btn) {
-            btn.disabled = true;
+            btn.style.pointerEvents = 'none';
+            btn.style.opacity = '0.7';
             btn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> আপলোড হচ্ছে...';
         }
         const clsLabel = formatClassLabelClient(className, cid);
         setUploadStatus('results', `${clsLabel}: "${selectedFile.name}" আপলোড ও GPA হিসাব হচ্ছে...`, 'loading');
+        document.getElementById('resultsUploadStatus')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
         try {
-            const res = await fetch('/api/excel/upload', { method: 'POST', body: fd });
+            const res = await fetch('/api/excel/upload', {
+                method: 'POST',
+                body: fd,
+                credentials: 'same-origin',
+            });
             const rawText = await res.text();
             let data = {};
             try {
@@ -2115,17 +2171,30 @@
                 throw new Error('সার্ভার থেকে সঠিক উত্তর পাওয়া যায়নি। ফাইল ফরম্যাট যাচাই করুন।');
             }
             if (!res.ok) throw new Error(data.error || 'আপলোড ব্যর্থ হয়েছে');
+
+            resultStatusFilter = 'all';
+            document.querySelectorAll('[data-res-status]').forEach((b) => {
+                b.classList.toggle('active', b.getAttribute('data-res-status') === 'all');
+            });
+            const searchEl = document.getElementById('resultsSearchInput');
+            if (searchEl) searchEl.value = '';
+            selectedInlineMarksheetRowId = '';
+
             applyState(data.state);
             if (inp) inp.value = '';
             setUploadStatus('results', `${clsLabel}: ${data.message}`, 'success');
             showToast(`${clsLabel} — ${data.message}`);
         } catch (err) {
-            setUploadStatus('results', err.message || 'আপলোড ব্যর্থ হয়েছে', 'error');
+            if (inp) inp.value = '';
+            setUploadStatus('results', `${clsLabel}: ${err.message || 'আপলোড ব্যর্থ হয়েছে'}`, 'error');
             showToast(err.message || 'আপলোড ব্যর্থ হয়েছে', true);
         } finally {
-            if (btn) {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-upload" aria-hidden="true"></i> Excel আপলোড';
+            const latestBtn = document.getElementById('classUploadBtn_' + cid);
+            if (latestBtn) {
+                latestBtn.style.pointerEvents = '';
+                latestBtn.style.opacity = '';
+                const hasRows = (getExamForClass(cid)?.rows || []).length > 0;
+                latestBtn.innerHTML = `<i class="fas fa-upload" aria-hidden="true"></i> ${hasRows ? 'নতুন Excel' : 'Excel আপলোড'}`;
             }
         }
     }
@@ -2135,7 +2204,10 @@
         const ex = getExamForClass(classId);
         if (!ex || !(ex.rows || []).length) return;
         try {
-            const res = await fetch('/api/excel/results/' + encodeURIComponent(ex.id), { method: 'DELETE' });
+            const res = await fetch('/api/excel/results/' + encodeURIComponent(ex.id), {
+                method: 'DELETE',
+                credentials: 'same-origin',
+            });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error);
             applyState(data.state);
@@ -2149,10 +2221,11 @@
         const gridEl = document.getElementById('classResultUploadGrid');
         if (!gridEl) return;
         const active = getActiveExam();
-        const activeCid = String(active?.classId || '');
+        const activeCid = String(active?.classId ?? '');
         const classEntries = Object.entries(state.classMap || {});
 
         gridEl.innerHTML = classEntries.map(([cid, info]) => {
+            ensureClassFileInput(cid);
             const ex = getExamForClass(cid);
             const clsLabel = formatClassLabelClient(info.name, cid);
             const rowCount = (ex?.rows || []).length;
@@ -2169,11 +2242,10 @@
                         <span class="class-upload-meta">${rowCount > 0 ? bnNum(rowCount) + ' জন' : 'খালি'}</span>
                     </div>
                     <div class="class-upload-meta">${esc(metaText)}</div>
-                    <div class="class-upload-actions">
-                        <input type="file" id="classResultFile_${esc(cid)}" class="upload-file-input" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain" onchange="uploadClassResultExcel('${esc(cid)}')">
-                        <button type="button" id="classUploadBtn_${esc(cid)}" class="btn btn-primary btn-sm" onclick="triggerClassResultUpload('${esc(cid)}', event)">
+                    <div class="class-upload-actions" onclick="event.stopPropagation()">
+                        <label for="classResultFile_${esc(cid)}" id="classUploadBtn_${esc(cid)}" class="btn btn-primary btn-sm" onclick="event.stopPropagation()" style="margin:0;">
                             <i class="fas fa-upload" aria-hidden="true"></i> ${rowCount > 0 ? 'নতুন Excel' : 'Excel আপলোড'}
-                        </button>
+                        </label>
                         ${rowCount > 0 ? `
                             <button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation(); selectClassResult('${esc(cid)}')">দেখুন</button>
                             <button type="button" class="btn btn-danger-outline btn-sm" onclick="clearClassResult('${esc(cid)}', event)" title="এই শ্রেণির রেজাল্ট মুছুন"><i class="fas fa-trash" aria-hidden="true"></i></button>

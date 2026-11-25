@@ -1072,21 +1072,25 @@ app.post('/api/excel/upload', requireAdminApi, verifySameOrigin, (req, res) => {
         updatedAt: now,
       };
     } else if (target === 'results') {
-      const classId = String(req.body.classId || '6').trim();
+      const classId = (req.body.classId !== undefined && String(req.body.classId).trim() !== '')
+        ? String(req.body.classId).trim()
+        : '6';
       let examId = String(req.body.examId || '').trim();
       if (!examId) {
         const matchedExisting = Object.values(store.results.exams || {}).find(
-          (ex) => String(ex.classId || '') === classId
+          (ex) => String(ex.classId ?? '') === classId
         );
         examId = matchedExisting?.id || `exam_class_${classId}`;
       }
       const existing = store.results.exams[examId] || {};
       const detectedCols = detectResultColumns(parsed.columns);
       const mappingGuess = autoDetectStudentMapping(parsed.columns);
-      const resolvedClassId = String(req.body.classId ?? existing.classId ?? classId);
-      const className = String(req.body.className ?? existing.className ?? (classMap[resolvedClassId]?.name || 'ষষ্ঠ')).trim();
-      const examName = String(req.body.examName ?? existing.examName ?? 'বার্ষিক পরীক্ষা').trim();
-      const year = String(req.body.year ?? existing.year ?? '২০২৬').trim();
+      const resolvedClassId = (req.body.classId !== undefined && String(req.body.classId).trim() !== '')
+        ? String(req.body.classId).trim()
+        : String(existing.classId ?? classId);
+      const className = String(req.body.className || existing.className || (classMap[resolvedClassId]?.name || 'ষষ্ঠ')).trim();
+      const examName = String(req.body.examName || existing.examName || 'বার্ষিক পরীক্ষা').trim();
+      const year = String(req.body.year || existing.year || '২০২৬').trim();
 
       store.results.exams[examId] = {
         id: examId,
