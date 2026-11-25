@@ -599,8 +599,8 @@ app.get(['/merit-list', '/merit-list.php'], async (req, res) => {
   });
 });
 
-// Admin Panel route (password-protected)
-app.all(['/dashboard', '/dashboard.php'], requireAdminPage, (req, res) => {
+// Unified Admin Panel & Dashboard route (password-protected)
+app.all(['/dashboard', '/dashboard.php', '/admin', '/admin.php', '/admin-panel', '/admin-panel.php'], requireAdminPage, (req, res) => {
   const institutionName = 'নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা';
   const store = loadExcelStore();
   const portal = loadPortalStore();
@@ -610,10 +610,25 @@ app.all(['/dashboard', '/dashboard.php'], requireAdminPage, (req, res) => {
   const excelDocsCount = (store.documents?.rows || []).length;
   const teachersCount = (portal.teachers || []).length;
   const admissionsCount = (portal.admissions || []).length;
+  const routinesCount = (portal.routines || []).length;
+  const syllabusCount = (portal.syllabus || []).length;
+  const feesCount = (portal.fees || []).length;
+  const registrationsCount = (portal.registrations || []).length;
+  const studentStatsCount = (portal.studentStats || []).length;
+
+  const categories = [
+    { id: 'all', label: 'ড্যাশবোর্ড (সব ফিচার)', icon: 'fas fa-th-large' },
+    { id: 'excel', label: 'এক্সেল ও প্রিন্ট', icon: 'fas fa-file-excel' },
+    { id: 'students', label: 'শিক্ষার্থী ও ভর্তি', icon: 'fas fa-user-graduate' },
+    { id: 'results', label: 'ফলাফল ও মেধা', icon: 'fas fa-award' },
+    { id: 'academic', label: 'নোটিশ ও একাডেমিক', icon: 'fas fa-school' },
+    { id: 'accounting', label: 'হিসাব ও অর্থ', icon: 'fas fa-coins' },
+  ];
 
   const modules = [
     {
       id: 'excel-students',
+      category: 'excel',
       label: 'শিক্ষার্থী তথ্য (Excel)',
       meta: `${convertToBengali(excelStudentsCount)} জন শিক্ষার্থী`,
       icon: 'fas fa-user-graduate',
@@ -622,6 +637,7 @@ app.all(['/dashboard', '/dashboard.php'], requireAdminPage, (req, res) => {
     },
     {
       id: 'excel-results',
+      category: 'excel',
       label: 'রেজাল্ট ও অটো GPA (Excel)',
       meta: `${convertToBengali(excelExamsCount)}টি পরীক্ষার শিট`,
       icon: 'fas fa-calculator',
@@ -630,6 +646,7 @@ app.all(['/dashboard', '/dashboard.php'], requireAdminPage, (req, res) => {
     },
     {
       id: 'excel-docs',
+      category: 'excel',
       label: 'সকল ডকুমেন্টস (Excel)',
       meta: `${convertToBengali(excelDocsCount)}টি ডকুমেন্ট সারি`,
       icon: 'fas fa-folder-open',
@@ -638,6 +655,7 @@ app.all(['/dashboard', '/dashboard.php'], requireAdminPage, (req, res) => {
     },
     {
       id: 'a4-studio',
+      category: 'excel',
       label: 'A4 মার্কশিট ও সনদ প্রিন্ট',
       meta: 'Word, PDF ও প্রিন্ট স্টুডিও',
       icon: 'fas fa-print',
@@ -645,31 +663,8 @@ app.all(['/dashboard', '/dashboard.php'], requireAdminPage, (req, res) => {
       src: '/excel-studio.php?embed=1&tab=docstudio&hideTabs=1',
     },
     {
-      id: 'notices',
-      label: 'নোটিশ ও হেডলাইন',
-      meta: `${convertToBengali(noticesCount)}টি সক্রিয় নোটিশ`,
-      icon: 'fas fa-bullhorn',
-      tone: 'ic-blue',
-      src: '/add_notice.php?embed=1',
-    },
-    {
-      id: 'result-portal',
-      label: 'অনলাইন ফলাফল দেখুন',
-      meta: 'রোল নম্বর দিয়ে মার্কশিট',
-      icon: 'fas fa-award',
-      tone: 'ic-green',
-      src: '/result.php?embed=1',
-    },
-    {
-      id: 'merit-portal',
-      label: 'মেধা তালিকা দেখুন',
-      meta: 'GPA ও মেধাক্রম তালিকা',
-      icon: 'fas fa-trophy',
-      tone: 'ic-amber',
-      src: '/merit-list.php?embed=1',
-    },
-    {
       id: 'admissions',
+      category: 'students',
       label: 'ভর্তি আবেদন ও ফরম',
       meta: `${convertToBengali(admissionsCount)}টি জমা আবেদন`,
       icon: 'fas fa-user-plus',
@@ -677,7 +672,17 @@ app.all(['/dashboard', '/dashboard.php'], requireAdminPage, (req, res) => {
       src: '/admin-admissions.php?embed=1',
     },
     {
+      id: 'student-search',
+      category: 'students',
+      label: 'শিক্ষার্থী অনুসন্ধান',
+      meta: 'প্রোফাইল ও A4 প্রিন্ট',
+      icon: 'fas fa-search',
+      tone: 'ic-green',
+      src: '/student-search.php?embed=1',
+    },
+    {
       id: 'admit-card',
+      category: 'students',
       label: 'এডমিট কার্ড',
       meta: 'প্রবেশপত্র অনুসন্ধান ও প্রিন্ট',
       icon: 'fas fa-id-card',
@@ -686,6 +691,7 @@ app.all(['/dashboard', '/dashboard.php'], requireAdminPage, (req, res) => {
     },
     {
       id: 'id-card',
+      category: 'students',
       label: 'শিক্ষার্থী আইডি কার্ড',
       meta: 'শ্রেণি ও রোল ভিত্তিক আইডি কার্ড',
       icon: 'fas fa-id-badge',
@@ -693,7 +699,35 @@ app.all(['/dashboard', '/dashboard.php'], requireAdminPage, (req, res) => {
       src: '/id-card.php?embed=1',
     },
     {
+      id: 'result-portal',
+      category: 'results',
+      label: 'অনলাইন ফলাফল দেখুন',
+      meta: 'রোল নম্বর দিয়ে মার্কশিট',
+      icon: 'fas fa-award',
+      tone: 'ic-green',
+      src: '/result.php?embed=1',
+    },
+    {
+      id: 'merit-portal',
+      category: 'results',
+      label: 'মেধা তালিকা দেখুন',
+      meta: 'GPA ও মেধাক্রম তালিকা',
+      icon: 'fas fa-trophy',
+      tone: 'ic-amber',
+      src: '/merit-list.php?embed=1',
+    },
+    {
+      id: 'notices',
+      category: 'academic',
+      label: 'নোটিশ ও হেডলাইন',
+      meta: `${convertToBengali(noticesCount)}টি সক্রিয় নোটিশ`,
+      icon: 'fas fa-bullhorn',
+      tone: 'ic-blue',
+      src: '/add_notice.php?embed=1',
+    },
+    {
       id: 'teachers',
+      category: 'academic',
       label: 'শিক্ষক ও কর্মচারী',
       meta: `${convertToBengali(teachersCount)} জন তালিকাভুক্ত`,
       icon: 'fas fa-chalkboard-teacher',
@@ -702,46 +736,52 @@ app.all(['/dashboard', '/dashboard.php'], requireAdminPage, (req, res) => {
     },
     {
       id: 'routine',
+      category: 'academic',
       label: 'ক্লাস রুটিন',
-      meta: `${convertToBengali((portal.routines || []).length)}টি সারি`,
+      meta: `${convertToBengali(routinesCount)}টি সারি`,
       icon: 'fas fa-clock',
       tone: 'ic-slate',
       src: '/admin-academic.php?embed=1&section=routines&single=1',
     },
     {
       id: 'syllabus',
+      category: 'academic',
       label: 'সিলেবাস',
-      meta: `${convertToBengali((portal.syllabus || []).length)}টি শ্রেণি`,
+      meta: `${convertToBengali(syllabusCount)}টি শ্রেণি`,
       icon: 'fas fa-book-open',
       tone: 'ic-green',
       src: '/admin-academic.php?embed=1&section=syllabus&single=1',
     },
     {
       id: 'fees',
+      category: 'academic',
       label: 'বেতন ও ফি কাঠামো',
-      meta: `${convertToBengali((portal.fees || []).length)}টি খাত`,
+      meta: `${convertToBengali(feesCount)}টি খাত`,
       icon: 'fas fa-wallet',
       tone: 'ic-amber',
       src: '/admin-academic.php?embed=1&section=fees&single=1',
     },
     {
       id: 'registrations',
+      category: 'academic',
       label: 'বোর্ড রেজিস্ট্রেশন',
-      meta: `${convertToBengali((portal.registrations || []).length)}টি কার্যক্রম`,
+      meta: `${convertToBengali(registrationsCount)}টি কার্যক্রম`,
       icon: 'fas fa-clipboard-check',
       tone: 'ic-blue',
       src: '/admin-academic.php?embed=1&section=registrations&single=1',
     },
     {
       id: 'student-stats',
+      category: 'academic',
       label: 'ছাত্র-ছাত্রী সংখ্যা',
-      meta: `${convertToBengali((portal.studentStats || []).length)}টি স্তর`,
+      meta: `${convertToBengali(studentStatsCount)}টি স্তর`,
       icon: 'fas fa-chart-bar',
       tone: 'ic-indigo',
       src: '/admin-academic.php?embed=1&section=studentStats&single=1',
     },
     {
       id: 'accounting-entry',
+      category: 'accounting',
       label: 'দৈনিক হিসাব এন্ট্রি',
       meta: 'প্রতিদিনের আয় ও ব্যয়',
       icon: 'fas fa-coins',
@@ -750,29 +790,39 @@ app.all(['/dashboard', '/dashboard.php'], requireAdminPage, (req, res) => {
     },
     {
       id: 'accounting-report',
+      category: 'accounting',
       label: 'আর্থিক স্মার্ট রিপোর্ট',
       meta: 'মাসিক ও বার্ষিক সারসংক্ষেপ',
       icon: 'fas fa-chart-pie',
       tone: 'ic-slate',
       src: '/accounting_report.php?embed=1',
     },
-    {
-      id: 'student-search',
-      label: 'শিক্ষার্থী অনুসন্ধান',
-      meta: 'প্রোফাইল ও A4 প্রিন্ট',
-      icon: 'fas fa-search',
-      tone: 'ic-green',
-      src: '/student-search.php?embed=1',
-    },
+  ];
+
+  const summaryStats = [
+    { label: 'শিক্ষার্থী (Excel)', value: convertToBengali(excelStudentsCount), feature: 'excel-students' },
+    { label: 'পরীক্ষার শিট', value: convertToBengali(excelExamsCount), feature: 'excel-results' },
+    { label: 'ডকুমেন্ট সারি', value: convertToBengali(excelDocsCount), feature: 'excel-docs' },
+    { label: 'সক্রিয় নোটিশ', value: convertToBengali(noticesCount), feature: 'notices' },
+    { label: 'ভর্তি আবেদন', value: convertToBengali(admissionsCount), feature: 'admissions' },
+    { label: 'শিক্ষক-কর্মচারী', value: convertToBengali(teachersCount), feature: 'teachers' },
   ];
 
   const requestedFeature = req.query.feature ? String(req.query.feature) : '';
-  const activeFeature = modules.find((m) => m.id === requestedFeature) ? requestedFeature : '';
+  const activeMod = modules.find((m) => m.id === requestedFeature) || null;
+  const activeFeature = activeMod ? activeMod.id : '';
+  const requestedTab = req.query.tab ? String(req.query.tab) : '';
+  const activeTab = activeMod
+    ? activeMod.category
+    : (categories.some((c) => c.id === requestedTab) ? requestedTab : 'all');
 
   res.render('dashboard', {
     institutionName,
+    categories,
     modules,
+    summaryStats,
     activeFeature,
+    activeTab,
   });
 });
 

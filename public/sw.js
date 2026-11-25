@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'nadufm-pwa-v8';
+const CACHE_VERSION = 'nadufm-pwa-v9';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PAGE_CACHE = `${CACHE_VERSION}-pages`;
 
@@ -28,6 +28,10 @@ const NO_CACHE_PATHS = [
   '/admin-logout',
   '/dashboard',
   '/dashboard.php',
+  '/admin',
+  '/admin.php',
+  '/admin-panel',
+  '/admin-panel.php',
   '/add_notice',
   '/add_notice.php',
   '/admin-teachers',

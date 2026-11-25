@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>অ্যাডমিন ড্যাশবোর্ড - <%= institutionName %></title>
+    <title>অ্যাডমিন প্যানেল ও ড্যাশবোর্ড - <%= institutionName %></title>
     <link rel="shortcut icon" href="/logo.png" type="image/x-icon">
     <link rel="icon" href="/pwa-192x192.png" type="image/png" sizes="192x192">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -18,13 +18,16 @@
         :root {
             --bg: #f6f8f7;
             --surface: #ffffff;
-            --border: rgba(15, 23, 42, 0.08);
+            --surface-subtle: #f8faf9;
+            --border: rgba(15, 23, 42, 0.09);
+            --border-strong: rgba(15, 23, 42, 0.16);
             --brand: #15803d;
             --brand-dark: #14532d;
+            --brand-tint: #f0fdf4;
             --text: #0f172a;
             --text-muted: #475569;
-            --radius: 16px;
-            --topbar-h: 58px;
+            --radius: 14px;
+            --topbar-h: 56px;
         }
 
         * {
@@ -44,9 +47,19 @@
             -webkit-font-smoothing: antialiased;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
-        /* Single Crisp Topbar */
+        button, input {
+            font-family: inherit;
+        }
+
+        :focus-visible {
+            outline: 2px solid var(--brand);
+            outline-offset: 2px;
+        }
+
+        /* 1. Single-row Top Header */
         .adm-topbar {
             height: var(--topbar-h);
             background: var(--surface);
@@ -55,12 +68,12 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
+            gap: 16px;
             flex-shrink: 0;
             z-index: 30;
         }
 
-        .adm-left {
+        .adm-brand {
             display: flex;
             align-items: center;
             gap: 10px;
@@ -76,8 +89,15 @@
             flex-shrink: 0;
         }
 
+        .adm-title-wrap {
+            min-width: 0;
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+        }
+
         .adm-title {
-            font-size: 1.05rem;
+            font-size: 1.08rem;
             font-weight: 700;
             color: var(--brand-dark);
             white-space: nowrap;
@@ -85,49 +105,18 @@
             text-overflow: ellipsis;
         }
 
-        .adm-back-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            min-height: 38px;
-            padding: 0 13px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            background: #f0fdf4;
-            color: var(--brand-dark);
-            font-family: inherit;
-            font-size: 0.88rem;
-            font-weight: 700;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: background-color 0.15s ease;
-        }
-
-        .adm-back-btn:hover {
-            background: #dcfce7;
-        }
-
-        .adm-home-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            min-height: 38px;
-            padding: 0 14px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            background: var(--surface);
-            color: var(--text);
-            text-decoration: none;
-            font-size: 0.88rem;
-            font-weight: 600;
-            white-space: nowrap;
+        .adm-inst-sep {
+            color: #cbd5e1;
+            font-size: 0.9rem;
             flex-shrink: 0;
-            transition: background-color 0.15s ease, border-color 0.15s ease;
         }
 
-        .adm-home-btn:hover {
-            background: #f1f5f9;
-            border-color: rgba(15, 23, 42, 0.16);
+        .adm-inst-sub {
+            font-size: 0.84rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .adm-actions {
@@ -137,62 +126,341 @@
             flex-shrink: 0;
         }
 
-        .adm-logout-btn {
+        .adm-top-btn {
             display: inline-flex;
             align-items: center;
             gap: 6px;
             min-height: 38px;
-            padding: 0 13px;
+            padding: 0 14px;
             border-radius: 10px;
-            border: 1px solid #fecaca;
-            background: #fef2f2;
-            color: #b91c1c;
-            font-family: inherit;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            text-decoration: none;
             font-size: 0.88rem;
             font-weight: 600;
             cursor: pointer;
             white-space: nowrap;
-            transition: background-color 0.15s ease;
+            flex-shrink: 0;
+            transition: background-color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .adm-top-btn:hover {
+            background: #f1f5f9;
+            border-color: var(--border-strong);
+        }
+
+        .adm-logout-btn {
+            border-color: #fecaca;
+            background: #fef2f2;
+            color: #b91c1c;
         }
 
         .adm-logout-btn:hover {
             background: #fee2e2;
+            border-color: #fca5a5;
         }
 
-        /* Dashboard Button Grid Container */
+        /* 2. Unified Category Tabs Bar */
+        .adm-tabs-bar {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            flex-shrink: 0;
+            z-index: 25;
+        }
+
+        .adm-tabs-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .adm-cat-tab {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            min-height: 44px;
+            padding: 0 14px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+            border-bottom: 2px solid transparent;
+            transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+        }
+
+        .adm-cat-tab:hover {
+            color: var(--text);
+            background: var(--surface-subtle);
+        }
+
+        .adm-cat-tab.active {
+            color: var(--brand-dark);
+            border-bottom-color: var(--brand);
+            font-weight: 700;
+        }
+
+        .adm-cat-tab i {
+            font-size: 0.88rem;
+            opacity: 0.85;
+        }
+
+        /* 3. Persistent Feature Buttons Bar (shown when a category/feature is active) */
+        .adm-subbar {
+            background: var(--surface-subtle);
+            border-bottom: 1px solid var(--border);
+            padding: 8px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-shrink: 0;
+            z-index: 20;
+        }
+
+        .adm-feat-btns {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .adm-feat-btns::-webkit-scrollbar {
+            display: none;
+        }
+
+        .feat-tab-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            min-height: 38px;
+            padding: 0 13px;
+            border-radius: 9px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .feat-tab-btn:hover {
+            border-color: rgba(21, 128, 61, 0.35);
+            background: var(--brand-tint);
+            color: var(--brand-dark);
+        }
+
+        .feat-tab-btn.active {
+            background: var(--brand);
+            border-color: var(--brand);
+            color: #ffffff;
+        }
+
+        .adm-subbar-tools {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .tool-icon-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 38px;
+            padding: 0 11px;
+            border-radius: 9px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-muted);
+            font-size: 0.84rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+
+        .tool-icon-btn:hover {
+            background: #eef2f6;
+            color: var(--text);
+        }
+
+        /* 4. Overview Dashboard Shell (when 'all' tab is active) */
         .dash-shell {
             flex: 1;
+            min-height: 0;
             overflow-y: auto;
-            padding: 28px 20px 44px 20px;
+            padding: 22px 20px 44px 20px;
         }
 
         .dash-inner {
-            max-width: 1120px;
+            max-width: 1220px;
             margin: 0 auto;
         }
 
-        .dash-head {
-            margin-bottom: 20px;
+        /* Flat 6-KPI Summary Strip */
+        .stats-strip {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 22px;
         }
 
-        .dash-inst {
-            font-size: 0.88rem;
+        .stat-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 13px 14px;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            transition: border-color 0.15s ease, transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .stat-btn:hover {
+            border-color: rgba(21, 128, 61, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .stat-val {
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: var(--brand-dark);
+            line-height: 1.15;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .stat-lbl {
+            font-size: 0.82rem;
             font-weight: 600;
             color: var(--text-muted);
-            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .dash-heading {
-            font-size: 1.38rem;
+        /* Overview Header + Search */
+        .dash-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .dash-heading-group h1 {
+            font-size: 1.24rem;
             font-weight: 700;
             color: var(--brand-dark);
             line-height: 1.3;
         }
 
+        .dash-heading-group p {
+            font-size: 0.86rem;
+            color: var(--text-muted);
+        }
+
+        .dash-search-box {
+            position: relative;
+            width: 280px;
+            max-width: 100%;
+        }
+
+        .dash-search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.86rem;
+            pointer-events: none;
+        }
+
+        .dash-search-input {
+            width: 100%;
+            height: 40px;
+            padding: 0 12px 0 34px;
+            border: 1px solid var(--border-strong);
+            border-radius: 10px;
+            background: var(--surface);
+            color: var(--text);
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .dash-search-input:focus {
+            border-color: var(--brand);
+        }
+
+        /* Categorized Feature Button Sections */
+        .cat-section {
+            margin-bottom: 24px;
+        }
+
+        .cat-section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cat-section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cat-section-title i {
+            color: var(--brand);
+            font-size: 0.94rem;
+        }
+
+        .cat-open-btn {
+            border: none;
+            background: transparent;
+            color: var(--brand);
+            font-size: 0.84rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            padding: 4px 6px;
+            border-radius: 6px;
+        }
+
+        .cat-open-btn:hover {
+            background: var(--brand-tint);
+        }
+
         .dash-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 14px;
+            grid-template-columns: repeat(auto-fill, minmax(235px, 1fr));
+            gap: 12px;
             font-variant-numeric: tabular-nums;
         }
 
@@ -200,37 +468,34 @@
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 18px 16px;
-            min-height: 122px;
+            padding: 15px 15px;
+            min-height: 82px;
             text-align: left;
-            font-family: inherit;
             cursor: pointer;
             display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 12px;
-            transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.15s ease, box-shadow 0.15s ease;
+            align-items: center;
+            gap: 13px;
+            transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.15s ease, background-color 0.15s ease;
         }
 
         .dash-btn:hover {
-            transform: translateY(-2px);
-            border-color: rgba(21, 128, 61, 0.38);
-            box-shadow: 0 8px 20px -6px rgba(15, 23, 42, 0.08);
+            transform: translateY(-1px);
+            border-color: rgba(21, 128, 61, 0.42);
+            background: #fcfefd;
         }
 
         .dash-btn:active {
-            transform: scale(0.975);
+            transform: scale(0.985);
         }
 
         .dash-btn-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
+            width: 42px;
+            height: 42px;
+            border-radius: 11px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.15rem;
+            font-size: 1.08rem;
             flex-shrink: 0;
         }
 
@@ -241,9 +506,13 @@
         .ic-teal { background: #f0fdfa; color: #0f766e; }
         .ic-indigo { background: #eef2ff; color: #4338ca; }
 
+        .dash-btn-text {
+            min-width: 0;
+        }
+
         .dash-btn-title {
             display: block;
-            font-size: 0.98rem;
+            font-size: 0.96rem;
             font-weight: 700;
             color: var(--text);
             line-height: 1.3;
@@ -254,16 +523,38 @@
             font-size: 0.81rem;
             font-weight: 500;
             color: var(--text-muted);
-            margin-top: 3px;
+            margin-top: 2px;
             line-height: 1.3;
         }
 
-        /* Active Workspace */
+        .dash-empty {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 36px 20px;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .dash-empty-reset {
+            margin-top: 12px;
+            min-height: 38px;
+            padding: 0 16px;
+            border-radius: 9px;
+            border: 1px solid var(--border-strong);
+            background: var(--surface);
+            color: var(--text);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* 5. Integrated Workspace Viewport */
         .adm-workspace {
             flex: 1;
             min-height: 0;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         .adm-frame {
@@ -279,54 +570,102 @@
             display: none !important;
         }
 
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                transition: none !important;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .stats-strip {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+            .adm-inst-sep, .adm-inst-sub {
+                display: none;
+            }
+        }
+
         @media (max-width: 640px) {
             .adm-topbar {
                 padding: 0 12px;
+                gap: 8px;
+            }
+            .adm-title {
+                font-size: 0.98rem;
+            }
+            .adm-top-btn {
+                min-height: 36px;
+                padding: 0 10px;
+                font-size: 0.82rem;
+            }
+            .adm-tabs-bar {
+                padding: 0 10px;
+            }
+            .adm-cat-tab {
+                min-height: 44px;
+                padding: 0 11px;
+                font-size: 0.86rem;
+            }
+            .adm-subbar {
+                padding: 8px 10px;
+            }
+            .feat-tab-btn {
+                min-height: 40px;
+                padding: 0 11px;
+                font-size: 0.84rem;
+            }
+            .tool-icon-btn span {
+                display: none;
             }
             .dash-shell {
-                padding: 18px 12px 32px 12px;
+                padding: 14px 12px 28px 12px;
             }
-            .dash-heading {
-                font-size: 1.2rem;
+            .stats-strip {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 8px;
+                margin-bottom: 16px;
+            }
+            .dash-search-box {
+                width: 100%;
             }
             .dash-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 10px;
+                grid-template-columns: 1fr;
+                gap: 8px;
             }
             .dash-btn {
-                padding: 15px 13px;
-                min-height: 112px;
-                gap: 10px;
-            }
-            .dash-btn-title {
-                font-size: 0.92rem;
-            }
-            .dash-btn-meta {
-                font-size: 0.77rem;
+                padding: 13px 14px;
+                min-height: 70px;
             }
         }
     </style>
 </head>
 <body>
 
-    <% const currentMod = modules.find(function(m) { return m.id === activeFeature; }); %>
+    <%
+        const currentMod = modules.find(function(m) { return m.id === activeFeature; }) || null;
+        const currentTab = currentMod ? currentMod.category : (activeTab || 'all');
+        const categoryGroups = categories.filter(function(c) { return c.id !== 'all'; });
+        const subFeatures = currentTab !== 'all'
+            ? modules.filter(function(m) { return m.category === currentTab; })
+            : [];
+    %>
 
     <header class="adm-topbar">
-        <div class="adm-left">
-            <button type="button" id="backToGridBtn" class="adm-back-btn <%= currentMod ? '' : 'is-hidden' %>">
-                <i class="fas fa-arrow-left" aria-hidden="true"></i>
-                <span>ড্যাশবোর্ড</span>
-            </button>
-            <img src="/logo.png" alt="মাদ্রাসা লোগো" id="brandLogo" class="adm-logo <%= currentMod ? 'is-hidden' : '' %>" referrerpolicy="no-referrer">
-            <span class="adm-title" id="topbarTitle"><%= currentMod ? currentMod.label : 'অ্যাডমিন ড্যাশবোর্ড' %></span>
+        <div class="adm-brand">
+            <img src="/logo.png" alt="মাদ্রাসার লোগো" class="adm-logo" referrerpolicy="no-referrer">
+            <div class="adm-title-wrap">
+                <span class="adm-title">অ্যাডমিন প্যানেল ও ড্যাশবোর্ড</span>
+                <span class="adm-inst-sep" aria-hidden="true">·</span>
+                <span class="adm-inst-sub"><%= institutionName %></span>
+            </div>
         </div>
         <div class="adm-actions">
-            <a href="/index.php" class="adm-home-btn">
+            <a href="/index.php" class="adm-top-btn">
                 <i class="fas fa-external-link-alt" aria-hidden="true"></i>
                 <span>ওয়েবসাইট</span>
             </a>
             <form method="POST" action="/admin-logout" style="margin:0;">
-                <button type="submit" class="adm-logout-btn" title="অ্যাডমিন প্যানেল থেকে লগআউট করুন">
+                <button type="submit" class="adm-top-btn adm-logout-btn" title="অ্যাডমিন প্যানেল ও ড্যাশবোর্ড থেকে লগআউট করুন">
                     <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
                     <span>লগআউট</span>
                 </button>
@@ -334,25 +673,116 @@
         </div>
     </header>
 
+    <nav class="adm-tabs-bar" role="tablist" aria-label="অ্যাডমিন প্যানেল বিভাগ ট্যাব">
+        <% categories.forEach(function(cat) { %>
+            <button
+                type="button"
+                role="tab"
+                class="adm-cat-tab <%= currentTab === cat.id ? 'active' : '' %>"
+                data-tab-id="<%= cat.id %>"
+                aria-selected="<%= currentTab === cat.id ? 'true' : 'false' %>"
+            >
+                <i class="<%= cat.icon %>" aria-hidden="true"></i>
+                <span><%= cat.label %></span>
+            </button>
+        <% }); %>
+    </nav>
+
+    <div id="featureSubbar" class="adm-subbar <%= currentMod ? '' : 'is-hidden' %>">
+        <div id="featureButtonsStrip" class="adm-feat-btns" role="tablist" aria-label="বিভাগীয় ফিচার বাটন">
+            <% subFeatures.forEach(function(mod) { %>
+                <button
+                    type="button"
+                    role="tab"
+                    class="feat-tab-btn <%= currentMod && currentMod.id === mod.id ? 'active' : '' %>"
+                    data-feature-btn="<%= mod.id %>"
+                    aria-selected="<%= currentMod && currentMod.id === mod.id ? 'true' : 'false' %>"
+                >
+                    <i class="<%= mod.icon %>" aria-hidden="true"></i>
+                    <span><%= mod.label %></span>
+                </button>
+            <% }); %>
+        </div>
+        <div class="adm-subbar-tools">
+            <button type="button" id="refreshFrameBtn" class="tool-icon-btn" title="বর্তমান ট্যাব রিফ্রেশ করুন">
+                <i class="fas fa-sync-alt" aria-hidden="true"></i>
+                <span>রিফ্রেশ</span>
+            </button>
+            <button type="button" id="homeGridBtn" class="tool-icon-btn" title="সব ফিচার বাটনে ফিরে যান">
+                <i class="fas fa-th-large" aria-hidden="true"></i>
+                <span>সব ফিচার</span>
+            </button>
+        </div>
+    </div>
+
     <main id="view-grid" class="dash-shell <%= currentMod ? 'is-hidden' : '' %>">
         <div class="dash-inner">
-            <div class="dash-head">
-                <p class="dash-inst"><%= institutionName %></p>
-                <h1 class="dash-heading">সকল ফিচার পরিচালনা</h1>
-            </div>
-
-            <div class="dash-grid" role="list" aria-label="ফিচার বাটন তালিকা">
-                <% modules.forEach(function(mod) { %>
-                    <button type="button" class="dash-btn" data-feature="<%= mod.id %>" role="listitem">
-                        <span class="dash-btn-icon <%= mod.tone %>">
-                            <i class="<%= mod.icon %>" aria-hidden="true"></i>
-                        </span>
-                        <div>
-                            <span class="dash-btn-title"><%= mod.label %></span>
-                            <span class="dash-btn-meta"><%= mod.meta %></span>
-                        </div>
+            <section class="stats-strip" aria-label="মাদ্রাসার সারসংক্ষেপ">
+                <% summaryStats.forEach(function(stat) { %>
+                    <button type="button" class="stat-btn" data-open-feature="<%= stat.feature %>">
+                        <span class="stat-val"><%= stat.value %></span>
+                        <span class="stat-lbl"><%= stat.label %></span>
                     </button>
                 <% }); %>
+            </section>
+
+            <div class="dash-toolbar">
+                <div class="dash-heading-group">
+                    <h1>একীভূত অ্যাডমিন ও পরিচালনা কেন্দ্র</h1>
+                    <p>উপরের ট্যাব বা নিচের যেকোনো ফিচার বাটনে ক্লিক করে সরাসরি কাজ শুরু করুন</p>
+                </div>
+                <div class="dash-search-box">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                    <input
+                        type="search"
+                        id="featureSearchInput"
+                        class="dash-search-input"
+                        placeholder="ফিচার খুঁজুন (রুটিন, ফলাফল, নোটিশ)..."
+                        aria-label="ফিচার খুঁজুন"
+                    >
+                </div>
+            </div>
+
+            <div id="categorySectionsWrap">
+                <% categoryGroups.forEach(function(cat) {
+                    const catModules = modules.filter(function(m) { return m.category === cat.id; });
+                %>
+                    <section class="cat-section" data-cat-section="<%= cat.id %>">
+                        <div class="cat-section-head">
+                            <h2 class="cat-section-title">
+                                <i class="<%= cat.icon %>" aria-hidden="true"></i>
+                                <span><%= cat.label %></span>
+                            </h2>
+                            <button type="button" class="cat-open-btn" data-open-tab="<%= cat.id %>">
+                                ট্যাব খুলুন <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <div class="dash-grid" role="list" aria-label="<%= cat.label %> ফিচার বাটন">
+                            <% catModules.forEach(function(mod) { %>
+                                <button
+                                    type="button"
+                                    class="dash-btn"
+                                    data-open-feature="<%= mod.id %>"
+                                    data-keywords="<%= (mod.label + ' ' + mod.meta + ' ' + cat.label).toLowerCase() %>"
+                                    role="listitem"
+                                >
+                                    <span class="dash-btn-icon <%= mod.tone %>">
+                                        <i class="<%= mod.icon %>" aria-hidden="true"></i>
+                                    </span>
+                                    <span class="dash-btn-text">
+                                        <span class="dash-btn-title"><%= mod.label %></span>
+                                        <span class="dash-btn-meta"><%= mod.meta %></span>
+                                    </span>
+                                </button>
+                            <% }); %>
+                        </div>
+                    </section>
+                <% }); %>
+            </div>
+
+            <div id="dashEmptyState" class="dash-empty is-hidden">
+                <p>আপনার অনুসন্ধানের সাথে মিলে এমন কোনো ফিচার পাওয়া যায়নি।</p>
+                <button type="button" id="resetSearchBtn" class="dash-empty-reset">সব ফিচার দেখান</button>
             </div>
         </div>
     </main>
@@ -368,56 +798,213 @@
 
     <script>
         (function () {
-            var modulesMap = <%- JSON.stringify(modules.reduce(function(acc, m) { acc[m.id] = m; return acc; }, {})) %>;
+            var modulesList = <%- JSON.stringify(modules) %>;
+            var modulesMap = {};
+            var lastFeatureByTab = {};
+            modulesList.forEach(function (m) {
+                modulesMap[m.id] = m;
+                if (!lastFeatureByTab[m.category]) {
+                    lastFeatureByTab[m.category] = m.id;
+                }
+            });
+
             var gridEl = document.getElementById('view-grid');
             var workspaceEl = document.getElementById('view-workspace');
             var frameEl = document.getElementById('workspaceFrame');
-            var backBtn = document.getElementById('backToGridBtn');
-            var brandLogo = document.getElementById('brandLogo');
-            var topbarTitle = document.getElementById('topbarTitle');
+            var subbarEl = document.getElementById('featureSubbar');
+            var stripEl = document.getElementById('featureButtonsStrip');
+            var refreshBtn = document.getElementById('refreshFrameBtn');
+            var homeGridBtn = document.getElementById('homeGridBtn');
+            var searchInput = document.getElementById('featureSearchInput');
+            var emptyStateEl = document.getElementById('dashEmptyState');
+            var resetSearchBtn = document.getElementById('resetSearchBtn');
+            var catTabs = document.querySelectorAll('.adm-cat-tab[data-tab-id]');
+
+            var currentFeatureId = <%- JSON.stringify(activeFeature || '') %>;
+            var currentTabId = <%- JSON.stringify(currentTab || 'all') %>;
+
+            function esc(str) {
+                return String(str || '').replace(/[&<>"']/g, function (ch) {
+                    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+                });
+            }
+
+            function renderCategoryTabs(activeTab) {
+                catTabs.forEach(function (tab) {
+                    var isAct = tab.getAttribute('data-tab-id') === activeTab;
+                    tab.classList.toggle('active', isAct);
+                    tab.setAttribute('aria-selected', isAct ? 'true' : 'false');
+                });
+            }
+
+            function renderFeatureButtonsStrip(tabId, activeFeatId) {
+                var feats = modulesList.filter(function (m) { return m.category === tabId; });
+                if (!feats.length) {
+                    subbarEl.classList.add('is-hidden');
+                    stripEl.innerHTML = '';
+                    return;
+                }
+                stripEl.innerHTML = feats.map(function (mod) {
+                    var isAct = mod.id === activeFeatId;
+                    return (
+                        '<button type="button" role="tab" class="feat-tab-btn' + (isAct ? ' active' : '') +
+                        '" data-feature-btn="' + esc(mod.id) + '" aria-selected="' + (isAct ? 'true' : 'false') + '">' +
+                        '<i class="' + esc(mod.icon) + '" aria-hidden="true"></i>' +
+                        '<span>' + esc(mod.label) + '</span>' +
+                        '</button>'
+                    );
+                }).join('');
+                subbarEl.classList.remove('is-hidden');
+            }
+
+            function showHomeGrid(pushHistory) {
+                currentTabId = 'all';
+                currentFeatureId = '';
+                renderCategoryTabs('all');
+                subbarEl.classList.add('is-hidden');
+                workspaceEl.classList.add('is-hidden');
+                gridEl.classList.remove('is-hidden');
+                frameEl.setAttribute('src', 'about:blank');
+                if (pushHistory) {
+                    history.pushState({ tab: 'all', feature: '' }, '', '/dashboard.php');
+                }
+            }
 
             function openFeature(featureId, pushHistory) {
                 var mod = featureId ? modulesMap[featureId] : null;
                 if (!mod) {
-                    gridEl.classList.remove('is-hidden');
-                    workspaceEl.classList.add('is-hidden');
-                    backBtn.classList.add('is-hidden');
-                    brandLogo.classList.remove('is-hidden');
-                    topbarTitle.textContent = 'অ্যাডমিন ড্যাশবোর্ড';
-                    frameEl.setAttribute('src', 'about:blank');
-                    if (pushHistory) {
-                        history.pushState({ feature: '' }, '', '/dashboard.php');
-                    }
+                    showHomeGrid(pushHistory);
                     return;
                 }
+                currentFeatureId = mod.id;
+                currentTabId = mod.category;
+                lastFeatureByTab[mod.category] = mod.id;
+
+                renderCategoryTabs(mod.category);
+                renderFeatureButtonsStrip(mod.category, mod.id);
 
                 gridEl.classList.add('is-hidden');
                 workspaceEl.classList.remove('is-hidden');
-                backBtn.classList.remove('is-hidden');
-                brandLogo.classList.add('is-hidden');
-                topbarTitle.textContent = mod.label;
+
                 if (frameEl.getAttribute('src') !== mod.src) {
                     frameEl.setAttribute('src', mod.src);
                 }
+
+                var activeBtn = stripEl.querySelector('.feat-tab-btn.active');
+                if (activeBtn && typeof activeBtn.scrollIntoView === 'function') {
+                    activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+                }
+
                 if (pushHistory) {
-                    history.pushState({ feature: mod.id }, '', '/dashboard.php?feature=' + encodeURIComponent(mod.id));
+                    history.pushState(
+                        { tab: mod.category, feature: mod.id },
+                        '',
+                        '/dashboard.php?feature=' + encodeURIComponent(mod.id)
+                    );
                 }
             }
 
-            document.querySelectorAll('.dash-btn[data-feature]').forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    openFeature(btn.getAttribute('data-feature'), true);
+            function openTab(tabId, pushHistory) {
+                if (!tabId || tabId === 'all') {
+                    showHomeGrid(pushHistory);
+                    return;
+                }
+                var targetFeat = lastFeatureByTab[tabId];
+                if (targetFeat && modulesMap[targetFeat]) {
+                    openFeature(targetFeat, pushHistory);
+                } else {
+                    showHomeGrid(pushHistory);
+                }
+            }
+
+            function filterDashboardButtons() {
+                var q = (searchInput.value || '').trim().toLowerCase();
+                var sections = document.querySelectorAll('.cat-section[data-cat-section]');
+                var anyVisible = false;
+
+                sections.forEach(function (sec) {
+                    var btns = sec.querySelectorAll('.dash-btn[data-open-feature]');
+                    var secHasMatch = false;
+                    btns.forEach(function (btn) {
+                        var kw = btn.getAttribute('data-keywords') || '';
+                        var match = !q || kw.indexOf(q) !== -1;
+                        btn.classList.toggle('is-hidden', !match);
+                        if (match) {
+                            secHasMatch = true;
+                            anyVisible = true;
+                        }
+                    });
+                    sec.classList.toggle('is-hidden', !secHasMatch);
+                });
+
+                emptyStateEl.classList.toggle('is-hidden', anyVisible);
+            }
+
+            catTabs.forEach(function (tab) {
+                tab.addEventListener('click', function () {
+                    openTab(tab.getAttribute('data-tab-id'), true);
                 });
             });
 
-            backBtn.addEventListener('click', function () {
-                openFeature('', true);
+            stripEl.addEventListener('click', function (e) {
+                var btn = e.target.closest('.feat-tab-btn[data-feature-btn]');
+                if (btn) {
+                    openFeature(btn.getAttribute('data-feature-btn'), true);
+                }
             });
+
+            document.querySelectorAll('[data-open-feature]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    openFeature(btn.getAttribute('data-open-feature'), true);
+                });
+            });
+
+            document.querySelectorAll('[data-open-tab]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    openTab(btn.getAttribute('data-open-tab'), true);
+                });
+            });
+
+            homeGridBtn.addEventListener('click', function () {
+                showHomeGrid(true);
+            });
+
+            refreshBtn.addEventListener('click', function () {
+                var mod = currentFeatureId ? modulesMap[currentFeatureId] : null;
+                if (mod) {
+                    frameEl.setAttribute('src', mod.src);
+                }
+            });
+
+            if (searchInput) {
+                searchInput.addEventListener('input', filterDashboardButtons);
+            }
+
+            if (resetSearchBtn) {
+                resetSearchBtn.addEventListener('click', function () {
+                    searchInput.value = '';
+                    filterDashboardButtons();
+                    searchInput.focus();
+                });
+            }
 
             window.addEventListener('popstate', function () {
                 var params = new URLSearchParams(window.location.search);
-                openFeature(params.get('feature') || '', false);
+                var f = params.get('feature') || '';
+                var t = params.get('tab') || 'all';
+                if (f && modulesMap[f]) {
+                    openFeature(f, false);
+                } else if (t && t !== 'all') {
+                    openTab(t, false);
+                } else {
+                    showHomeGrid(false);
+                }
             });
+
+            // Initialize if opened with ?tab=category without ?feature=
+            if (!currentFeatureId && currentTabId && currentTabId !== 'all') {
+                openTab(currentTabId, false);
+            }
         })();
     </script>
     <script src="/pwa.js" defer></script>
