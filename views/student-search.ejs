@@ -419,7 +419,7 @@
                     <i class="fas fa-file-pdf"></i> <span>PDF ডাউনলোড</span>
                 </button>
                 <button type="button" onclick="downloadCurrentDocWord()" class="tool-btn tool-blue">
-                    <i class="fas fa-file-word"></i> <span>Word (.docx)</span>
+                    <i class="fas fa-file-word"></i> <span>Word (.doc)</span>
                 </button>
                 <button type="button" onclick="resetStudentSearch()" class="tool-btn tool-slate">
                     <i class="fas fa-redo"></i> <span>নতুন অনুসন্ধান</span>
@@ -954,10 +954,9 @@
             if (!window.NadufmExport) throw new Error('এক্সপোর্ট স্ক্রিপ্ট লোড হয়নি।');
             await window.NadufmExport.exportElementToWord({
                 element: el,
-                filename: `${activeDocTab}-${Date.now()}.docx`,
+                filename: `${activeDocTab}-${Date.now()}.doc`,
                 title: activeDocTab,
                 cssText: cssText,
-                marginMm: [14, 15, 14, 15],
                 onStatus: setExportStatus
             });
         } catch (err) {

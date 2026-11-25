@@ -1,6 +1,5 @@
 import express from 'express';
 import crypto from 'node:crypto';
-import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import multer from 'multer';
@@ -15,15 +14,11 @@ import {
   loadExcelStore,
   saveExcelStore,
   parseExcelBuffer,
-  parseExcelWorkbook,
   autoDetectStudentMapping,
   detectResultColumns,
   computeResultSheet,
   buildExcelBuffer,
-  buildMultiSheetExcelBuffer,
-  resolveSheetClassInfo,
 } from './data/excelStore.js';
-import { generateDocxFromHtml } from './data/docxExport.js';
 import { loadPortalStore, savePortalStore } from './data/portalStore.js';
 import {
   getClassesAndRolls,
@@ -36,44 +31,16 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load local .env if present (helpful for cPanel/VPS hosting) without overriding host-injected env vars
-try {
-  const envFilePath = path.join(__dirname, '.env');
-  if (fs.existsSync(envFilePath)) {
-    const lines = fs.readFileSync(envFilePath, 'utf8').split(/\r?\n/);
-    for (const rawLine of lines) {
-      const line = rawLine.trim();
-      if (!line || line.startsWith('#')) continue;
-      const eqIdx = line.indexOf('=');
-      if (eqIdx <= 0) continue;
-      const key = line.slice(0, eqIdx).trim();
-      let val = line.slice(eqIdx + 1).trim();
-      if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
-        val = val.slice(1, -1);
-      }
-      if (key && process.env[key] === undefined) {
-        process.env[key] = val;
-      }
-    }
-  }
-} catch {}
-
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
 });
 
 const app = express();
-const IS_DEV_NGINX_PROXY = (
-  Boolean(process.env.NGINX_PORT) &&
-  process.env.NODE_ENV !== 'production' &&
-  String(process.env.PORT || '') === String(process.env.NGINX_PORT)
-);
-const RAW_PORT = IS_DEV_NGINX_PROXY
-  ? (process.env.DEFAULT_APP_PORT || 3000)
-  : (process.env.PORT || process.env.DEFAULT_APP_PORT || 3000);
-const PORT = /^\d+$/.test(String(RAW_PORT)) ? Number(RAW_PORT) : RAW_PORT;
-const HOST = process.env.HOST || '0.0.0.0';
+const PORT = process.env.NGINX_PORT
+  ? Number(process.env.DEFAULT_APP_PORT) || 3000
+  : Number(process.env.PORT) || 3000;
+const HOST = '0.0.0.0';
 
 function getHeadlines() {
   const store = loadPortalStore();
@@ -124,12 +91,7 @@ app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 app.use(express.json({ limit: '25mb' }));
 app.use((req, res, next) => {
   res.locals.isEmbedded = req.query.embed === '1';
-  res.locals.currentPath = req.path || '/';
   next();
-});
-
-app.get(['/health', '/healthz', '/api/health'], (req, res) => {
-  res.status(200).json({ status: 'ok', uptime: Math.round(process.uptime()) });
 });
 
 const ADMIN_COOKIE_NAME = 'nadufm_admin_sid';
@@ -216,37 +178,13 @@ function getValidAdminSession(req) {
   return { sid, ...sess };
 }
 
-function normalizeHostPort(hostStr) {
-  return String(hostStr || '')
-    .split(',')[0]
-    .trim()
-    .toLowerCase()
-    .replace(/:(80|443)$/, '');
-}
-
 function verifySameOrigin(req, res, next) {
   const origin = req.headers.origin;
   if (origin) {
     try {
-      const parsedOrigin = new URL(origin);
-      const originHost = normalizeHostPort(parsedOrigin.host);
-      const originHostname = parsedOrigin.hostname.toLowerCase();
-      const xfHost = normalizeHostPort(req.headers['x-forwarded-host']);
-      const rawHost = normalizeHostPort(req.headers.host);
-      const allowedEnv = String(process.env.ALLOWED_HOSTS || '')
-        .split(',')
-        .map((h) => normalizeHostPort(h))
-        .filter(Boolean);
-
-      const candidates = [xfHost, rawHost, ...allowedEnv].filter(Boolean);
-      const isMatch = candidates.some((c) => c === originHost || c.split(':')[0] === originHostname);
-      const isInternalReverseProxy = (
-        !xfHost &&
-        Boolean(req.headers['x-forwarded-for']) &&
-        (rawHost.startsWith('127.0.0.1') || rawHost.startsWith('localhost') || rawHost.startsWith('[::1]'))
-      );
-
-      if (candidates.length > 0 && !isMatch && !isInternalReverseProxy) {
+      const originHost = new URL(origin).host;
+      const expectedHost = String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim();
+      if (expectedHost && originHost !== expectedHost) {
         return res.status(403).json({ error: 'অননুমোদিত অনুরোধ।' });
       }
     } catch {
@@ -527,18 +465,13 @@ app.get(['/view_notice', '/view_notice.php'], (req, res) => {
 });
 
 app.get(['/merit-list', '/merit-list.php'], async (req, res) => {
-  let selectedClass = String(req.query.class_id || '');
+  const selectedClass = String(req.query.class_id || '');
   const selectedExamId = String(req.query.exam_id || '');
   const excelStore = loadExcelStore();
   const uploadedExams = getUploadedExamsSummary(excelStore);
 
-  if (!selectedClass && !selectedExamId && uploadedExams.length > 0) {
-    selectedClass = `excel:${uploadedExams[0].id}`;
-  }
-
   let selectedName = '';
   let selectedExamTitle = '';
-  let selectedClassValue = selectedClass;
   let meritData = [];
   let sourceType = 'csv';
 
@@ -561,7 +494,6 @@ app.get(['/merit-list', '/merit-list.php'], async (req, res) => {
     sourceType = 'excel';
     selectedName = matchedExcelExam.className || (classMap[matchedExcelExam.classId]?.name || '');
     selectedExamTitle = matchedExcelExam.title || `${matchedExcelExam.examName || 'পরীক্ষা'} - ${selectedName}`;
-    selectedClassValue = `excel:${matchedExcelExam.id}`;
     const { meritList } = computeResultSheet(matchedExcelExam);
     meritData = meritList.map((item) => ({
       name: item.name || '—',
@@ -580,7 +512,6 @@ app.get(['/merit-list', '/merit-list.php'], async (req, res) => {
   } else if (selectedClass !== '' && Object.prototype.hasOwnProperty.call(classMap, selectedClass)) {
     selectedName = classMap[selectedClass].name;
     selectedExamTitle = `বার্ষিক পরীক্ষার মেধাতালিকা · শ্রেণি: ${selectedName}`;
-    selectedClassValue = selectedClass;
     const gid = classMap[selectedClass].gid;
     const csvUrl = `https://docs.google.com/spreadsheets/d/e/2PACX-1vSYfZ7IOoN4gbjjSgT02E1ugUQvhPmL39Ch4gJns0GGbb9OrCO4Wm9hdmbpPaEerRC5m2S0-WOJQcV4/pub?output=csv&gid=${gid}`;
 
@@ -659,7 +590,6 @@ app.get(['/merit-list', '/merit-list.php'], async (req, res) => {
     classMap,
     uploadedExams,
     selectedClass,
-    selectedClassValue,
     selectedExamId: matchedExcelExam ? matchedExcelExam.id : selectedExamId,
     selectedName,
     selectedExamTitle,
@@ -1058,157 +988,65 @@ app.post('/api/excel/upload', requireAdminApi, verifySameOrigin, (req, res) => {
         return res.status(400).json({ error: 'কোনো এক্সেল ফাইল নির্বাচন করা হয়নি।' });
       }
       const target = String(req.body.target || 'students');
+      const parsed = parseExcelBuffer(req.file.buffer, req.file.originalname || '');
       const store = loadExcelStore();
       const now = new Date().toISOString();
 
-      if (target === 'students') {
-        const parsed = parseExcelBuffer(req.file.buffer, req.file.originalname || '');
-        store.students = {
-          columns: parsed.columns,
-          mapping: autoDetectStudentMapping(parsed.columns),
-          rows: parsed.rows,
-          updatedAt: now,
-        };
-        saveExcelStore(store);
-        return res.json({
-          message: `শিক্ষার্থী ফাইল সফলভাবে আপলোড হয়েছে (${convertToBengali(parsed.rows.length)}টি সারি, ${convertToBengali(parsed.columns.length)}টি কলাম)।`,
-          state: serializeExcelState(store),
-        });
-      }
+    if (target === 'students') {
+      store.students = {
+        columns: parsed.columns,
+        mapping: autoDetectStudentMapping(parsed.columns),
+        rows: parsed.rows,
+        updatedAt: now,
+      };
+    } else if (target === 'documents') {
+      store.documents = {
+        title: String(req.body.title || parsed.sheetName || 'সকল ডকুমেন্টস ডেটা শিট'),
+        columns: parsed.columns,
+        mapping: autoDetectStudentMapping(parsed.columns),
+        rows: parsed.rows,
+        updatedAt: now,
+      };
+    } else if (target === 'results') {
+      const examId = String(req.body.examId || store.results.activeExamId || `exam_${Date.now()}`);
+      const existing = store.results.exams[examId] || {};
+      const detectedCols = detectResultColumns(parsed.columns);
+      const mappingGuess = autoDetectStudentMapping(parsed.columns);
+      const classId = String(req.body.classId ?? existing.classId ?? '6');
+      const className = String(req.body.className ?? existing.className ?? (classMap[classId]?.name || 'ষষ্ঠ'));
+      const examName = String(req.body.examName ?? existing.examName ?? 'বার্ষিক পরীক্ষা');
+      const year = String(req.body.year ?? existing.year ?? '২০২৬');
 
-      if (target === 'documents') {
-        const parsed = parseExcelBuffer(req.file.buffer, req.file.originalname || '');
-        store.documents = {
-          title: String(req.body.title || parsed.sheetName || 'সকল ডকুমেন্টস ডেটা শিট'),
-          columns: parsed.columns,
-          mapping: autoDetectStudentMapping(parsed.columns),
-          rows: parsed.rows,
-          updatedAt: now,
-        };
-        saveExcelStore(store);
-        return res.json({
-          message: `ডকুমেন্টস ফাইল সফলভাবে আপলোড হয়েছে (${convertToBengali(parsed.rows.length)}টি সারি, ${convertToBengali(parsed.columns.length)}টি কলাম)।`,
-          state: serializeExcelState(store),
-        });
-      }
-
-      if (target === 'results') {
-        const workbook = parseExcelWorkbook(req.file.buffer, req.file.originalname || '');
-        const fallbackExamId = String(req.body.examId || store.results.activeExamId || '');
-        const fallbackExisting = store.results.exams[fallbackExamId] || {};
-        const reqClassId = String(req.body.classId ?? '');
-        const reqClassName = String(req.body.className ?? '');
-        const reqExamName = String(req.body.examName || fallbackExisting.examName || 'বার্ষিক পরীক্ষা');
-        const reqYear = String(req.body.year || fallbackExisting.year || '২০২৬');
-        const passPercent = Number(req.body.passPercent || fallbackExisting.passPercent || 33);
-        const maxPromoteFail = Number(req.body.maxPromoteFail ?? fallbackExisting.maxPromoteFail ?? 0);
-        const promotionLabel = String(req.body.promotionLabel || fallbackExisting.promotionLabel || 'বিশেষ বিবেচনায় প্রমোটেড');
-
-        const validSheets = workbook.sheets.filter((sh) => {
-          const cols = detectResultColumns(sh.columns, sh.subRowFullMarks, sh.rows);
-          const hasSub = cols.some((c) => c.isSubject);
-          return sh.rows.length > 0 && hasSub;
-        });
-
-        const sheetsToImport = validSheets.length > 0 ? validSheets : [workbook.sheets[0]];
-        const isMultiSheet = sheetsToImport.length > 1;
-        const importedExams = [];
-        const skippedSheets = workbook.sheets
-          .filter((sh) => !sheetsToImport.includes(sh))
-          .map((sh) => sh.sheetName);
-
-        for (let idx = 0; idx < sheetsToImport.length; idx++) {
-          const sh = sheetsToImport[idx];
-          const detectedCols = detectResultColumns(sh.columns, sh.subRowFullMarks, sh.rows);
-          const mappingGuess = autoDetectStudentMapping(sh.columns);
-
-          let classId = sh.classInfo?.key || '';
-          let className = sh.classInfo?.label || '';
-          if (!classId && !isMultiSheet && reqClassId) {
-            classId = reqClassId;
-            className = reqClassName || classMap[classId]?.name || sh.sheetName;
-          } else if (!classId) {
-            const fallbackSlug = sh.sheetName.trim().toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '_') || `sheet_${idx + 1}`;
-            const resolvedFallback = resolveSheetClassInfo(sh.sheetName);
-            classId = resolvedFallback.key || `custom_${fallbackSlug}`;
-            className = resolvedFallback.label || sh.sheetName;
-          } else if (!className) {
-            className = classMap[classId]?.name || sh.sheetName;
-          }
-
-          let examId = '';
-          if (!isMultiSheet && fallbackExamId && (fallbackExisting.classId === classId || !sh.classInfo?.key || (fallbackExisting.rows || []).length === 0)) {
-            examId = fallbackExamId;
-          } else {
-            const matchingExisting = Object.values(store.results.exams).find(
-              (ex) => String(ex.classId) === String(classId)
-            );
-            examId = matchingExisting
-              ? matchingExisting.id
-              : `exam_class_${String(classId).replace(/[^a-zA-Z0-9_-]/g, '_')}`;
-            // Avoid collisions when two sheets in same workbook map to the same classId
-            if (importedExams.some((ie) => ie.id === examId)) {
-              examId = `${examId}_${idx + 1}`;
-            }
-          }
-
-          const existing = store.results.exams[examId] || {};
-          const examName = sh.detectedExamName || reqExamName;
-          const year = sh.detectedYear || reqYear;
-          const subjectCount = detectedCols.filter((c) => c.isSubject).length;
-
-          store.results.exams[examId] = {
-            id: examId,
-            title: `${examName} - ${className} শ্রেণি`,
-            classId,
-            className,
-            examName,
-            year,
-            passPercent: Number(existing.passPercent || passPercent || 33),
-            maxPromoteFail: Number(existing.maxPromoteFail ?? maxPromoteFail ?? 0),
-            promotionLabel: String(existing.promotionLabel || promotionLabel || 'বিশেষ বিবেচনায় প্রমোটেড'),
-            columns: detectedCols,
-            mapping: {
-              roll: mappingGuess.roll || (sh.columns[0]?.key || ''),
-              name: mappingGuess.name_bn || (sh.columns[1]?.key || ''),
-              father: mappingGuess.father_bn || '',
-              id: mappingGuess.id || '',
-            },
-            rows: sh.rows,
-            updatedAt: now,
-          };
-
-          importedExams.push({
-            id: examId,
-            sheetName: sh.sheetName,
-            classId,
-            className,
-            rowCount: sh.rows.length,
-            subjectCount,
-          });
-        }
-
-        if (importedExams.length > 0) {
-          store.results.activeExamId = importedExams[0].id;
-        }
-
-        saveExcelStore(store);
-        const summaryText = importedExams
-          .map((e) => `${e.className} (${convertToBengali(e.rowCount)} জন, ${convertToBengali(e.subjectCount)} বিষয়)`)
-          .join(', ');
-        const msg = importedExams.length > 1
-          ? `সফলভাবে ${convertToBengali(importedExams.length)}টি শ্রেণির রেজাল্ট শিট আপলোড হয়েছে: ${summaryText}`
-          : `রেজাল্ট শিট সফলভাবে আপলোড হয়েছে: ${summaryText}`;
-
-        return res.json({
-          message: msg,
-          importedExams,
-          skippedSheets,
-          state: serializeExcelState(store),
-        });
-      }
-
+      store.results.exams[examId] = {
+        id: examId,
+        title: String(req.body.title || `${examName} - ${className} শ্রেণি`),
+        classId,
+        className,
+        examName,
+        year,
+        passPercent: Number(req.body.passPercent || existing.passPercent || 33),
+        maxPromoteFail: Number(req.body.maxPromoteFail ?? existing.maxPromoteFail ?? 0),
+        promotionLabel: String(req.body.promotionLabel || existing.promotionLabel || 'বিশেষ বিবেচনায় প্রমোটেড'),
+        columns: detectedCols,
+        mapping: {
+          roll: mappingGuess.roll || (parsed.columns[0]?.key || ''),
+          name: mappingGuess.name_bn || (parsed.columns[1]?.key || ''),
+          father: mappingGuess.father_bn || '',
+          id: mappingGuess.id || '',
+        },
+        rows: parsed.rows,
+        updatedAt: now,
+      };
+      store.results.activeExamId = examId;
+    } else {
       return res.status(400).json({ error: 'অবৈধ টার্গেট শিট।' });
+    }
+
+      saveExcelStore(store);
+      res.json({
+        message: `ফাইল সফলভাবে আপলোড হয়েছে (${parsed.rows.length}টি সারি, ${parsed.columns.length}টি কলাম)।`,
+        state: serializeExcelState(store),
+      });
     } catch (err) {
       res.status(400).json({ error: err.message || 'এক্সেল ফাইল পড়তে সমস্যা হয়েছে।' });
     }
@@ -1323,42 +1161,6 @@ app.delete('/api/excel/results/:examId', requireAdminApi, verifySameOrigin, (req
 
 app.get('/api/excel/template/:type', requireAdminApi, (req, res) => {
   const type = String(req.params.type || 'students');
-  if (type === 'results-multi') {
-    const buffer = buildMultiSheetExcelBuffer([
-      {
-        sheetName: 'ষষ্ঠ',
-        aoa: [
-          ['নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা - বার্ষিক পরীক্ষা ২০২৬ (ষষ্ঠ শ্রেণি)'],
-          ['রোল', 'শিক্ষার্থীর নাম', 'পিতার নাম', 'কুরআন মাজিদ (100)', 'আরবি (100)', 'বাংলা (100)', 'ইংরেজি (100)', 'গণিত (100)', 'আইসিটি (50)'],
-          ['1', 'মোঃ আব্দুল্লাহ আল মামুন', 'মোঃ আব্দুর রহমান', '88', '84', '81', '78', '92', '46'],
-          ['2', 'মোছাঃ ফাতিমা তুজ জোহরা', 'মোঃ জাকারিয়া হোসেন', '76', '72', '75', '28', '69', '41'],
-          ['3', 'মোঃ তানভীর আহমেদ', 'মোঃ সাইফুল ইসলাম', '64', '58', '55', '49', '70', '35'],
-        ],
-      },
-      {
-        sheetName: 'সপ্তম',
-        aoa: [
-          ['বার্ষিক পরীক্ষা ২০২৬ - সপ্তম শ্রেণি'],
-          ['ক্রম', 'রোল', 'শিক্ষার্থীর নাম', 'পিতার নাম', 'কুরআন মাজিদ', 'আরবি ১ম', 'বাংলা', 'ইংরেজি', 'আইসিটি'],
-          ['', 'পূর্ণমান', '', '', '100', '100', '100', '100', '50'],
-          ['1', '1', 'মোঃ হাসানুল ইসলাম', 'মোঃ শরিফুল ইসলাম', '85', '80', '74', '71', '45'],
-          ['2', '2', 'মোছাঃ মারিয়াম আক্তার', 'মোঃ আনিছুর রহমান', '90', '88', '82', '79', '48'],
-        ],
-      },
-      {
-        sheetName: 'অষ্টম',
-        aoa: [
-          ['রোল', 'শিক্ষার্থীর নাম', 'পিতার নাম', 'কুরআন [100]', 'আরবি [100]', 'বাংলা [100]', 'ইংরেজি [100]', 'গণিত [100]', 'মোট', 'GPA', 'মন্তব্য'],
-          ['1', 'মোঃ নাইমুর রহমান', 'মোঃ ওসমান আলী', '82', '79', '75', '70', '86', '392', '4.60', 'উত্তীর্ণ'],
-          ['2', 'মোছাঃ সাবিহা সুলতানা', 'মোঃ আমিরুল ইসলাম', '91', '85', '84', '81', '89', '430', '5.00', 'উত্তীর্ণ'],
-        ],
-      },
-    ]);
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', 'attachment; filename="multi-class-results-template.xlsx"');
-    return res.send(buffer);
-  }
-
   let headers = [];
   let rows = [];
   let filename = 'template.xlsx';
@@ -1413,32 +1215,20 @@ app.post('/api/excel/export', requireAdminApi, verifySameOrigin, (req, res) => {
   }
 });
 
-app.post('/api/export/word', async (req, res) => {
+app.post('/api/export/word', (req, res) => {
   try {
     const html = String(req.body?.html || '');
     if (!html.trim()) {
       return res.status(400).send('ডকুমেন্টের কোনো কন্টেন্ট পাওয়া যায়নি।');
     }
-    const title = String(req.body?.title || 'Document');
-    let marginMm = [14, 14, 14, 14];
-    if (req.body?.marginMm) {
-      try {
-        const parsedMargin = JSON.parse(String(req.body.marginMm));
-        if (Array.isArray(parsedMargin) && parsedMargin.length === 4) {
-          marginMm = parsedMargin.map((n) => Number(n) || 14);
-        }
-      } catch {
-        // ignore invalid margin JSON
-      }
-    }
-    const safeFilename = String(req.body?.filename || 'document.docx')
+    const safeFilename = String(req.body?.filename || 'document.doc')
       .replace(/[^a-zA-Z0-9._-]/g, '_')
-      .replace(/\.docx?$/i, '') + '.docx';
-    const docxBuffer = await generateDocxFromHtml({ html, title, marginMm });
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+      .replace(/\.docx?$/i, '') + '.doc';
+    const docBuffer = Buffer.concat([Buffer.from('\ufeff', 'utf8'), Buffer.from(html, 'utf8')]);
+    res.setHeader('Content-Type', 'application/msword; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}"`);
-    res.setHeader('Content-Length', String(docxBuffer.length));
-    res.send(docxBuffer);
+    res.setHeader('Content-Length', String(docBuffer.length));
+    res.send(docBuffer);
   } catch (err) {
     res.status(500).send(err.message || 'Word ফাইল তৈরি ব্যর্থ হয়েছে।');
   }
@@ -1833,26 +1623,9 @@ app.all(['/student-search', '/student-search.php'], (req, res) => {
   });
 });
 
-app.use((err, req, res, next) => {
-  if (!err) return next();
-  console.error('Unhandled request error:', err.message);
-  if (res.headersSent) return next(err);
-  if (err.code === 'LIMIT_FILE_SIZE') {
-    return res.status(413).json({ error: 'ফাইলটি ১০ মেগাবাইটের চেয়ে বড়। অনুগ্রহ করে ছোট ফাইল আপলোড করুন।' });
-  }
-  if (req.path.startsWith('/api/')) {
-    return res.status(err.status || 500).json({ error: 'সার্ভারে একটি সাময়িক ত্রুটি হয়েছে।' });
-  }
-  return res.status(err.status || 500).send('সার্ভারে সাময়িক ত্রুটি হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
+const server = app.listen(PORT, HOST, () => {
+  console.log(`Madrasah portal server running at http://${HOST}:${PORT}`);
 });
-
-const server = typeof PORT === 'number'
-  ? app.listen(PORT, HOST, () => {
-      console.log(`Madrasah portal server running at http://${HOST}:${PORT}`);
-    })
-  : app.listen(PORT, () => {
-      console.log(`Madrasah portal server running on socket ${PORT}`);
-    });
 
 function shutdown() {
   if (typeof server.closeAllConnections === 'function') {
@@ -1865,9 +1638,3 @@ function shutdown() {
 
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
-process.on('unhandledRejection', (reason) => {
-  console.error('Unhandled Promise Rejection:', reason);
-});
-process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err);
-});

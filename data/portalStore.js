@@ -5,9 +5,7 @@ import { initialNotices, allTeachersAndStaff } from './seed.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DATA_ROOT = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : __dirname;
-const STORE_PATH = path.join(DATA_ROOT, 'portal-store.json');
-let memoryPortalStore = null;
+const STORE_PATH = path.join(__dirname, 'portal-store.json');
 
 function createDefaultPortalStore() {
   return {
@@ -57,39 +55,30 @@ function createDefaultPortalStore() {
 
 export function loadPortalStore() {
   try {
-    if (fs.existsSync(STORE_PATH)) {
-      const raw = fs.readFileSync(STORE_PATH, 'utf8');
-      const parsed = JSON.parse(raw);
+    if (!fs.existsSync(STORE_PATH)) {
       const defaults = createDefaultPortalStore();
-      memoryPortalStore = {
-        notices: Array.isArray(parsed.notices) ? parsed.notices : defaults.notices,
-        teachers: Array.isArray(parsed.teachers) ? parsed.teachers : defaults.teachers,
-        admissions: Array.isArray(parsed.admissions) ? parsed.admissions : defaults.admissions,
-        routines: Array.isArray(parsed.routines) ? parsed.routines : defaults.routines,
-        syllabus: Array.isArray(parsed.syllabus) ? parsed.syllabus : defaults.syllabus,
-        fees: Array.isArray(parsed.fees) ? parsed.fees : defaults.fees,
-        registrations: Array.isArray(parsed.registrations) ? parsed.registrations : defaults.registrations,
-        studentStats: Array.isArray(parsed.studentStats) ? parsed.studentStats : defaults.studentStats,
-      };
-      return memoryPortalStore;
+      savePortalStore(defaults);
+      return defaults;
     }
-    if (memoryPortalStore) return memoryPortalStore;
+    const raw = fs.readFileSync(STORE_PATH, 'utf8');
+    const parsed = JSON.parse(raw);
     const defaults = createDefaultPortalStore();
-    savePortalStore(defaults);
-    return defaults;
+    return {
+      notices: Array.isArray(parsed.notices) ? parsed.notices : defaults.notices,
+      teachers: Array.isArray(parsed.teachers) ? parsed.teachers : defaults.teachers,
+      admissions: Array.isArray(parsed.admissions) ? parsed.admissions : defaults.admissions,
+      routines: Array.isArray(parsed.routines) ? parsed.routines : defaults.routines,
+      syllabus: Array.isArray(parsed.syllabus) ? parsed.syllabus : defaults.syllabus,
+      fees: Array.isArray(parsed.fees) ? parsed.fees : defaults.fees,
+      registrations: Array.isArray(parsed.registrations) ? parsed.registrations : defaults.registrations,
+      studentStats: Array.isArray(parsed.studentStats) ? parsed.studentStats : defaults.studentStats,
+    };
   } catch (err) {
-    console.warn('Could not read portal store, using fallback:', err.message);
-    return memoryPortalStore || createDefaultPortalStore();
+    console.warn('Could not read portal store, resetting defaults:', err.message);
+    return createDefaultPortalStore();
   }
 }
 
 export function savePortalStore(data) {
-  memoryPortalStore = data;
-  try {
-    fs.mkdirSync(path.dirname(STORE_PATH), { recursive: true });
-    fs.writeFileSync(STORE_PATH, JSON.stringify(data, null, 2), 'utf8');
-  } catch (err) {
-    console.warn('Failed to persist portal-store.json:', err.message);
-  }
-  return memoryPortalStore;
+  fs.writeFileSync(STORE_PATH, JSON.stringify(data, null, 2), 'utf8');
 }

@@ -2,12 +2,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as XLSX from 'xlsx';
-import { bnToEnNumber, classMap, convertToBengali, getGradeInfo } from './seed.js';
+import { bnToEnNumber, convertToBengali, getGradeInfo } from './seed.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DATA_ROOT = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : __dirname;
-const STORE_PATH = path.join(DATA_ROOT, 'excel-store.json');
+const STORE_PATH = path.join(__dirname, 'excel-store.json');
 
 function createDefaultStore() {
   return {
@@ -129,7 +128,6 @@ export function loadExcelStore() {
 export function saveExcelStore(store) {
   memoryStore = store;
   try {
-    fs.mkdirSync(path.dirname(STORE_PATH), { recursive: true });
     fs.writeFileSync(STORE_PATH, JSON.stringify(store, null, 2), 'utf8');
   } catch (err) {
     console.warn('Failed to persist excel-store.json:', err.message);
@@ -189,105 +187,29 @@ function isBinarySpreadsheetBuffer(buffer, filename = '') {
   return false;
 }
 
-const CLASS_MATCHERS = [
-  { key: '0', label: 'শিশু', aliases: ['0', 'শিশু', 'nursery', 'play', 'kg', 'shishu'] },
-  { key: '1', label: 'প্রথম', aliases: ['1', '১', '১ম', 'প্রথম', '1st', 'one', 'first'] },
-  { key: '2', label: 'দ্বিতীয়', aliases: ['2', '২', '২য়', '২য়', 'দ্বিতীয়', 'দ্বিতীয়', '2nd', 'two', 'second'] },
-  { key: '3', label: 'তৃতীয়', aliases: ['3', '৩', '৩য়', '৩য়', 'তৃতীয়', 'তৃতীয়', '3rd', 'three', 'third'] },
-  { key: '4', label: 'চতুর্থ', aliases: ['4', '৪', '৪র্থ', 'চতুর্থ', '4th', 'four', 'fourth'] },
-  { key: '5', label: 'পঞ্চম', aliases: ['5', '৫', '৫ম', 'পঞ্চম', '5th', 'five', 'fifth', 'এবতেদায়ী সমাপনী', 'এবতেদায়ী'] },
-  { key: '6', label: 'ষষ্ঠ', aliases: ['6', '৬', '৬ষ্ঠ', 'ষষ্ঠ', '6th', 'six', 'sixth', 'class 6', 'class-6'] },
-  { key: '7', label: 'সপ্তম', aliases: ['7', '৭', '৭ম', 'সপ্তম', '7th', 'seven', 'seventh', 'class 7', 'class-7'] },
-  { key: '8', label: 'অষ্টম', aliases: ['8', '৮', '৮ম', 'অষ্টম', '8th', 'eight', 'eighth', 'জেডিসি', 'jdc', 'class 8', 'class-8'] },
-  { key: '9', label: 'নবম', aliases: ['9', '৯', '৯ম', 'নবম', '9th', 'nine', 'ninth', 'class 9', 'class-9'] },
-  { key: '10', label: 'দশম', aliases: ['10', '১০', '১০ম', 'দশম', 'দাখিল', '10th', 'ten', 'tenth', 'dakhil', 'দাখিল (দশম)', 'class 10', 'class-10'] },
-  { key: '11', label: 'আলিম ১ম বর্ষ', aliases: ['11', '১১', '১১শ', 'আলিম ১ম', 'আলিম ১ম বর্ষ', 'আলিম প্রথম বর্ষ', 'alim 1st', 'alim 1', 'alim 1st year'] },
-  { key: '12', label: 'আলিম ২য় বর্ষ', aliases: ['12', '১২', '১২শ', 'আলিম ২য়', 'আলিম ২য় বর্ষ', 'আলিম ২য় বর্ষ', 'আলিম ২য়', 'আলিম দ্বিতীয় বর্ষ', 'alim 2nd', 'alim 2', 'alim 2nd year'] },
-  { key: 'fazil_1', label: 'ফাজিল ১ম বর্ষ', aliases: ['ফাজিল ১ম', 'ফাজিল ১ম বর্ষ', 'fazil 1st', 'fazil 1', 'fazil 1st year'] },
-  { key: 'fazil_2', label: 'ফাজিল ২য় বর্ষ', aliases: ['ফাজিল ২য়', 'ফাজিল ২য় বর্ষ', 'ফাজিল ২য় বর্ষ', 'fazil 2nd', 'fazil 2', 'fazil 2nd year'] },
-  { key: 'fazil_3', label: 'ফাজিল ৩য় বর্ষ', aliases: ['ফাজিল ৩য়', 'ফাজিল ৩য় বর্ষ', 'ফাজিল ৩য় বর্ষ', 'fazil 3rd', 'fazil 3', 'fazil 3rd year'] },
-];
-
-export function resolveSheetClassInfo(rawText) {
-  const raw = String(rawText ?? '').trim();
-  if (!raw) return { key: '', label: '' };
-  if (Object.prototype.hasOwnProperty.call(classMap, raw)) {
-    return { key: raw, label: String(classMap[raw].name || '').trim() };
-  }
-  const cleaned = raw
-    .replace(/শ্রেণি|শ্রেণী|class|result|ফলাফল|sheet|শিট/gi, ' ')
-    .replace(/[():_-]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  const enLower = bnToEnNumber(cleaned).toLowerCase();
-  if (!enLower) return { key: '', label: '' };
-
-  for (const entry of CLASS_MATCHERS) {
-    if (entry.aliases.some((alias) => {
-      const al = bnToEnNumber(alias).toLowerCase().trim();
-      return enLower === al || cleaned.toLowerCase() === alias.toLowerCase();
-    })) {
-      return { key: entry.key, label: entry.label };
-    }
-  }
-
-  for (const entry of CLASS_MATCHERS) {
-    if (entry.aliases.some((alias) => {
-      const al = bnToEnNumber(alias).toLowerCase().trim();
-      return al.length >= 2 && (enLower.includes(al) || al.includes(enLower));
-    })) {
-      return { key: entry.key, label: entry.label };
-    }
-  }
-
-  return { key: '', label: raw };
-}
-
-function isGenericSheetName(name) {
-  return /^(sheet\s*\d+|page\s*\d+|tab\s*\d+|result\s*\d*|data|শিট\s*\d*)$/i.test(String(name || '').trim());
-}
-
-function isPureNumericCell(val) {
-  const s = bnToEnNumber(String(val ?? '').trim());
-  return /^\d+(?:\.\d+)?$/.test(s);
-}
-
 function findHeaderRowIndex(nonEmptyRows) {
   if (nonEmptyRows.length <= 1) return 0;
-  const maxCheck = Math.min(15, nonEmptyRows.length - 1);
-  const strongInfoKw = /^(?:ক্রমিক|ক্রম|sl|serial|রোল|roll|আইডি|id|নাম|name|শিক্ষার্থীর নাম|পিতা|father|মাতা|mother|শ্রেণি|শ্রেণী|class)$/i;
-  const headerKeywords = /রোল|নাম|roll|name|id|আইডি|শ্রেণি|শ্রেণী|class|subject|বিষয়|বিষয়|পিতা|father|মাতা|mother|reg|gpa|কুরআন|আরবি|বাংলা|ইংরেজি|গণিত|মোট|total|মেধা|merit/i;
-  const fullMarkRowKw = /^(?:পূর্ণমান|full\s*marks?|fm|max\s*marks?|সর্বোচ্চ)$/i;
+  const countFilled = (row) => row.filter((c) => String(c ?? '').trim() !== '').length;
+  const maxCheck = Math.min(8, nonEmptyRows.length - 1);
+  const firstCount = countFilled(nonEmptyRows[0]);
+  const headerKeywords = /রোল|নাম|roll|name|id|আইডি|শ্রেণি|class|subject|বিষয়|পিতা|father|reg|gpa/i;
 
-  let bestIdx = 0;
-  let bestScore = -999;
-
-  for (let i = 0; i <= maxCheck; i++) {
-    const row = nonEmptyRows[i];
-    const cells = row.map((c) => String(c ?? '').trim()).filter(Boolean);
-    const filled = cells.length;
-    if (filled === 0) continue;
-
-    // Never pick a pure "Full Marks" sub-row or a data row of numbers
-    const numericCount = cells.filter((c) => isPureNumericCell(c)).length;
-    const isFullMarksLabelRow = cells.some((c) => fullMarkRowKw.test(c)) && numericCount >= 2;
-    if (isFullMarksLabelRow) continue;
-
-    let kwMatches = 0;
-    let strongMatches = 0;
-    for (const c of cells) {
-      if (headerKeywords.test(c)) kwMatches++;
-      const cClean = c.replace(/\([^)]*\)|\[[^\]]*\]/g, '').trim();
-      if (strongInfoKw.test(cClean)) strongMatches++;
+  if (firstCount <= 1) {
+    for (let i = 1; i <= maxCheck; i++) {
+      if (countFilled(nonEmptyRows[i]) >= 2) {
+        return i;
+      }
     }
+  }
 
-    // Data rows usually have >= 40% numeric mark columns; header rows are mostly text labels
-    const numericRatio = numericCount / filled;
-    const numericPenalty = numericRatio > 0.45 ? 12 : numericCount * 1.2;
-    const singleCellBannerPenalty = filled <= 2 ? 6 : 0;
-
-    const score = filled * 1.5 + kwMatches * 4 + strongMatches * 6 - numericPenalty - singleCellBannerPenalty;
-    if (score > bestScore) {
+  // Also check if row 0 has far fewer columns than a multi-column header row right below it
+  let bestIdx = 0;
+  let bestScore = firstCount + (nonEmptyRows[0].some((c) => headerKeywords.test(String(c || ''))) ? 3 : 0);
+  for (let i = 1; i <= Math.min(4, nonEmptyRows.length - 1); i++) {
+    const filled = countFilled(nonEmptyRows[i]);
+    const kwBonus = nonEmptyRows[i].some((c) => headerKeywords.test(String(c || ''))) ? 3 : 0;
+    const score = filled + kwBonus;
+    if (filled >= 3 && firstCount <= 2 && score > bestScore) {
       bestScore = score;
       bestIdx = i;
     }
@@ -295,162 +217,7 @@ function findHeaderRowIndex(nonEmptyRows) {
   return bestIdx;
 }
 
-function isFullMarksSubHeaderRow(row, headerRow) {
-  if (!Array.isArray(row)) return false;
-  const cells = row.map((c) => String(c ?? '').trim());
-  const nonEmpty = cells.filter(Boolean);
-  if (nonEmpty.length < 2) return false;
-
-  const fullMarkCue = /পূর্ণমান|প\.মান|full\s*marks?|f\.?\s*m\.?|max\s*marks?|pass\s*marks?|সর্বোচ্চ/i;
-  const hasExplicitCue = nonEmpty.some((c) => fullMarkCue.test(c));
-
-  let validFullMarksCount = 0;
-  let textUnderInfoCount = 0;
-  let suspectStudentName = false;
-
-  for (let c = 0; c < cells.length; c++) {
-    const val = cells[c];
-    if (!val) continue;
-    const hVal = String(headerRow[c] ?? '').toLowerCase();
-    const isNameHeader = /নাম|name|পিতা|father|মাতা|mother/.test(hVal);
-    if (isPureNumericCell(val)) {
-      const n = parseFloat(bnToEnNumber(val));
-      // Typical full marks range (10 to 500)
-      if (n >= 10 && n <= 500) {
-        validFullMarksCount++;
-      }
-    } else if (fullMarkCue.test(val)) {
-      textUnderInfoCount++;
-    } else if (isNameHeader && val.length > 2) {
-      // Looks like an actual student's name under "Name" column
-      suspectStudentName = true;
-    }
-  }
-
-  if (suspectStudentName && !hasExplicitCue) return false;
-  if (hasExplicitCue && validFullMarksCount >= 1) return true;
-  // Even without "পূর্ণমান" word, if Name/Roll cells are empty and >=3 subject columns have numbers like 100/50/75/25
-  if (!suspectStudentName && validFullMarksCount >= 3 && textUnderInfoCount >= 0) {
-    const rollOrNameHasNonMark = cells.some((val, c) => {
-      const hVal = String(headerRow[c] ?? '').toLowerCase();
-      return /রোল|roll|নাম|name/.test(hVal) && val !== '' && !fullMarkCue.test(val);
-    });
-    if (!rollOrNameHasNonMark) return true;
-  }
-  return false;
-}
-
-function isSummaryOrEmptyRow(rowObj, columns, mapping) {
-  const vals = columns.map((c) => String(rowObj[c.key] ?? '').trim());
-  if (!vals.some(Boolean)) return true;
-
-  const nameVal = mapping?.name_bn ? String(rowObj[mapping.name_bn] ?? '').trim() : '';
-  const rollVal = mapping?.roll ? String(rowObj[mapping.roll] ?? '').trim() : '';
-  const summaryPattern = /^(?:মোট|সর্বমোট|গড়|গড়|পাশের হার|total|grand\s*total|average|avg|summary|signature|স্বাক্ষর|তারিখ|date)$/i;
-  if (summaryPattern.test(nameVal) || summaryPattern.test(rollVal)) return true;
-
-  // Check if first 2 filled cells are summary labels
-  const firstTwo = vals.filter(Boolean).slice(0, 2);
-  if (firstTwo.some((v) => summaryPattern.test(v))) return true;
-
-  return false;
-}
-
-function parseMatrixSheet(sheetName, matrix) {
-  const nonEmpty = (matrix || []).filter(
-    (row) => Array.isArray(row) && row.some((cell) => String(cell ?? '').trim() !== '')
-  );
-  if (nonEmpty.length === 0) {
-    return null;
-  }
-
-  const headerIdx = findHeaderRowIndex(nonEmpty);
-  const preambleRows = nonEmpty.slice(0, headerIdx);
-  const headerRow = nonEmpty[headerIdx];
-  const candidateSubRow = nonEmpty[headerIdx + 1];
-  const hasFullMarksSubRow = isFullMarksSubHeaderRow(candidateSubRow, headerRow);
-  const dataSlice = nonEmpty.slice(headerIdx + (hasFullMarksSubRow ? 2 : 1));
-
-  // Determine rightmost used column index across header, sub-row, and data
-  let lastUsedCol = -1;
-  const rowsToMeasure = hasFullMarksSubRow ? [headerRow, candidateSubRow, ...dataSlice] : [headerRow, ...dataSlice];
-  for (const r of rowsToMeasure) {
-    for (let c = r.length - 1; c > lastUsedCol; c--) {
-      if (String(r[c] ?? '').trim() !== '') {
-        lastUsedCol = c;
-        break;
-      }
-    }
-  }
-  const maxCols = Math.max(1, lastUsedCol + 1);
-
-  const usedKeys = new Set();
-  const columns = [];
-  const subRowFullMarks = [];
-
-  for (let i = 0; i < maxCols; i++) {
-    const rawLabel = String(headerRow[i] ?? '').trim();
-    const label = rawLabel || `কলাম ${i + 1}`;
-    const key = makeColumnKey(label, i, usedKeys);
-    columns.push({ key, label });
-
-    let fm = 0;
-    if (hasFullMarksSubRow && candidateSubRow[i] !== undefined) {
-      const n = parseFloat(bnToEnNumber(String(candidateSubRow[i] ?? '').trim()));
-      if (!Number.isNaN(n) && n >= 10 && n <= 500) {
-        fm = n;
-      }
-    }
-    subRowFullMarks.push(fm);
-  }
-
-  const rawRows = dataSlice.map((r, rowIdx) => {
-    const obj = { _id: `row_${Date.now()}_${rowIdx}_${Math.random().toString(36).slice(2, 6)}` };
-    columns.forEach((col, colIdx) => {
-      obj[col.key] = String(r[colIdx] ?? '').trim();
-    });
-    return obj;
-  });
-
-  const mappingGuess = autoDetectStudentMapping(columns);
-  const rows = rawRows.filter((r) => !isSummaryOrEmptyRow(r, columns, mappingGuess));
-
-  // Extract preamble metadata (class, exam name, year)
-  const preambleText = preambleRows.flat().map((x) => String(x || '').trim()).filter(Boolean).join(' ');
-  const yearMatch = bnToEnNumber(preambleText + ' ' + sheetName).match(/\b(20\d{2})\b/);
-  const detectedYear = yearMatch ? convertToBengali(yearMatch[1]) : '';
-  const examMatch = (preambleText + ' ' + sheetName).match(/(অর্ধবার্ষিক পরীক্ষা|বার্ষিক পরীক্ষা|প্রাক-নির্বাচনী পরীক্ষা|নির্বাচনী পরীক্ষা|মডেল টেস্ট|Half Yearly|Annual Exam|Final Exam|Pre-Test|Test Exam)/i);
-  const detectedExamName = examMatch ? examMatch[1] : '';
-
-  let classInfo = !isGenericSheetName(sheetName) ? resolveSheetClassInfo(sheetName) : { key: '', label: '' };
-  if (!classInfo.key && preambleText) {
-    // Check explicit "শ্রেণি: X" or "Class: X" in preamble
-    const clsExplicit = preambleText.match(/(?:শ্রেণি|শ্রেণী|class)\s*[:ঃ-]?\s*([^\s,|·/]+(?:\s+[^\s,|·/]+)?)/i);
-    if (clsExplicit) {
-      const resolved = resolveSheetClassInfo(clsExplicit[1]);
-      if (resolved.key) classInfo = resolved;
-    }
-  }
-  if (!classInfo.key && mappingGuess.class_name && rows.length > 0) {
-    const firstClsVal = rows.map((r) => r[mappingGuess.class_name]).find(Boolean);
-    if (firstClsVal) {
-      classInfo = resolveSheetClassInfo(firstClsVal);
-    }
-  }
-
-  return {
-    sheetName,
-    columns,
-    rows,
-    subRowFullMarks,
-    hasFullMarksSubRow,
-    classInfo,
-    detectedYear,
-    detectedExamName,
-  };
-}
-
-export function parseExcelWorkbook(buffer, filename = '') {
+export function parseExcelBuffer(buffer, filename = '') {
   if (!buffer || buffer.length === 0) {
     throw new Error('আপলোডকৃত ফাইলটি খালি।');
   }
@@ -463,42 +230,63 @@ export function parseExcelWorkbook(buffer, filename = '') {
     wb = XLSX.read(text, { type: 'string', cellDates: false });
   }
 
-  if (!wb.SheetNames || wb.SheetNames.length === 0) {
+  const sheetName = wb.SheetNames[0];
+  if (!sheetName) {
     throw new Error('এক্সেল ফাইলে কোনো শিট পাওয়া যায়নি।');
   }
+  const ws = wb.Sheets[sheetName];
+  const matrix = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false });
 
-  const parsedSheets = [];
-  for (const sheetName of wb.SheetNames) {
-    const ws = wb.Sheets[sheetName];
-    if (!ws) continue;
-    const matrix = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false });
-    const parsed = parseMatrixSheet(sheetName, matrix);
-    if (parsed && parsed.rows.length > 0) {
-      parsedSheets.push(parsed);
+  // Trim completely empty rows
+  const nonEmpty = matrix.filter(
+    (row) => Array.isArray(row) && row.some((cell) => String(cell ?? '').trim() !== '')
+  );
+
+  if (nonEmpty.length === 0) {
+    throw new Error('এক্সেল শিটে কোনো তথ্য পাওয়া যায়নি।');
+  }
+
+  const headerIdx = findHeaderRowIndex(nonEmpty);
+  const headerRow = nonEmpty[headerIdx];
+  const dataSlice = nonEmpty.slice(headerIdx + 1);
+
+  // Determine rightmost column index that actually contains any non-empty cell
+  let lastUsedCol = -1;
+  for (const r of [headerRow, ...dataSlice]) {
+    for (let c = r.length - 1; c > lastUsedCol; c--) {
+      if (String(r[c] ?? '').trim() !== '') {
+        lastUsedCol = c;
+        break;
+      }
     }
   }
+  const maxCols = Math.max(1, lastUsedCol + 1);
 
-  if (parsedSheets.length === 0) {
-    throw new Error('এক্সেল শিটে কোনো কার্যকর শিক্ষার্থী বা ফলাফলের সারি পাওয়া যায়নি।');
+  const usedKeys = new Set();
+  const columns = [];
+
+  for (let i = 0; i < maxCols; i++) {
+    const rawLabel = String(headerRow[i] ?? '').trim();
+    const label = rawLabel || `কলাম ${i + 1}`;
+    const key = makeColumnKey(label, i, usedKeys);
+    columns.push({ key, label });
   }
 
-  return {
-    totalSheetCount: wb.SheetNames.length,
-    sheetNames: wb.SheetNames,
-    sheets: parsedSheets,
-  };
-}
+  const rows = dataSlice.map((r, rowIdx) => {
+    const obj = { _id: `row_${Date.now()}_${rowIdx}` };
+    columns.forEach((col, colIdx) => {
+      obj[col.key] = String(r[colIdx] ?? '').trim();
+    });
+    return obj;
+  });
 
-export function parseExcelBuffer(buffer, filename = '') {
-  const wbResult = parseExcelWorkbook(buffer, filename);
-  return wbResult.sheets[0];
+  return { sheetName, columns, rows };
 }
 
 export function autoDetectStudentMapping(columns) {
-  const nonMarkCols = columns.filter((c) => {
-    const lbl = String(c.label || '');
-    return !/\(\s*[0-9০-৯]+(?:\.[0-9০-৯]+)?\s*\)/.test(lbl) && !/\[\s*[0-9০-৯]+(?:\.[0-9০-৯]+)?\s*\]/.test(lbl);
-  });
+  const nonMarkCols = columns.filter(
+    (c) => !/\(\s*[0-9০-৯]+(?:\.[0-9০-৯]+)?\s*\)/.test(String(c.label || ''))
+  );
   const pool = nonMarkCols.length > 0 ? nonMarkCols : columns;
   const findKey = (patterns, exclude = []) => {
     const found = pool.find((c) => {
@@ -510,13 +298,13 @@ export function autoDetectStudentMapping(columns) {
   };
 
   return {
-    roll: findKey(['রোল', 'roll'], ['কন্ট্রোল', 'পেরোল']),
+    roll: findKey(['রোল', 'roll']),
     id: findKey(['আইডি', 'uid', 'student id', 'student_id']),
-    name_bn: findKey(['নাম (বাংলা)', 'শিক্ষার্থীর নাম', 'ছাত্র/ছাত্রীর নাম', 'বাংলা নাম', 'name_bn', 'student name', 'নাম', 'name'], ['পিতা', 'মাতা', 'বাবা', 'মা', 'father', 'mother', 'ইংরেজি', 'english', 'শ্রেণি', 'শ্রেণী', 'বিষয়', 'বিষয়', 'অভিভাবক']),
+    name_bn: findKey(['নাম (বাংলা)', 'শিক্ষার্থীর নাম', 'বাংলা নাম', 'name_bn', 'student name', 'নাম', 'name'], ['পিতা', 'মাতা', 'father', 'mother', 'ইংরেজি', 'english']),
     name_en: findKey(['নাম (ইংরেজি)', 'english name', 'name_en']),
     class_name: findKey(['শ্রেণি', 'শ্রেণী', 'class']),
-    father_bn: findKey(['পিতার নাম', 'পিতা', 'বাবা', 'father']),
-    mother_bn: findKey(['মাতার নাম', 'মাতা', 'মা', 'mother'], ['মোট', 'মন্তব্য']),
+    father_bn: findKey(['পিতা', 'বাবা', 'father']),
+    mother_bn: findKey(['মাতা', 'মা', 'mother']),
     dob: findKey(['জন্ম তারিখ', 'dob', 'birth']),
     reg_no: findKey(['রেজিস্ট্রেশন', 'রেজি নং', 'নিবন্ধন', 'reg_no', 'registration'], ['ইংরেজি']),
     session: findKey(['শিক্ষাবর্ষ', 'সেশন', 'session', 'year']),
@@ -528,123 +316,50 @@ export function autoDetectStudentMapping(columns) {
 }
 
 export function extractFullMarksFromLabel(label) {
-  const normalized = bnToEnNumber(String(label || '').trim());
-  // 1) Parentheses: (100) or (FM: 50) or (পূর্ণমান 50)
-  const parenMatch = normalized.match(/\([^)]*?(\d+(?:\.\d+)?)[^)]*\)/);
-  if (parenMatch) {
-    const n = parseFloat(parenMatch[1]);
-    if (n >= 5 && n <= 500) return n;
-  }
-  // 2) Square brackets: [100] or [50]
-  const bracketMatch = normalized.match(/\[[^\]]*?(\d+(?:\.\d+)?)[^\]]*\]/);
-  if (bracketMatch) {
-    const n = parseFloat(bracketMatch[1]);
-    if (n >= 5 && n <= 500) return n;
-  }
-  // 3) Explicit FM / পূর্ণমান / Full Marks keyword
-  const kwMatch = normalized.match(/(?:পূর্ণমান|full\s*marks?|f\.?\s*m\.?|max)\s*[:=-]?\s*(\d+(?:\.\d+)?)/i);
-  if (kwMatch) {
-    const n = parseFloat(kwMatch[1]);
-    if (n >= 5 && n <= 500) return n;
-  }
-  // 4) Trailing "- 100" or "/ 50" or ": 100"
-  const sepMatch = normalized.match(/[-/:|]\s*(\d+(?:\.\d+)?)\s*$/);
-  if (sepMatch) {
-    const n = parseFloat(sepMatch[1]);
-    if (n >= 10 && n <= 500) return n;
-  }
-  // 5) Trailing standalone number >= 20 (avoids "বাংলা ১ম" or "Paper 2")
-  const trailMatch = normalized.match(/\s+(\d{2,3})\s*$/);
-  if (trailMatch) {
-    const n = parseFloat(trailMatch[1]);
-    if (n >= 20 && n <= 500) return n;
-  }
+  const normalized = bnToEnNumber(String(label || ''));
+  const match = normalized.match(/\((\d+(?:\.\d+)?)\)/);
+  if (match) return parseFloat(match[1]);
   return 100;
 }
 
-export function detectResultColumns(columns, subRowFullMarks = [], sampleRows = []) {
-  const exactNonSubjectWords = new Set([
-    'sl', 's.no', 'sno', 's/l', 'serial', 'serial no', 'no', '#', 'নং', 'ক্রম', 'ক্রমিক', 'ক্রমিক নং', 'ক্রমিক নম্বর',
-    'roll', 'roll no', 'roll number', 'রোল', 'রোল নং', 'রোল নম্বর',
-    'name', 'student name', 'নাম', 'শিক্ষার্থীর নাম', 'ছাত্র/ছাত্রীর নাম', 'নাম (বাংলা)', 'নাম (ইংরেজি)',
-    'id', 'student id', 'student_id', 'uid', 'আইডি', 'স্টুডেন্ট আইডি',
-    'father', 'father name', 'পিতা', 'পিতার নাম',
-    'mother', 'mother name', 'মাতা', 'মাতার নাম',
-    'class', 'শ্রেণি', 'শ্রেণী', 'section', 'শাখা', 'shift', 'শিফট', 'group', 'বিভাগ',
-    'mobile', 'phone', 'মোবাইল', 'ফোন',
+export function detectResultColumns(columns) {
+  const exactInfoWords = new Set([
+    'roll', 'রোল', 'রোল নং', 'রোল নম্বর',
+    'name', 'নাম', 'শিক্ষার্থীর নাম', 'নাম (বাংলা)', 'নাম (ইংরেজি)', 'student name',
+    'id', 'আইডি', 'স্টুডেন্ট আইডি', 'student id', 'uid',
+    'father', 'পিতা', 'পিতার নাম', 'father name',
+    'mother', 'মাতা', 'মাতার নাম', 'mother name',
+    'class', 'শ্রেণি', 'শ্রেণী', 'section', 'শাখা',
+    'mobile', 'মোবাইল', 'ফোন', 'phone',
     'reg', 'reg no', 'registration', 'রেজি', 'রেজি নং', 'রেজিস্ট্রেশন', 'রেজিস্ট্রেশন নং',
-    'dob', 'জন্ম তারিখ', 'address', 'ঠিকানা', 'session', 'শিক্ষাবর্ষ',
-    // Computed summary / merit / grade / remark columns — NEVER treat as subject!
-    'total', 'total marks', 'grand total', 'obtained', 'obtained marks', 'marks obtained', 'মোট', 'মোট নম্বর', 'মোট প্রাপ্ত নম্বর', 'সর্বমোট', 'প্রাপ্ত নম্বর',
-    'full marks', 'total full marks', 'পূর্ণমান', 'মোট পূর্ণমান',
-    'avg', 'average', 'গড়', 'গড়', 'percentage', 'percent', 'শতকরা', '%',
-    'gpa', 'cgpa', 'gp', 'grade point', 'জিপিএ', 'জিপি', 'গ্রেড পয়েন্ট',
-    'grade', 'lg', 'letter grade', 'গ্রেড', 'লেটার গ্রেড',
-    'merit', 'merit rank', 'merit position', 'rank', 'position', 'মেধা', 'মেধাক্রম', 'স্থান', 'অবস্থান',
-    'result', 'status', 'pass/fail', 'ফলাফল', 'অবস্থা', 'স্ট্যাটাস', 'fail', 'fail count', 'ফেল', 'ফেল বিষয়',
-    'remark', 'remarks', 'comment', 'comments', 'মন্তব্য', 'attendance', 'উপস্থিতি', 'conduct', 'আচরণ',
   ]);
-
-  const computedSummaryRegex = /^(?:মোট|সর্বমোট|প্রাপ্ত\s*নম্বর|গড়|গড়|শতকরা|জিপিএ|গ্রেড|মেধা|মেধাক্রম|ফলাফল|অবস্থা|স্ট্যাটাস|মন্তব্য|ক্রমিক|ক্রম|উপস্থিতি|total|grand\s*total|obtained|full\s*marks?|avg|average|percent(?:age)?|gpa|cgpa|grade(?:\s*point)?|letter\s*grade|lg|gp|merit(?:\s*(?:rank|position))?|rank|position|result|status|fail(?:\s*count)?|remarks?|comments?|sl\.?\s*(?:no)?|serial|attendance)/i;
-
-  const infoFieldRegex = /(?:^|\b)(roll|name|father|mother|class|section|shift|mobile|phone|reg_no|registration|student_id|dob|address|session)(?:\b|$)/i;
-
-  return columns.map((col, idx) => {
-    const rawLabel = String(col.label || '').trim();
-    const cleanLower = cleanSubjectTitle(rawLabel).toLowerCase();
+  return columns.map((col) => {
+    const cleanLower = cleanSubjectTitle(col.label).toLowerCase();
     const keyLower = String(col.key || '').toLowerCase();
-    const hasExplicitMarksTag = (
-      /\(\s*[0-9০-৯]+(?:\.[0-9০-৯]+)?\s*\)/.test(rawLabel) ||
-      /\[\s*[0-9০-৯]+(?:\.[0-9০-৯]+)?\s*\]/.test(rawLabel) ||
-      (Number(subRowFullMarks[idx]) > 0)
-    );
-
-    const isAlwaysNonSubject = (
-      exactNonSubjectWords.has(cleanLower) ||
-      exactNonSubjectWords.has(keyLower) ||
-      computedSummaryRegex.test(cleanLower)
-    );
-
-    const isInfoCol = (
-      exactNonSubjectWords.has(cleanLower) ||
+    const hasMarksInParens = /\(\s*[0-9০-৯]+(?:\.[0-9০-৯]+)?\s*\)/.test(String(col.label || ''));
+    const isInfo = !hasMarksInParens && (
+      exactInfoWords.has(cleanLower) ||
+      exactInfoWords.has(keyLower) ||
       cleanLower.includes('পিতার নাম') ||
       cleanLower.includes('মাতার নাম') ||
       cleanLower.includes('শিক্ষার্থীর নাম') ||
-      cleanLower.includes('ক্রমিক') ||
       cleanLower.includes('রোল') ||
       cleanLower.includes('রেজিস্ট্রেশন') ||
       cleanLower.includes('মোবাইল') ||
-      cleanLower.includes('ঠিকানা') ||
-      cleanLower.includes('জন্ম তারিখ') ||
-      infoFieldRegex.test(cleanLower)
+      /(?:^|\b)(roll|name|father|mother|class|section|mobile|phone|reg_no|registration)(?:\b|$)/i.test(cleanLower)
     );
-
-    // Unnamed blank placeholder columns with no data are also not subjects
-    const isBlankPlaceholder = /^কলাম\s*\d+$/i.test(rawLabel) &&
-      Array.isArray(sampleRows) &&
-      sampleRows.every((r) => !String(r[col.key] ?? '').trim());
-
-    const isSubject = !isAlwaysNonSubject && !isBlankPlaceholder && (hasExplicitMarksTag || !isInfoCol);
-    const subRowFm = Number(subRowFullMarks[idx]) || 0;
-    const fullMarks = isSubject ? (subRowFm > 0 ? subRowFm : extractFullMarksFromLabel(rawLabel)) : 0;
-
+    const fullMarks = isInfo ? 0 : extractFullMarksFromLabel(col.label);
     return {
       key: col.key,
-      label: rawLabel,
-      isSubject,
-      fullMarks: isSubject ? (fullMarks > 0 ? fullMarks : 100) : 0,
+      label: col.label,
+      isSubject: !isInfo,
+      fullMarks: fullMarks > 0 ? fullMarks : 100,
     };
   });
 }
 
 export function cleanSubjectTitle(label) {
-  return String(label || '')
-    .replace(/\s*\([^)]*\)/g, '')
-    .replace(/\s*\[[^\]]*\]/g, '')
-    .replace(/\s*(?:পূর্ণমান|full\s*marks?|fm)\s*[:=-]?\s*[0-9০-৯]+(?:\.[0-9০-৯]+)?\s*$/i, '')
-    .replace(/\s*[-/:|]\s*[0-9০-৯]{2,3}\s*$/, '')
-    .replace(/\s+[0-9০-৯]{2,3}\s*$/, '')
-    .trim();
+  return String(label || '').replace(/\s*\([^)]*\)/g, '').trim();
 }
 
 export function computeResultSheet(exam) {
@@ -815,16 +530,5 @@ export function buildExcelBuffer(headers, dataRows, sheetName = 'Sheet1') {
   const ws = XLSX.utils.aoa_to_sheet(aoa);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 31));
-  return XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
-}
-
-export function buildMultiSheetExcelBuffer(sheets = []) {
-  const wb = XLSX.utils.book_new();
-  sheets.forEach((sh, idx) => {
-    const aoa = sh.aoa || [sh.headers || [], ...(sh.rows || [])];
-    const ws = XLSX.utils.aoa_to_sheet(aoa);
-    const name = String(sh.sheetName || `Sheet${idx + 1}`).replace(/[\\/?*[\]:]/g, '').slice(0, 31) || `Sheet${idx + 1}`;
-    XLSX.utils.book_append_sheet(wb, ws, name);
-  });
   return XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
 }
