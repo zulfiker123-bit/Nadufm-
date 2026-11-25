@@ -1,22 +1,10 @@
-<%
-  const _fp = typeof currentPath !== 'undefined' ? String(currentPath).toLowerCase() : '/';
-  const _isAdminOrDash = (
-    _fp.indexOf('/admin') === 0 ||
-    _fp.indexOf('/dashboard') === 0 ||
-    _fp.indexOf('/add_notice') === 0 ||
-    _fp.indexOf('/accounting_entry') === 0 ||
-    _fp.indexOf('/excel-studio') === 0
-  );
-%>
 <% if (!isEmbedded) { %>
-<% if (!_isAdminOrDash) { %>
 <footer class="app-footer">
     <div class="app-footer-inner">
         <p class="app-footer-title">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</p>
         <p class="app-footer-meta">নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা · EIIN: ১১৮৭৭৮ · © ২০২৬ সর্বস্বত্ব সংরক্ষিত</p>
     </div>
 </footer>
-<% } %>
 
 <nav class="mobile-bottom-nav" aria-label="মোবাইল নেভিগেশন">
     <a href="/index.php" class="mobile-tab" data-nav-match="/">

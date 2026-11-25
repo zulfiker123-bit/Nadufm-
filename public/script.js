@@ -29,22 +29,6 @@ function toggleMenu() {
   openAppDrawer();
 }
 
-function startNavProgress() {
-  var bar = document.getElementById('nadufmTopProgress');
-  if (!bar) return;
-  bar.classList.remove('done');
-  bar.classList.add('active');
-}
-
-function resetNavProgress() {
-  var bar = document.getElementById('nadufmTopProgress');
-  if (!bar) return;
-  bar.classList.remove('active');
-  bar.classList.remove('done');
-}
-
-window.addEventListener('pageshow', resetNavProgress);
-
 document.addEventListener('DOMContentLoaded', function () {
   var path = window.location.pathname.toLowerCase();
   var navItems = document.querySelectorAll('[data-nav-match]');
@@ -53,12 +37,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var match = el.getAttribute('data-nav-match');
     var isActive = false;
     if (match === '/' && (path === '/' || path === '/index.php')) {
-      isActive = true;
-    } else if (match === '#notice' && (path.indexOf('/view_notice') !== -1 || path.indexOf('/notices') !== -1)) {
-      isActive = true;
-    } else if (match === '/result' && (path.indexOf('/result') !== -1 || path.indexOf('/merit-list') !== -1)) {
-      isActive = true;
-    } else if (match === '/student' && (path.indexOf('/student') !== -1 || path.indexOf('/admit') !== -1 || path.indexOf('/id-card') !== -1 || path.indexOf('/admission') !== -1)) {
       isActive = true;
     } else if (match !== '/' && !match.startsWith('#') && path.indexOf(match) !== -1) {
       isActive = true;
@@ -71,34 +49,6 @@ document.addEventListener('DOMContentLoaded', function () {
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
       closeAppDrawer();
-    }
-  });
-
-  // Smooth navigation progress bar & drawer auto-close
-  document.addEventListener('click', function (e) {
-    var link = e.target && e.target.closest ? e.target.closest('a[href]') : null;
-    if (!link) return;
-    if (link.classList.contains('app-drawer-item')) {
-      closeAppDrawer();
-    }
-    var href = link.getAttribute('href') || '';
-    if (!href || href.startsWith('#') || href.startsWith('tel:') || href.startsWith('mailto:') || href.startsWith('javascript:')) return;
-    if (link.getAttribute('target') === '_blank' || link.hasAttribute('download')) return;
-    if (href === '/#notice-section' && (path === '/' || path === '/index.php')) {
-      var nEl = document.getElementById('notice-section');
-      if (nEl) {
-        e.preventDefault();
-        nEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-      return;
-    }
-    startNavProgress();
-  });
-
-  document.addEventListener('submit', function (e) {
-    var form = e.target;
-    if (form && form.tagName === 'FORM' && form.getAttribute('target') !== '_blank') {
-      startNavProgress();
     }
   });
 
