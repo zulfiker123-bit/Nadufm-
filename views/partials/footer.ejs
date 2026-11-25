@@ -1,6 +1,20 @@
 <% if (!isEmbedded) { %>
 <footer class="app-footer">
     <div class="app-footer-inner">
+        <div class="app-footer-socials" aria-label="সোশ্যাল ও লোকেশন লিংক">
+            <a href="https://www.facebook.com/naltafazilmadrasah" target="_blank" rel="noopener noreferrer" class="footer-icon-link is-facebook" aria-label="ফেসবুক পেজ" title="ফেসবুক পেজ">
+                <i class="fab fa-facebook-f" aria-hidden="true"></i>
+            </a>
+            <a href="https://youtube.com/@naltamadrasah" target="_blank" rel="noopener noreferrer" class="footer-icon-link is-youtube" aria-label="ইউটিউব চ্যানেল" title="ইউটিউব চ্যানেল">
+                <i class="fab fa-youtube" aria-hidden="true"></i>
+            </a>
+            <a href="https://maps.google.com/maps?q=%E0%A6%A8%E0%A6%B2%E0%A6%A4%E0%A6%BE%20%E0%A6%86%E0%A6%B9%E0%A6%9B%E0%A6%BE%E0%A6%A8%E0%A6%BF%E0%A6%AF%E0%A6%BC%E0%A6%BE%20%E0%A6%A6%E0%A6%BE%E0%A6%B0%E0%A7%81%E0%A6%B2%20%E0%A6%89%E0%A6%B2%E0%A7%81%E0%A6%AE%20%E0%A6%AB%E0%A6%BE%E0%A6%9C%E0%A6%BF%E0%A6%B2%20%E0%A6%AE%E0%A6%BE%E0%A6%A6%E0%A7%8D%E0%A6%B0%E0%A6%BE%E0%A6%B8%E0%A6%BE" target="_blank" rel="noopener noreferrer" class="footer-icon-link is-location" aria-label="মাদ্রাসার লোকেশন (গুগল ম্যাপ)" title="মাদ্রাসার লোকেশন (গুগল ম্যাপ)">
+                <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+            </a>
+            <button type="button" onclick="openHotlineModal()" class="footer-icon-link is-hotline" aria-label="জরুরি হটলাইন" title="জরুরি হটলাইন">
+                <i class="fas fa-phone-volume" aria-hidden="true"></i>
+            </button>
+        </div>
         <p class="app-footer-title">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</p>
         <p class="app-footer-meta">নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা · EIIN: ১১৮৭৭৮ · © ২০২৬ সর্বস্বত্ব সংরক্ষিত</p>
     </div>
@@ -74,6 +88,49 @@
         </div>
     </div>
 </aside>
+
+<div id="hotlineModalBackdrop" class="hotline-modal-backdrop" onclick="closeHotlineModal()" hidden>
+    <div class="hotline-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="hotlineModalTitle" onclick="event.stopPropagation()">
+        <div class="hotline-modal-head">
+            <h3 id="hotlineModalTitle"><i class="fas fa-phone-volume" aria-hidden="true"></i> জাতীয় জরুরি হটলাইন</h3>
+            <button type="button" class="app-drawer-close" onclick="closeHotlineModal()" aria-label="হটলাইন বন্ধ করুন">
+                <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div class="hotline-modal-body">
+            <div class="hotline-quick-grid">
+                <a href="tel:999" class="hotline-chip"><strong>৯৯৯</strong><span>জাতীয় জরুরি সেবা</span></a>
+                <a href="tel:333" class="hotline-chip"><strong>৩৩৩</strong><span>সরকারি তথ্য ও সেবা</span></a>
+                <a href="tel:109" class="hotline-chip"><strong>১০৯</strong><span>নারী ও শিশু নির্যাতন</span></a>
+                <a href="tel:102" class="hotline-chip"><strong>১০২</strong><span>ফায়ার সার্ভিস</span></a>
+                <a href="tel:106" class="hotline-chip"><strong>১০৬</strong><span>দুদক হটলাইন</span></a>
+                <a href="tel:1098" class="hotline-chip"><strong>১০৯৮</strong><span>শিশু সহায়তা</span></a>
+                <a href="tel:1090" class="hotline-chip"><strong>১০৯০</strong><span>দুর্যোগের আগাম বার্তা</span></a>
+                <a href="tel:16122" class="hotline-chip"><strong>১৬১২২</strong><span>ভূমি সেবা</span></a>
+            </div>
+            <div class="hotline-poster-wrap">
+                <img src="/hotline.jpg" alt="জাতীয় জরুরি হটলাইন নম্বরসমূহ" class="hotline-poster-img" referrerpolicy="no-referrer">
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function openHotlineModal() {
+        var el = document.getElementById('hotlineModalBackdrop');
+        if (!el) return;
+        el.hidden = false;
+        document.body.style.overflow = 'hidden';
+    }
+    function closeHotlineModal() {
+        var el = document.getElementById('hotlineModalBackdrop');
+        if (!el) return;
+        el.hidden = true;
+        document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeHotlineModal();
+    });
+</script>
 <% } %>
 
 <script src="/script.js"></script>

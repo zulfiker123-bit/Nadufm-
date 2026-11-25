@@ -1849,6 +1849,12 @@
     }
 
     // ============ RESULTS SECTION ============
+    function formatClassLabelClient(name, classId) {
+        const raw = String(name || (classId && state.classMap?.[classId]?.name) || '').trim();
+        if (!raw || raw === 'custom') return 'নির্ধারিত শ্রেণি';
+        return /(?:শ্রেণি|শ্রেণী)$/.test(raw) ? raw : `${raw} শ্রেণি`;
+    }
+
     function renderExamSelectors() {
         const exams = Object.values(state.results.exams || {});
         const active = getActiveExam();
@@ -1859,19 +1865,24 @@
             barEl.innerHTML = `<span class="class-filter-label"><i class="fas fa-layer-group" aria-hidden="true"></i> শ্রেণি ভিত্তিক শিট:</span>` +
                 exams.map((ex) => {
                     const isAct = ex.id === active.id;
-                    const clsLabel = ex.className || (state.classMap?.[ex.classId]?.name || 'শ্রেণি');
+                    const clsLabel = formatClassLabelClient(ex.className, ex.classId);
                     return `<button type="button" role="tab" aria-selected="${isAct}" class="class-seg-btn ${isAct ? 'active' : ''}" data-exam-id="${esc(ex.id)}" onclick="switchActiveExam(this.dataset.examId)">${esc(clsLabel)} (${bnNum((ex.rows || []).length)})</button>`;
                 }).join('');
         }
 
-        document.getElementById('activeExamSelect').innerHTML = exams.map((ex) => `
-            <option value="${esc(ex.id)}" ${ex.id === active.id ? 'selected' : ''}>${esc(ex.title || ex.examName)} (${bnNum((ex.rows || []).length)} জন)</option>
-        `).join('');
+        document.getElementById('activeExamSelect').innerHTML = exams.map((ex) => {
+            const clsLabel = formatClassLabelClient(ex.className, ex.classId);
+            const exName = String(ex.examName || 'বার্ষিক পরীক্ষা').trim();
+            const exYear = String(ex.year || '').trim();
+            const label = `${clsLabel} — ${exName}${exYear ? ` (${exYear})` : ''} (${bnNum((ex.rows || []).length)} জন)`;
+            return `<option value="${esc(ex.id)}" ${ex.id === active.id ? 'selected' : ''}>${esc(label)}</option>`;
+        }).join('');
 
         const cmEntries = Object.entries(state.classMap || {});
-        document.getElementById('examClassId').innerHTML = cmEntries.map(([k, v]) => `
-            <option value="${esc(k)}" ${String(active.classId) === String(k) ? 'selected' : ''}>${esc(v.name)} শ্রেণি</option>
-        `).join('') + `<option value="custom" ${active.classId === 'custom' ? 'selected' : ''}>কাস্টম শ্রেণি</option>`;
+        document.getElementById('examClassId').innerHTML = cmEntries.map(([k, v]) => {
+            const clsLabel = formatClassLabelClient(v.name, k);
+            return `<option value="${esc(k)}" ${String(active.classId) === String(k) ? 'selected' : ''}>${esc(clsLabel)}</option>`;
+        }).join('') + `<option value="custom" ${active.classId === 'custom' ? 'selected' : ''}>কাস্টম শ্রেণি</option>`;
 
         document.getElementById('examNameInput').value = active.examName || 'বার্ষিক পরীক্ষা';
         document.getElementById('examYearInput').value = active.year || '২০২৬';
@@ -1890,13 +1901,15 @@
         const cid = document.getElementById('examClassId').value;
         exam.classId = cid;
         if (state.classMap && state.classMap[cid]) {
-            exam.className = state.classMap[cid].name;
+            exam.className = String(state.classMap[cid].name || '').trim();
         }
         exam.examName = document.getElementById('examNameInput').value;
         exam.year = document.getElementById('examYearInput').value;
-        exam.title = `${exam.examName} - ${exam.className || 'শ্রেণি'}`;
+        const clsLabel = formatClassLabelClient(exam.className, cid);
+        exam.title = `${clsLabel} — ${String(exam.examName || 'বার্ষিক পরীক্ষা').trim()}`;
         markDirty('results', true);
         renderExamSelectors();
+        renderResultsTable();
     }
 
     function updatePromoConfig() {
@@ -1936,11 +1949,16 @@
     }
 
     async function createNewExam() {
+        const usedIds = new Set(Object.values(state.results.exams || {}).map((ex) => String(ex.classId || '')));
+        const preferredOrder = ['6', '7', '8', '9', '10', '11', '12', '5', '4', '3', '2', '1', '0'];
+        const nextClassId = preferredOrder.find((id) => state.classMap?.[id] && !usedIds.has(id))
+            || Object.keys(state.classMap || {}).find((id) => !usedIds.has(id))
+            || '6';
         try {
             const res = await fetch('/api/excel/results/create', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ classId: '6', examName: 'বার্ষিক পরীক্ষা', year: '২০২৬' }),
+                body: JSON.stringify({ classId: nextClassId, examName: 'বার্ষিক পরীক্ষা', year: '২০২৬' }),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error);
@@ -2085,11 +2103,16 @@
 
         if (resultSubView === 'merit') {
             const list = computed.meritList.filter(matchesFilter);
+            const clsLabel = formatClassLabelClient(exam.className, exam.classId);
             if (!list.length) {
                 container.innerHTML = `<div class="empty-state"><i class="fas fa-filter" aria-hidden="true"></i><p>নির্বাচিত ফিল্টার অনুযায়ী কোনো শিক্ষার্থী পাওয়া যায়নি।</p></div>`;
                 return;
             }
             container.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; padding:8px 12px; border:1px solid var(--border); border-radius:9px; background:var(--surface-subtle);">
+                    <strong style="color:var(--brand); font-size:0.92rem;"><i class="fas fa-trophy" aria-hidden="true"></i> শ্রেণি ভিত্তিক মেধা তালিকা: ${esc(clsLabel)} — ${esc(exam.examName || 'বার্ষিক পরীক্ষা')}</strong>
+                    <span style="font-size:0.84rem; color:var(--muted);">মোট ${bnNum(list.length)} জন</span>
+                </div>
                 <div class="table-wrap">
                     <table class="sheet-table">
                         <thead>

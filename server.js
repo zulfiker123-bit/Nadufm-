@@ -269,19 +269,34 @@ app.post('/admin-logout', verifySameOrigin, (req, res) => {
   return res.redirect('/index.php');
 });
 
+function formatClassLabel(name, classId = '') {
+  const raw = String(name || (classId && classMap[classId]?.name) || '').trim();
+  if (!raw || raw === 'custom') return 'নির্ধারিত শ্রেণি';
+  return /(?:শ্রেণি|শ্রেণী)$/.test(raw) ? raw : `${raw} শ্রেণি`;
+}
+
 function getUploadedExamsSummary(store) {
   const exams = (store.results && store.results.exams) || {};
   return Object.values(exams)
     .filter((ex) => Array.isArray(ex.rows) && ex.rows.length > 0)
-    .map((ex) => ({
-      id: ex.id,
-      title: ex.title || `${ex.examName || 'পরীক্ষা'} - ${ex.className || ''}`,
-      classId: ex.classId || '',
-      className: ex.className || '',
-      examName: ex.examName || 'বার্ষিক পরীক্ষা',
-      year: ex.year || '২০২৬',
-      rowCount: ex.rows.length,
-    }));
+    .map((ex) => {
+      const className = String(ex.className || (ex.classId && classMap[ex.classId]?.name) || '').trim();
+      const classLabel = formatClassLabel(className, ex.classId);
+      const examName = String(ex.examName || 'বার্ষিক পরীক্ষা').trim();
+      const year = String(ex.year || '').trim();
+      const dropdownLabel = `${classLabel} — ${examName}${year ? ` (${year})` : ''}`;
+      return {
+        id: ex.id,
+        title: ex.title || dropdownLabel,
+        dropdownLabel,
+        classId: ex.classId || '',
+        className,
+        classLabel,
+        examName,
+        year: year || '২০২৬',
+        rowCount: ex.rows.length,
+      };
+    });
 }
 
 function serializeExcelState(store) {
@@ -469,13 +484,16 @@ app.get(['/merit-list', '/merit-list.php'], async (req, res) => {
   const selectedExamId = String(req.query.exam_id || '');
   const excelStore = loadExcelStore();
   const uploadedExams = getUploadedExamsSummary(excelStore);
+  const uploadedClassIds = uploadedExams
+    .map((ex) => String(ex.classId || '').trim())
+    .filter(Boolean);
 
   let selectedName = '';
   let selectedExamTitle = '';
   let meritData = [];
   let sourceType = 'csv';
 
-  // Prefer explicit exam_id, or uploaded Excel sheet matching class_id
+  // Prefer explicit exam_id, or uploaded Excel sheet matching class_id / normalized className
   let matchedExcelExam = null;
   if (selectedExamId && excelStore.results?.exams?.[selectedExamId]) {
     matchedExcelExam = excelStore.results.exams[selectedExamId];
@@ -485,15 +503,21 @@ app.get(['/merit-list', '/merit-list.php'], async (req, res) => {
       matchedExcelExam = excelStore.results.exams[eid];
     }
   } else if (selectedClass !== '') {
-    matchedExcelExam = Object.values(excelStore.results?.exams || {}).find(
-      (ex) => String(ex.classId) === selectedClass && Array.isArray(ex.rows) && ex.rows.length > 0
-    );
+    const normSel = normalizeClassInput(selectedClass);
+    matchedExcelExam = Object.values(excelStore.results?.exams || {}).find((ex) => {
+      if (!Array.isArray(ex.rows) || ex.rows.length === 0) return false;
+      if (String(ex.classId) === selectedClass) return true;
+      const exNorm = normalizeClassInput(ex.className || ex.classId || '');
+      return Boolean(normSel.key && exNorm.key && normSel.key === exNorm.key);
+    }) || null;
   }
 
   if (matchedExcelExam && Array.isArray(matchedExcelExam.rows) && matchedExcelExam.rows.length > 0) {
     sourceType = 'excel';
-    selectedName = matchedExcelExam.className || (classMap[matchedExcelExam.classId]?.name || '');
-    selectedExamTitle = matchedExcelExam.title || `${matchedExcelExam.examName || 'পরীক্ষা'} - ${selectedName}`;
+    selectedName = formatClassLabel(matchedExcelExam.className, matchedExcelExam.classId);
+    const exName = String(matchedExcelExam.examName || 'বার্ষিক পরীক্ষা').trim();
+    const exYear = String(matchedExcelExam.year || '').trim();
+    selectedExamTitle = `শ্রেণি: ${selectedName} · ${exName}${exYear ? ` (${exYear})` : ''}`;
     const { meritList } = computeResultSheet(matchedExcelExam);
     meritData = meritList.map((item) => ({
       name: item.name || '—',
@@ -510,8 +534,8 @@ app.get(['/merit-list', '/merit-list.php'], async (req, res) => {
       meritRank: item.meritRank,
     }));
   } else if (selectedClass !== '' && Object.prototype.hasOwnProperty.call(classMap, selectedClass)) {
-    selectedName = classMap[selectedClass].name;
-    selectedExamTitle = `বার্ষিক পরীক্ষার মেধাতালিকা · শ্রেণি: ${selectedName}`;
+    selectedName = formatClassLabel(classMap[selectedClass].name, selectedClass);
+    selectedExamTitle = `শ্রেণি: ${selectedName} · বার্ষিক পরীক্ষার মেধাতালিকা`;
     const gid = classMap[selectedClass].gid;
     const csvUrl = `https://docs.google.com/spreadsheets/d/e/2PACX-1vSYfZ7IOoN4gbjjSgT02E1ugUQvhPmL39Ch4gJns0GGbb9OrCO4Wm9hdmbpPaEerRC5m2S0-WOJQcV4/pub?output=csv&gid=${gid}`;
 
@@ -586,9 +610,10 @@ app.get(['/merit-list', '/merit-list.php'], async (req, res) => {
   }
 
   res.render('merit-list', {
-    pageTitle: 'মেধা তালিকা - নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা',
+    pageTitle: 'শ্রেণি ভিত্তিক মেধা তালিকা - নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা',
     classMap,
     uploadedExams,
+    uploadedClassIds,
     selectedClass,
     selectedExamId: matchedExcelExam ? matchedExcelExam.id : selectedExamId,
     selectedName,
@@ -1063,13 +1088,13 @@ app.post('/api/excel/upload', requireAdminApi, verifySameOrigin, (req, res) => {
       const detectedCols = detectResultColumns(parsed.columns);
       const mappingGuess = autoDetectStudentMapping(parsed.columns);
       const classId = String(req.body.classId ?? existing.classId ?? '6');
-      const className = String(req.body.className ?? existing.className ?? (classMap[classId]?.name || 'ষষ্ঠ'));
-      const examName = String(req.body.examName ?? existing.examName ?? 'বার্ষিক পরীক্ষা');
-      const year = String(req.body.year ?? existing.year ?? '২০২৬');
+      const className = String(req.body.className ?? existing.className ?? (classMap[classId]?.name || 'ষষ্ঠ')).trim();
+      const examName = String(req.body.examName ?? existing.examName ?? 'বার্ষিক পরীক্ষা').trim();
+      const year = String(req.body.year ?? existing.year ?? '২০২৬').trim();
 
       store.results.exams[examId] = {
         id: examId,
-        title: String(req.body.title || `${examName} - ${className} শ্রেণি`),
+        title: String(req.body.title || `${formatClassLabel(className, classId)} — ${examName}`),
         classId,
         className,
         examName,
@@ -1140,13 +1165,13 @@ app.post('/api/excel/results/create', requireAdminApi, verifySameOrigin, (req, r
   const store = loadExcelStore();
   const examId = `exam_${Date.now()}`;
   const classId = String(req.body.classId || '6');
-  const className = String(req.body.className || classMap[classId]?.name || 'নতুন শ্রেণি');
-  const examName = String(req.body.examName || 'বার্ষিক পরীক্ষা');
-  const year = String(req.body.year || '২০২৬');
+  const className = String(req.body.className || classMap[classId]?.name || 'নতুন শ্রেণি').trim();
+  const examName = String(req.body.examName || 'বার্ষিক পরীক্ষা').trim();
+  const year = String(req.body.year || '২০২৬').trim();
 
   store.results.exams[examId] = {
     id: examId,
-    title: String(req.body.title || `${examName} - ${className} শ্রেণি`),
+    title: String(req.body.title || `${formatClassLabel(className, classId)} — ${examName}`),
     classId,
     className,
     examName,

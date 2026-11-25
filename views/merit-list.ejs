@@ -53,14 +53,60 @@
         flex-wrap: wrap;
     }
 
+    .merit-select-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .merit-select-label {
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: #14532d;
+        white-space: nowrap;
+    }
+
     .merit-form select {
         height: 44px;
         padding: 0 14px;
         border-radius: 10px;
         border: 1px solid rgba(15, 23, 42, 0.14);
         background: #ffffff;
-        min-width: 240px;
+        min-width: 260px;
         font-size: 0.95rem;
+        color: #0f172a;
+    }
+
+    .merit-summary-bar {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+        margin-bottom: 16px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .merit-summary-item {
+        background: #f8faf9;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 11px;
+        padding: 10px 14px;
+        text-align: center;
+    }
+
+    .merit-summary-lbl {
+        display: block;
+        font-size: 0.78rem;
+        color: #475569;
+        font-weight: 600;
+    }
+
+    .merit-summary-val {
+        display: block;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #14532d;
+        margin-top: 2px;
     }
 
     .merit-btn {
@@ -150,25 +196,32 @@
     <div class="merit-card" id="meritPrintArea">
         <div class="merit-header">
             <h1>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h1>
-            <p class="merit-subtitle"><%= selectedExamTitle || ('বার্ষিক পরীক্ষার মেধাতালিকা' + (selectedClass !== '' ? ' · শ্রেণি: ' + selectedName : '')) %></p>
+            <p class="merit-subtitle"><%= selectedExamTitle || ('শ্রেণি ভিত্তিক মেধা তালিকা' + (selectedName ? ' · শ্রেণি: ' + selectedName : '')) %></p>
         </div>
 
         <form method="GET" action="/merit-list.php" class="merit-form no-print">
-            <select name="class_id" required aria-label="শ্রেণি বা পরীক্ষা নির্বাচন করুন">
-                <option value="">শ্রেণি / পরীক্ষা নির্বাচন করুন</option>
-                <% if (typeof uploadedExams !== 'undefined' && uploadedExams.length > 0) { %>
-                    <optgroup label="আপলোডকৃত এক্সেল মেধা তালিকা">
-                        <% uploadedExams.forEach(function(ex) { %>
-                            <option value="excel:<%= ex.id %>" <%= (selectedClass === 'excel:' + ex.id || selectedExamId === ex.id) ? 'selected' : '' %>><%= ex.title %> (<%= convertToBengali(ex.rowCount) %> জন)</option>
+            <div class="merit-select-wrap">
+                <label for="meritClassSelect" class="merit-select-label">শ্রেণি নির্বাচন:</label>
+                <select id="meritClassSelect" name="class_id" required aria-label="শ্রেণি ভিত্তিক মেধা তালিকা নির্বাচন করুন" onchange="if (this.value) this.form.submit()">
+                    <option value="">শ্রেণি নির্বাচন করুন</option>
+                    <% if (typeof uploadedExams !== 'undefined' && uploadedExams.length > 0) { %>
+                        <optgroup label="শ্রেণি ভিত্তিক আপলোডকৃত মেধা তালিকা (Excel)">
+                            <% uploadedExams.forEach(function(ex) { %>
+                                <option value="excel:<%= ex.id %>" <%= (selectedClass === 'excel:' + ex.id || (!selectedClass && selectedExamId === ex.id)) ? 'selected' : '' %>><%= ex.dropdownLabel || ex.title %> (<%= convertToBengali(ex.rowCount) %> জন)</option>
+                            <% }); %>
+                        </optgroup>
+                    <% } %>
+                    <optgroup label="সকল শ্রেণি (শ্রেণি অনুযায়ী মেধা তালিকা)">
+                        <% const _uploadedSet = new Set(typeof uploadedClassIds !== 'undefined' ? uploadedClassIds : []); %>
+                        <% Object.entries(classMap).forEach(function([id, info]) {
+                            const _cname = String(info.name || '').trim();
+                            const _clsLabel = /(?:শ্রেণি|শ্রেণী)$/.test(_cname) ? _cname : _cname + ' শ্রেণি';
+                        %>
+                            <option value="<%= id %>" <%= (selectedClass === id) ? 'selected' : '' %>><%= _clsLabel %><%= _uploadedSet.has(id) ? ' — ফলাফল সংরক্ষিত' : '' %></option>
                         <% }); %>
                     </optgroup>
-                <% } %>
-                <optgroup label="সকল শ্রেণি">
-                    <% Object.entries(classMap).forEach(function([id, info]) { %>
-                        <option value="<%= id %>" <%= (selectedClass === id) ? 'selected' : '' %>><%= info.name %> শ্রেণি</option>
-                    <% }); %>
-                </optgroup>
-            </select>
+                </select>
+            </div>
             <button type="submit" class="merit-btn">
                 <i class="fas fa-search" aria-hidden="true"></i>
                 <span>মেধাতালিকা দেখুন</span>
@@ -179,7 +232,29 @@
             </a>
         </form>
 
-        <% if (meritData && meritData.length > 0) { %>
+        <% if (meritData && meritData.length > 0) {
+            const _totalStudents = meritData.length;
+            const _passedStudents = meritData.filter(function(r) { return !r.absent && (r.fail === 0 || r.isPromoted); }).length;
+            const _passPct = _totalStudents > 0 ? Math.round((_passedStudents / _totalStudents) * 1000) / 10 : 0;
+        %>
+        <div class="merit-summary-bar">
+            <div class="merit-summary-item">
+                <span class="merit-summary-lbl">শ্রেণি</span>
+                <span class="merit-summary-val"><%= selectedName || 'নির্ধারিত শ্রেণি' %></span>
+            </div>
+            <div class="merit-summary-item">
+                <span class="merit-summary-lbl">মোট শিক্ষার্থী</span>
+                <span class="merit-summary-val"><%= convertToBengali(_totalStudents) %> জন</span>
+            </div>
+            <div class="merit-summary-item">
+                <span class="merit-summary-lbl">উত্তীর্ণ / প্রমোটেড</span>
+                <span class="merit-summary-val"><%= convertToBengali(_passedStudents) %> জন</span>
+            </div>
+            <div class="merit-summary-item">
+                <span class="merit-summary-lbl">পাসের হার</span>
+                <span class="merit-summary-val"><%= convertToBengali(_passPct) %>%</span>
+            </div>
+        </div>
         <div class="merit-table-wrap">
             <table class="merit-table">
                 <thead>
@@ -282,8 +357,10 @@
                 }
             }
         </script>
-        <% } else if (selectedClass !== '') { %>
-            <p style="text-align: center; color: #b91c1c; font-weight: 600; padding: 24px;">কোনো ডেটা পাওয়া যায়নি। শিটটি পাবলিশ বা আপলোড করা আছে কি না যাচাই করুন।</p>
+        <% } else if (selectedClass !== '' || selectedExamId !== '') { %>
+            <p style="text-align: center; color: #b91c1c; font-weight: 600; padding: 24px;">নির্বাচিত শ্রেণির জন্য কোনো মেধা তালিকা পাওয়া যায়নি।</p>
+        <% } else { %>
+            <p style="text-align: center; color: #475569; font-weight: 600; padding: 24px;">শ্রেণি ভিত্তিক মেধা তালিকা দেখতে উপরের ড্রপডাউন থেকে শ্রেণি নির্বাচন করুন।</p>
         <% } %>
     </div>
 </div>
