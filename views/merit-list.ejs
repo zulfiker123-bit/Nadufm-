@@ -200,6 +200,7 @@
         </div>
 
         <form method="GET" action="/merit-list.php" class="merit-form no-print">
+            <% if (isEmbedded) { %><input type="hidden" name="embed" value="1"><% } %>
             <div class="merit-select-wrap">
                 <label for="meritClassSelect" class="merit-select-label">শ্রেণি নির্বাচন:</label>
                 <select id="meritClassSelect" name="class_id" required aria-label="শ্রেণি ভিত্তিক মেধা তালিকা নির্বাচন করুন" onchange="if (this.value) this.form.submit()">
@@ -226,7 +227,7 @@
                 <i class="fas fa-search" aria-hidden="true"></i>
                 <span>মেধাতালিকা দেখুন</span>
             </button>
-            <a href="/result.php" class="merit-btn merit-btn-secondary">
+            <a href="/result.php<%= isEmbedded ? '?embed=1' : '' %>" class="merit-btn merit-btn-secondary">
                 <i class="fas fa-poll" aria-hidden="true"></i>
                 <span>ব্যক্তিগত ফলাফল</span>
             </a>

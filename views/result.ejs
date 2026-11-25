@@ -383,7 +383,8 @@
             <% if (searchError) { %>
                 <div class="result-error"><%= searchError %></div>
             <% } %>
-            <form method="POST" action="/result.php" id="resultSearchForm">
+            <form method="POST" action="/result.php<%= isEmbedded ? '?embed=1' : '' %>" id="resultSearchForm">
+                <% if (isEmbedded) { %><input type="hidden" name="embed" value="1"><% } %>
                 <div class="result-field">
                     <label for="student_class">শিক্ষার্থীর শ্রেণি / পরীক্ষা</label>
                     <select id="student_class" name="student_class" required>
@@ -428,7 +429,7 @@
                         <i class="fas fa-search" aria-hidden="true"></i>
                         <span>ফলাফল দেখুন</span>
                     </button>
-                    <a href="/merit-list.php" class="r-btn r-btn-secondary">
+                    <a href="/merit-list.php<%= isEmbedded ? '?embed=1' : '' %>" class="r-btn r-btn-secondary">
                         <i class="fas fa-trophy" aria-hidden="true"></i>
                         <span>মেধা তালিকা</span>
                     </a>
@@ -473,23 +474,24 @@
                 <i class="fas fa-file-word" aria-hidden="true"></i>
                 <span>Word (.doc)</span>
             </button>
-            <a href="/id-card.php?class=<%= _qCls %>&roll=<%= _qRoll %>" class="r-btn r-btn-secondary">
+            <% const _embedSuffix = isEmbedded ? '&embed=1' : ''; %>
+            <a href="/id-card.php?class=<%= _qCls %>&roll=<%= _qRoll %><%= _embedSuffix %>" class="r-btn r-btn-secondary">
                 <i class="fas fa-id-badge" aria-hidden="true"></i>
                 <span>আইডি কার্ড</span>
             </a>
-            <a href="/admit.php?class=<%= _qCls %>&roll=<%= _qRoll %>" class="r-btn r-btn-secondary">
+            <a href="/admit.php?class=<%= _qCls %>&roll=<%= _qRoll %><%= _embedSuffix %>" class="r-btn r-btn-secondary">
                 <i class="fas fa-id-card" aria-hidden="true"></i>
                 <span>এডমিট কার্ড</span>
             </a>
-            <a href="/student-search.php?class=<%= _qCls %>&roll=<%= _qRoll %>&doc=attestation" class="r-btn r-btn-secondary">
+            <a href="/student-search.php?class=<%= _qCls %>&roll=<%= _qRoll %>&doc=attestation<%= _embedSuffix %>" class="r-btn r-btn-secondary">
                 <i class="fas fa-certificate" aria-hidden="true"></i>
                 <span>প্রত্যায়ন / প্রশংসা</span>
             </a>
-            <a href="/result.php" class="r-btn r-btn-secondary">
+            <a href="/result.php<%= isEmbedded ? '?embed=1' : '' %>" class="r-btn r-btn-secondary">
                 <i class="fas fa-redo" aria-hidden="true"></i>
                 <span>নতুনভাবে খুঁজুন</span>
             </a>
-            <a href="/merit-list.php<%= selectedClassValue ? '?class_id=' + encodeURIComponent(selectedClassValue) : '' %>" class="r-btn r-btn-secondary">
+            <a href="/merit-list.php<%= selectedClassValue ? '?class_id=' + encodeURIComponent(selectedClassValue) + (isEmbedded ? '&embed=1' : '') : (isEmbedded ? '?embed=1' : '') %>" class="r-btn r-btn-secondary">
                 <i class="fas fa-trophy" aria-hidden="true"></i>
                 <span>মেধা তালিকা</span>
             </a>

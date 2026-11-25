@@ -90,7 +90,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 app.use(express.json({ limit: '25mb' }));
 app.use((req, res, next) => {
-  res.locals.isEmbedded = req.query.embed === '1';
+  res.locals.isEmbedded = req.query.embed === '1' || req.body?.embed === '1';
   next();
 });
 

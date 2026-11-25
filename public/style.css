@@ -1331,6 +1331,19 @@ main > #notice-section {
     border-radius: 8px;
 }
 
+.is-in-workspace .app-topbar,
+.is-in-workspace .app-footer,
+.is-in-workspace .mobile-bottom-nav,
+.is-in-workspace .app-drawer-backdrop,
+.is-in-workspace .app-drawer-sheet {
+    display: none !important;
+}
+
+.is-in-workspace .merit-shell,
+.is-in-workspace .result-shell {
+    margin-top: 10px !important;
+}
+
 .mobile-bottom-nav {
     display: none;
 }
