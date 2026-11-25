@@ -7,9 +7,7 @@
     <link rel="icon" href="/pwa-192x192.png" type="image/png" sizes="192x192">
     <link rel="manifest" href="/manifest.webmanifest">
     <meta name="theme-color" content="#14532d">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/fonts.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="/vendor/html2pdf.bundle.min.js" defer></script>
     <script src="/doc-export.js" defer></script>
@@ -32,10 +30,14 @@
 
         body {
             margin: 0;
-            font-family: 'Hind Siliguri', 'Segoe UI', sans-serif;
+            font-family: 'Kalpurush', sans-serif;
             background: var(--bg);
             color: var(--text);
             -webkit-font-smoothing: antialiased;
+        }
+
+        button, input, select, textarea {
+            font-family: inherit;
         }
 
         .studio-topbar {
@@ -473,6 +475,7 @@
             min-height: 297mm;
             background: #ffffff;
             color: #0f172a;
+            font-family: 'Nikosh', 'Kalpurush', sans-serif;
             box-shadow: 0 10px 30px rgba(15, 23, 42, 0.18);
             box-sizing: border-box;
             position: relative;
@@ -480,6 +483,10 @@
             flex-direction: column;
             page-break-after: always;
             break-after: page;
+        }
+
+        .a4-page * {
+            font-family: 'Nikosh', 'Kalpurush', sans-serif;
         }
 
         .a4-page:last-child {
@@ -2415,7 +2422,7 @@
             }
             div.Section1 {
                 page: Section1;
-                font-family: "SolaimanLipi", "Kalpurush", "Hind Siliguri", Arial, sans-serif;
+                font-family: "Nikosh", "Kalpurush", Arial, sans-serif;
                 font-size: ${style.fontSize}px;
                 color: #0f172a;
             }

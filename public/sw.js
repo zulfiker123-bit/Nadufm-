@@ -1,9 +1,10 @@
-const CACHE_VERSION = 'nadufm-pwa-v5';
+const CACHE_VERSION = 'nadufm-pwa-v7';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PAGE_CACHE = `${CACHE_VERSION}-pages`;
 
 const PRECACHE_URLS = [
   '/',
+  '/fonts.css',
   '/style.css',
   '/script.js',
   '/pwa.js',
@@ -12,6 +13,7 @@ const PRECACHE_URLS = [
   '/home-icon.png',
   '/header.jpg',
   '/kalpurush.ttf',
+  '/nikosh.ttf',
   '/vendor/html2pdf.bundle.min.js',
   '/doc-export.js',
   '/pwa-192x192.png',
@@ -21,6 +23,8 @@ const PRECACHE_URLS = [
 ];
 
 const NO_CACHE_PATHS = [
+  '/admin-login',
+  '/admin-logout',
   '/dashboard',
   '/dashboard.php',
   '/add_notice',

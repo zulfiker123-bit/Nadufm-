@@ -12,9 +12,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="NADUFM Admin">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/fonts.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         :root {
@@ -40,7 +38,7 @@
         }
 
         body {
-            font-family: 'Hind Siliguri', 'Segoe UI', sans-serif;
+            font-family: 'Kalpurush', sans-serif;
             background: var(--bg);
             color: var(--text);
             -webkit-font-smoothing: antialiased;
@@ -130,6 +128,35 @@
         .adm-home-btn:hover {
             background: #f1f5f9;
             border-color: rgba(15, 23, 42, 0.16);
+        }
+
+        .adm-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .adm-logout-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 38px;
+            padding: 0 13px;
+            border-radius: 10px;
+            border: 1px solid #fecaca;
+            background: #fef2f2;
+            color: #b91c1c;
+            font-family: inherit;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background-color 0.15s ease;
+        }
+
+        .adm-logout-btn:hover {
+            background: #fee2e2;
         }
 
         /* Dashboard Button Grid Container */
@@ -293,10 +320,18 @@
             <img src="/logo.png" alt="মাদ্রাসা লোগো" id="brandLogo" class="adm-logo <%= currentMod ? 'is-hidden' : '' %>" referrerpolicy="no-referrer">
             <span class="adm-title" id="topbarTitle"><%= currentMod ? currentMod.label : 'অ্যাডমিন ড্যাশবোর্ড' %></span>
         </div>
-        <a href="/index.php" class="adm-home-btn">
-            <i class="fas fa-external-link-alt" aria-hidden="true"></i>
-            <span>ওয়েবসাইট</span>
-        </a>
+        <div class="adm-actions">
+            <a href="/index.php" class="adm-home-btn">
+                <i class="fas fa-external-link-alt" aria-hidden="true"></i>
+                <span>ওয়েবসাইট</span>
+            </a>
+            <form method="POST" action="/admin-logout" style="margin:0;">
+                <button type="submit" class="adm-logout-btn" title="অ্যাডমিন প্যানেল থেকে লগআউট করুন">
+                    <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                    <span>লগআউট</span>
+                </button>
+            </form>
+        </div>
     </header>
 
     <main id="view-grid" class="dash-shell <%= currentMod ? 'is-hidden' : '' %>">

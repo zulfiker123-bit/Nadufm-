@@ -1,0 +1,15 @@
+@font-face {
+    font-family: 'Kalpurush';
+    src: url('/kalpurush.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Nikosh';
+    src: url('/nikosh.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}

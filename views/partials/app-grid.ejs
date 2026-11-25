@@ -33,15 +33,13 @@
     </div>
 </section>
 
-<%- include('notice') %>
-
 <section class="app-hub-section" aria-label="বিভাগভিত্তিক কার্যক্রম">
     <div class="app-hub-toolbar">
         <div class="app-hub-tabs" role="tablist" aria-label="বিভাগ নির্বাচন">
             <button type="button" class="app-hub-tab active" data-filter="all">সব বিভাগ</button>
+            <button type="button" class="app-hub-tab" data-filter="institute">প্রতিষ্ঠান ও প্রশাসন</button>
             <button type="button" class="app-hub-tab" data-filter="academic">পরীক্ষা ও একাডেমিক</button>
             <button type="button" class="app-hub-tab" data-filter="students">শিক্ষার্থী ও ভর্তি</button>
-            <button type="button" class="app-hub-tab" data-filter="institute">প্রতিষ্ঠান ও প্রশাসন</button>
             <button type="button" class="app-hub-tab" data-filter="portal">সরকারি পোর্টাল</button>
         </div>
         <div class="app-hub-search-wrap">
@@ -51,7 +49,45 @@
     </div>
 
     <div class="app-groups-grid" id="appGroupsGrid">
-        <!-- গ্রুপ ১: পরীক্ষা, ফলাফল ও একাডেমিক -->
+        <!-- গ্রুপ ১: প্রতিষ্ঠান, শিক্ষক ও প্রশাসন -->
+        <div class="app-group-card" data-group-category="institute">
+            <div class="app-group-head">
+                <span class="app-group-badge tone-emerald"><i class="fas fa-mosque" aria-hidden="true"></i></span>
+                <h3>প্রতিষ্ঠান, শিক্ষক ও প্রশাসন</h3>
+            </div>
+            <div class="app-group-tiles">
+                <a href="/about.php" class="app-tile" data-category="institute" data-keywords="আমাদের সম্পর্কে পরিচিতি about">
+                    <span class="app-tile-icon tone-indigo"><i class="fas fa-school" aria-hidden="true"></i></span>
+                    <span class="app-tile-label">আমাদের সম্পর্কে</span>
+                </a>
+                <a href="/teacher-list.php" class="app-tile" data-category="institute" data-keywords="শিক্ষক কর্মচারী তালিকা teacher staff">
+                    <span class="app-tile-icon tone-emerald"><i class="fas fa-chalkboard-teacher" aria-hidden="true"></i></span>
+                    <span class="app-tile-label">শিক্ষক-কর্মচারী</span>
+                </a>
+                <a href="/governingbody.php" class="app-tile" data-category="institute" data-keywords="গভর্নিং বডি কমিটি governing body">
+                    <span class="app-tile-icon tone-blue"><i class="fas fa-users" aria-hidden="true"></i></span>
+                    <span class="app-tile-label">গভর্নিং বডি</span>
+                </a>
+                <a href="/principalspeech.php" class="app-tile" data-category="institute" data-keywords="অধ্যক্ষের বাণী principal">
+                    <span class="app-tile-icon tone-violet"><i class="fas fa-microphone-alt" aria-hidden="true"></i></span>
+                    <span class="app-tile-label">অধ্যক্ষের বাণী</span>
+                </a>
+                <a href="/presidentspeech.php" class="app-tile" data-category="institute" data-keywords="সভাপতির বাণী president">
+                    <span class="app-tile-icon tone-cyan"><i class="fas fa-user-tie" aria-hidden="true"></i></span>
+                    <span class="app-tile-label">সভাপতির বাণী</span>
+                </a>
+                <a href="/morehistory.php" class="app-tile" data-category="institute" data-keywords="প্রতিষ্ঠানের ইতিহাস history">
+                    <span class="app-tile-icon tone-amber"><i class="fas fa-landmark" aria-hidden="true"></i></span>
+                    <span class="app-tile-label">প্রতিষ্ঠানের ইতিহাস</span>
+                </a>
+                <a href="/contact.php" class="app-tile" data-category="institute" data-keywords="যোগাযোগ ঠিকানা ফোন ম্যাপ contact">
+                    <span class="app-tile-icon tone-rose"><i class="fas fa-phone-alt" aria-hidden="true"></i></span>
+                    <span class="app-tile-label">যোগাযোগ ও ম্যাপ</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- গ্রুপ ২: পরীক্ষা, ফলাফল ও একাডেমিক -->
         <div class="app-group-card" data-group-category="academic">
             <div class="app-group-head">
                 <span class="app-group-badge tone-blue"><i class="fas fa-award" aria-hidden="true"></i></span>
@@ -93,7 +129,7 @@
             </div>
         </div>
 
-        <!-- গ্রুপ ২: শিক্ষার্থী, ভর্তি ও হিসাব -->
+        <!-- গ্রুপ ৩: শিক্ষার্থী, ভর্তি ও হিসাব -->
         <div class="app-group-card" data-group-category="students">
             <div class="app-group-head">
                 <span class="app-group-badge tone-teal"><i class="fas fa-user-graduate" aria-hidden="true"></i></span>
@@ -123,48 +159,6 @@
                 <a href="/registration.php" class="app-tile" data-category="students" data-keywords="রেজিস্ট্রেশন নিবন্ধন registration">
                     <span class="app-tile-icon tone-indigo"><i class="fas fa-clipboard-check" aria-hidden="true"></i></span>
                     <span class="app-tile-label">রেজিস্ট্রেশন</span>
-                </a>
-            </div>
-        </div>
-
-        <!-- গ্রুপ ৩: প্রতিষ্ঠান, শিক্ষক ও প্রশাসন -->
-        <div class="app-group-card" data-group-category="institute">
-            <div class="app-group-head">
-                <span class="app-group-badge tone-emerald"><i class="fas fa-mosque" aria-hidden="true"></i></span>
-                <h3>প্রতিষ্ঠান, শিক্ষক ও প্রশাসন</h3>
-            </div>
-            <div class="app-group-tiles">
-                <a href="/teacher-list.php" class="app-tile" data-category="institute" data-keywords="শিক্ষক কর্মচারী তালিকা teacher staff">
-                    <span class="app-tile-icon tone-emerald"><i class="fas fa-chalkboard-teacher" aria-hidden="true"></i></span>
-                    <span class="app-tile-label">শিক্ষক-কর্মচারী</span>
-                </a>
-                <a href="/governingbody.php" class="app-tile" data-category="institute" data-keywords="গভর্নিং বডি কমিটি governing body">
-                    <span class="app-tile-icon tone-blue"><i class="fas fa-users" aria-hidden="true"></i></span>
-                    <span class="app-tile-label">গভর্নিং বডি</span>
-                </a>
-                <a href="/about.php" class="app-tile" data-category="institute" data-keywords="আমাদের সম্পর্কে পরিচিতি about">
-                    <span class="app-tile-icon tone-indigo"><i class="fas fa-school" aria-hidden="true"></i></span>
-                    <span class="app-tile-label">আমাদের সম্পর্কে</span>
-                </a>
-                <a href="/morehistory.php" class="app-tile" data-category="institute" data-keywords="প্রতিষ্ঠানের ইতিহাস history">
-                    <span class="app-tile-icon tone-amber"><i class="fas fa-landmark" aria-hidden="true"></i></span>
-                    <span class="app-tile-label">প্রতিষ্ঠানের ইতিহাস</span>
-                </a>
-                <a href="/presidentspeech.php" class="app-tile" data-category="institute" data-keywords="সভাপতির বাণী president">
-                    <span class="app-tile-icon tone-cyan"><i class="fas fa-user-tie" aria-hidden="true"></i></span>
-                    <span class="app-tile-label">সভাপতির বাণী</span>
-                </a>
-                <a href="/principalspeech.php" class="app-tile" data-category="institute" data-keywords="অধ্যক্ষের বাণী principal">
-                    <span class="app-tile-icon tone-violet"><i class="fas fa-microphone-alt" aria-hidden="true"></i></span>
-                    <span class="app-tile-label">অধ্যক্ষের বাণী</span>
-                </a>
-                <a href="/contact.php" class="app-tile" data-category="institute" data-keywords="যোগাযোগ ঠিকানা ফোন ম্যাপ contact">
-                    <span class="app-tile-icon tone-rose"><i class="fas fa-phone-alt" aria-hidden="true"></i></span>
-                    <span class="app-tile-label">যোগাযোগ ও ম্যাপ</span>
-                </a>
-                <a href="/dashboard.php" class="app-tile" data-category="institute" data-keywords="অ্যাডমিন প্যানেল ড্যাশবোর্ড admin">
-                    <span class="app-tile-icon tone-slate"><i class="fas fa-user-shield" aria-hidden="true"></i></span>
-                    <span class="app-tile-label">অ্যাডমিন প্যানেল</span>
                 </a>
             </div>
         </div>

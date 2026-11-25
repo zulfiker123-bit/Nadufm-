@@ -1,4 +1,5 @@
 import express from 'express';
+import crypto from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import multer from 'multer';
@@ -82,6 +83,181 @@ app.use(express.json({ limit: '25mb' }));
 app.use((req, res, next) => {
   res.locals.isEmbedded = req.query.embed === '1';
   next();
+});
+
+const ADMIN_COOKIE_NAME = 'nadufm_admin_sid';
+const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const MAX_LOGIN_ATTEMPTS = 12;
+const DEFAULT_ADMIN_SCRYPT = 'd469f1a8242713b974d298aae6a24578:ee415d053409ab438eb8792abd799b3534dffa22eb8399bc80aca7c4d5998607e2b7189a7e19a867568ed75735596b070b72239cfcd3ec3d4a7815140a852b4f';
+
+const adminSessions = new Map();
+const loginAttempts = new Map();
+
+function parseCookies(cookieHeader) {
+  const out = {};
+  if (!cookieHeader) return out;
+  for (const part of String(cookieHeader).split(';')) {
+    const idx = part.indexOf('=');
+    if (idx === -1) continue;
+    const k = part.slice(0, idx).trim();
+    const v = part.slice(idx + 1).trim();
+    if (k) {
+      try {
+        out[k] = decodeURIComponent(v);
+      } catch {
+        out[k] = v;
+      }
+    }
+  }
+  return out;
+}
+
+function isHttpsRequest(req) {
+  const proto = String(req.headers['x-forwarded-proto'] || '').split(',')[0].trim().toLowerCase();
+  return Boolean(req.secure || proto === 'https');
+}
+
+function buildAdminCookieHeader(req, token, maxAgeSeconds) {
+  const parts = [
+    `${ADMIN_COOKIE_NAME}=${encodeURIComponent(token)}`,
+    'Path=/',
+    'HttpOnly',
+    `Max-Age=${maxAgeSeconds}`,
+  ];
+  if (isHttpsRequest(req)) {
+    parts.push('SameSite=None', 'Secure', 'Partitioned');
+  } else {
+    parts.push('SameSite=Lax');
+  }
+  return parts.join('; ');
+}
+
+function getSafeNextUrl(rawNext) {
+  const val = String(rawNext || '').trim();
+  if (!val || !val.startsWith('/') || val.startsWith('//') || val.startsWith('/\\')) {
+    return '/dashboard.php';
+  }
+  return val;
+}
+
+function verifyAdminPassword(candidate) {
+  const input = String(candidate || '');
+  if (!input) return false;
+  const envPw = String(process.env.ADMIN_PASSWORD || '');
+  if (envPw) {
+    const a = crypto.createHash('sha256').update(input).digest();
+    const b = crypto.createHash('sha256').update(envPw).digest();
+    return crypto.timingSafeEqual(a, b);
+  }
+  const [salt, expectedHex] = DEFAULT_ADMIN_SCRYPT.split(':');
+  const expectedBuf = Buffer.from(expectedHex, 'hex');
+  const actualBuf = crypto.scryptSync(input, salt, expectedBuf.length);
+  return crypto.timingSafeEqual(actualBuf, expectedBuf);
+}
+
+function getValidAdminSession(req) {
+  const cookies = parseCookies(req.headers.cookie);
+  const sid = cookies[ADMIN_COOKIE_NAME];
+  if (!sid) return null;
+  const sess = adminSessions.get(sid);
+  if (!sess) return null;
+  if (Date.now() > sess.expiresAt) {
+    adminSessions.delete(sid);
+    return null;
+  }
+  return { sid, ...sess };
+}
+
+function verifySameOrigin(req, res, next) {
+  const origin = req.headers.origin;
+  if (origin) {
+    try {
+      const originHost = new URL(origin).host;
+      const expectedHost = String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim();
+      if (expectedHost && originHost !== expectedHost) {
+        return res.status(403).json({ error: 'অননুমোদিত অনুরোধ।' });
+      }
+    } catch {
+      return res.status(403).json({ error: 'অবৈধ অনুরোধ।' });
+    }
+  }
+  next();
+}
+
+function requireAdminPage(req, res, next) {
+  if (getValidAdminSession(req)) {
+    return next();
+  }
+  const nextUrl = getSafeNextUrl(req.originalUrl);
+  return res.redirect(`/admin-login?next=${encodeURIComponent(nextUrl)}`);
+}
+
+function requireAdminApi(req, res, next) {
+  if (!getValidAdminSession(req)) {
+    return res.status(401).json({ error: 'অ্যাডমিন অনুমোদন প্রয়োজন। অনুগ্রহ করে পুনরায় লগইন করুন।' });
+  }
+  next();
+}
+
+app.get('/admin-login', (req, res) => {
+  const nextUrl = getSafeNextUrl(req.query.next);
+  if (getValidAdminSession(req)) {
+    return res.redirect(nextUrl);
+  }
+  res.render('admin-login', {
+    error: '',
+    nextUrl,
+    isEmbedded: req.query.embed === '1' || nextUrl.includes('embed=1'),
+  });
+});
+
+app.post('/admin-login', verifySameOrigin, (req, res) => {
+  const nextUrl = getSafeNextUrl(req.body?.next || req.query.next);
+  const isEmbedded = req.query.embed === '1' || nextUrl.includes('embed=1');
+  const clientKey = String(req.ip || 'unknown');
+  const now = Date.now();
+  const attemptInfo = loginAttempts.get(clientKey);
+  if (attemptInfo && now < attemptInfo.resetAt && attemptInfo.count >= MAX_LOGIN_ATTEMPTS) {
+    return res.status(429).render('admin-login', {
+      error: 'অতিরিক্ত ভুল চেষ্টার কারণে সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।',
+      nextUrl,
+      isEmbedded,
+    });
+  }
+
+  const password = String(req.body?.password || '');
+  if (!verifyAdminPassword(password)) {
+    const nextCount = (!attemptInfo || now >= attemptInfo.resetAt) ? 1 : attemptInfo.count + 1;
+    loginAttempts.set(clientKey, {
+      count: nextCount,
+      resetAt: (!attemptInfo || now >= attemptInfo.resetAt) ? now + LOGIN_WINDOW_MS : attemptInfo.resetAt,
+    });
+    return res.status(401).render('admin-login', {
+      error: 'ভুল পাসওয়ার্ড! সঠিক অ্যাডমিন পাসওয়ার্ড দিন।',
+      nextUrl,
+      isEmbedded,
+    });
+  }
+
+  loginAttempts.delete(clientKey);
+  const token = crypto.randomBytes(32).toString('hex');
+  adminSessions.set(token, {
+    createdAt: now,
+    expiresAt: now + SESSION_TTL_MS,
+  });
+  res.setHeader('Set-Cookie', buildAdminCookieHeader(req, token, Math.floor(SESSION_TTL_MS / 1000)));
+  return res.redirect(nextUrl);
+});
+
+app.post('/admin-logout', verifySameOrigin, (req, res) => {
+  const cookies = parseCookies(req.headers.cookie);
+  const sid = cookies[ADMIN_COOKIE_NAME];
+  if (sid) {
+    adminSessions.delete(sid);
+  }
+  res.setHeader('Set-Cookie', buildAdminCookieHeader(req, '', 0));
+  return res.redirect('/index.php');
 });
 
 function getUploadedExamsSummary(store) {
@@ -414,8 +590,8 @@ app.get(['/merit-list', '/merit-list.php'], async (req, res) => {
   });
 });
 
-// Admin Panel route (open access without ID/password, pure button-driven control of ALL features)
-app.all(['/dashboard', '/dashboard.php'], (req, res) => {
+// Admin Panel route (password-protected)
+app.all(['/dashboard', '/dashboard.php'], requireAdminPage, (req, res) => {
   const institutionName = 'নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা';
   const store = loadExcelStore();
   const portal = loadPortalStore();
@@ -583,14 +759,14 @@ app.all(['/dashboard', '/dashboard.php'], (req, res) => {
   });
 });
 
-app.get(['/admin-teachers', '/admin-teachers.php'], (req, res) => {
+app.get(['/admin-teachers', '/admin-teachers.php'], requireAdminPage, (req, res) => {
   const portal = loadPortalStore();
   res.render('admin-teachers', {
     teachers: portal.teachers || [],
   });
 });
 
-app.post('/api/portal/teachers', (req, res) => {
+app.post('/api/portal/teachers', requireAdminApi, verifySameOrigin, (req, res) => {
   const portal = loadPortalStore();
   const body = req.body || {};
   const id = body.id ? String(body.id) : `t_${Date.now()}`;
@@ -618,14 +794,14 @@ app.post('/api/portal/teachers', (req, res) => {
   res.json({ ok: true, teachers: portal.teachers });
 });
 
-app.delete('/api/portal/teachers/:id', (req, res) => {
+app.delete('/api/portal/teachers/:id', requireAdminApi, verifySameOrigin, (req, res) => {
   const portal = loadPortalStore();
   portal.teachers = (portal.teachers || []).filter((t) => t.id !== String(req.params.id));
   savePortalStore(portal);
   res.json({ ok: true, teachers: portal.teachers });
 });
 
-app.get(['/admin-academic', '/admin-academic.php'], (req, res) => {
+app.get(['/admin-academic', '/admin-academic.php'], requireAdminPage, (req, res) => {
   const portal = loadPortalStore();
   res.render('admin-academic', {
     initialSection: req.query.section ? String(req.query.section) : 'routines',
@@ -640,7 +816,7 @@ app.get(['/admin-academic', '/admin-academic.php'], (req, res) => {
   });
 });
 
-app.post('/api/portal/academic/:section', (req, res) => {
+app.post('/api/portal/academic/:section', requireAdminApi, verifySameOrigin, (req, res) => {
   const section = String(req.params.section);
   const allowed = ['routines', 'syllabus', 'fees', 'registrations', 'studentStats'];
   if (!allowed.includes(section)) {
@@ -657,7 +833,7 @@ app.post('/api/portal/academic/:section', (req, res) => {
   res.json({ ok: true, items: portal[section] });
 });
 
-app.delete('/api/portal/academic/:section/:id', (req, res) => {
+app.delete('/api/portal/academic/:section/:id', requireAdminApi, verifySameOrigin, (req, res) => {
   const section = String(req.params.section);
   const allowed = ['routines', 'syllabus', 'fees', 'registrations', 'studentStats'];
   if (!allowed.includes(section)) {
@@ -669,7 +845,7 @@ app.delete('/api/portal/academic/:section/:id', (req, res) => {
   res.json({ ok: true, items: portal[section] });
 });
 
-app.get(['/admin-admissions', '/admin-admissions.php'], (req, res) => {
+app.get(['/admin-admissions', '/admin-admissions.php'], requireAdminPage, (req, res) => {
   const portal = loadPortalStore();
   res.render('admin-admissions', {
     admissions: portal.admissions || [],
@@ -697,7 +873,7 @@ app.post('/api/portal/admissions', (req, res) => {
   res.json({ ok: true, admission: item });
 });
 
-app.delete('/api/portal/admissions/:id', (req, res) => {
+app.delete('/api/portal/admissions/:id', requireAdminApi, verifySameOrigin, (req, res) => {
   const portal = loadPortalStore();
   portal.admissions = (portal.admissions || []).filter((a) => a.id !== String(req.params.id));
   savePortalStore(portal);
@@ -750,7 +926,7 @@ app.get('/api/portal/admit-lookup', (req, res) => {
   return res.json({ status: 'not_found' });
 });
 
-app.get(['/excel-studio', '/excel-studio.php'], (req, res) => {
+app.get(['/excel-studio', '/excel-studio.php'], requireAdminPage, (req, res) => {
   const store = loadExcelStore();
   res.render('excel-studio', {
     pageTitle: 'এক্সেল ও A4 ডকুমেন্ট স্টুডিও - নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা',
@@ -761,12 +937,12 @@ app.get(['/excel-studio', '/excel-studio.php'], (req, res) => {
   });
 });
 
-app.get('/api/excel/state', (req, res) => {
+app.get('/api/excel/state', requireAdminApi, (req, res) => {
   const store = loadExcelStore();
   res.json(serializeExcelState(store));
 });
 
-app.post('/api/excel/upload', (req, res) => {
+app.post('/api/excel/upload', requireAdminApi, verifySameOrigin, (req, res) => {
   upload.single('file')(req, res, (uploadErr) => {
     if (uploadErr) {
       return res.status(400).json({ error: uploadErr.message || 'ফাইল আপলোড করা যায়নি।' });
@@ -841,7 +1017,7 @@ app.post('/api/excel/upload', (req, res) => {
   });
 });
 
-app.post('/api/excel/students/save', (req, res) => {
+app.post('/api/excel/students/save', requireAdminApi, verifySameOrigin, (req, res) => {
   const store = loadExcelStore();
   const { columns, mapping, rows } = req.body || {};
   if (!Array.isArray(columns) || !Array.isArray(rows)) {
@@ -857,7 +1033,7 @@ app.post('/api/excel/students/save', (req, res) => {
   res.json({ message: 'শিক্ষার্থীদের ডেটা সংরক্ষণ করা হয়েছে।', state: serializeExcelState(store) });
 });
 
-app.post('/api/excel/documents/save', (req, res) => {
+app.post('/api/excel/documents/save', requireAdminApi, verifySameOrigin, (req, res) => {
   const store = loadExcelStore();
   const { title, columns, mapping, rows } = req.body || {};
   if (!Array.isArray(columns) || !Array.isArray(rows)) {
@@ -874,7 +1050,7 @@ app.post('/api/excel/documents/save', (req, res) => {
   res.json({ message: 'ডকুমেন্টস শিট সংরক্ষণ করা হয়েছে।', state: serializeExcelState(store) });
 });
 
-app.post('/api/excel/results/create', (req, res) => {
+app.post('/api/excel/results/create', requireAdminApi, verifySameOrigin, (req, res) => {
   const store = loadExcelStore();
   const examId = `exam_${Date.now()}`;
   const classId = String(req.body.classId || '6');
@@ -911,7 +1087,7 @@ app.post('/api/excel/results/create', (req, res) => {
   res.json({ message: 'নতুন রেজাল্ট শিট তৈরি হয়েছে।', examId, state: serializeExcelState(store) });
 });
 
-app.post('/api/excel/results/save', (req, res) => {
+app.post('/api/excel/results/save', requireAdminApi, verifySameOrigin, (req, res) => {
   const store = loadExcelStore();
   const { exam } = req.body || {};
   if (!exam || !exam.id || !Array.isArray(exam.columns) || !Array.isArray(exam.rows)) {
@@ -932,7 +1108,7 @@ app.post('/api/excel/results/save', (req, res) => {
   });
 });
 
-app.delete('/api/excel/results/:examId', (req, res) => {
+app.delete('/api/excel/results/:examId', requireAdminApi, verifySameOrigin, (req, res) => {
   const store = loadExcelStore();
   const examId = String(req.params.examId || '');
   const keys = Object.keys(store.results.exams || {});
@@ -947,7 +1123,7 @@ app.delete('/api/excel/results/:examId', (req, res) => {
   res.json({ message: 'রেজাল্ট শিট মুছে ফেলা হয়েছে।', state: serializeExcelState(store) });
 });
 
-app.get('/api/excel/template/:type', (req, res) => {
+app.get('/api/excel/template/:type', requireAdminApi, (req, res) => {
   const type = String(req.params.type || 'students');
   let headers = [];
   let rows = [];
@@ -983,7 +1159,7 @@ app.get('/api/excel/template/:type', (req, res) => {
   res.send(buffer);
 });
 
-app.post('/api/excel/export', (req, res) => {
+app.post('/api/excel/export', requireAdminApi, verifySameOrigin, (req, res) => {
   try {
     let body = req.body || {};
     if (typeof body.payload === 'string') {
@@ -1048,7 +1224,7 @@ app.post('/api/export/pdf-relay', (req, res) => {
   }
 });
 
-app.all(['/add_notice', '/add_notice.php'], (req, res) => {
+app.all(['/add_notice', '/add_notice.php'], requireAdminPage, verifySameOrigin, (req, res) => {
   let message = '';
   let messageType = 'green';
   const portal = loadPortalStore();
@@ -1343,14 +1519,14 @@ app.all(['/result', '/result.php', '/view_result.php'], async (req, res) => {
   });
 });
 
-app.all(['/accounting_entry', '/accounting_entry.php'], (req, res) => {
+app.all(['/accounting_entry', '/accounting_entry.php'], requireAdminPage, (req, res) => {
   res.render('accounting_entry', {
     pageTitle: 'হিসাব এন্ট্রি - নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা',
     isEmbedded: req.query.embed === '1',
   });
 });
 
-app.all(['/accounting_report', '/accounting_report.php'], (req, res) => {
+app.all(['/accounting_report', '/accounting_report.php'], requireAdminPage, (req, res) => {
   res.render('accounting_report', {
     pageTitle: 'আয়-ব্যয় স্মার্ট রিপোর্ট - নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা',
   });

@@ -127,8 +127,10 @@
     host.style.zIndex = '-1';
     host.style.pointerEvents = 'none';
     host.style.opacity = '1';
+    host.style.fontFamily = "'Nikosh', 'Kalpurush', sans-serif";
 
     const clone = element.cloneNode(true);
+    clone.style.fontFamily = "'Nikosh', 'Kalpurush', sans-serif";
     clone.querySelectorAll('.no-print').forEach((n) => n.remove());
 
     if (clone.classList && clone.classList.contains('a4-pages-stack')) {

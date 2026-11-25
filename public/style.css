@@ -1,6 +1,14 @@
 @font-face {
     font-family: 'Kalpurush';
-    src: url('kalpurush.ttf') format('truetype');
+    src: url('/kalpurush.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Nikosh';
+    src: url('/nikosh.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
@@ -36,7 +44,7 @@ html {
 }
 
 body {
-    font-family: 'Hind Siliguri', 'Kalpurush', sans-serif;
+    font-family: 'Kalpurush', sans-serif;
     background-color: var(--canvas);
     color: var(--text-primary);
     line-height: 1.6;
@@ -47,7 +55,7 @@ a {
     color: inherit;
 }
 
-button, input, select {
+button, input, select, textarea {
     font-family: inherit;
 }
 
@@ -73,7 +81,7 @@ button, input, select {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 24px;
+    gap: 16px;
 }
 
 .app-brand {
@@ -81,8 +89,8 @@ button, input, select {
     align-items: center;
     gap: 10px;
     text-decoration: none;
-    white-space: nowrap;
-    flex-shrink: 0;
+    min-width: 0;
+    flex-shrink: 1;
     min-height: 44px;
 }
 
@@ -96,16 +104,18 @@ button, input, select {
 }
 
 .app-brand-title {
-    font-size: 1.08rem;
+    font-size: 1rem;
     font-weight: 700;
     color: var(--brand-dark);
     letter-spacing: -0.01em;
+    line-height: 1.22;
 }
 
 .app-desktop-nav {
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: 18px;
+    flex-shrink: 0;
 }
 
 .app-nav-link {
@@ -1338,16 +1348,24 @@ main > #notice-section {
 
 @media (max-width: 768px) {
     .app-topbar {
-        height: 54px;
+        min-height: 54px;
+        height: auto;
+        padding: 4px 0;
     }
 
     .app-topbar-inner {
-        padding: 0 14px;
+        padding: 0 12px;
         gap: 10px;
     }
 
+    .app-brand-logo {
+        width: 32px;
+        height: 32px;
+    }
+
     .app-brand-title {
-        font-size: 0.98rem;
+        font-size: 0.86rem;
+        line-height: 1.18;
     }
 
     .app-admin-cta {

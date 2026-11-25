@@ -8,14 +8,14 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="manifest" href="/manifest.webmanifest">
     <meta name="theme-color" content="#28a745">
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/fonts.css">
     <style>
         :root {
             --primary-color: #2c6e49;
             --secondary-color: #1a472a;
         }
 
-        body { font-family: 'Hind Siliguri', sans-serif; background: #e0e0e0; margin: 0; padding: 0; color: #333; }
+        body { font-family: 'Kalpurush', sans-serif; background: #e0e0e0; margin: 0; padding: 0; color: #333; }
 
         @media print {
             body { background: white; }
@@ -35,6 +35,11 @@
             box-sizing: border-box;
             border: 4px double var(--primary-color);
             overflow: hidden;
+            font-family: 'Nikosh', 'Kalpurush', sans-serif;
+        }
+
+        .print-container * {
+            font-family: 'Nikosh', 'Kalpurush', sans-serif;
         }
 
         .watermark {
