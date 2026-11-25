@@ -151,7 +151,12 @@
         }
 
         .dash-head {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .dash-inst {
@@ -166,6 +171,41 @@
             font-weight: 700;
             color: var(--brand-dark);
             line-height: 1.3;
+        }
+
+        .dash-search-wrap {
+            position: relative;
+            flex: 1 1 240px;
+            max-width: 310px;
+        }
+
+        .dash-search-wrap i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.86rem;
+            pointer-events: none;
+        }
+
+        .dash-search-input {
+            width: 100%;
+            height: 40px;
+            padding: 0 12px 0 34px;
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            border-radius: 11px;
+            background: var(--surface);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .dash-search-input:focus {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.12);
         }
 
         .dash-grid {
@@ -243,6 +283,53 @@
             min-height: 0;
             display: flex;
             flex-direction: column;
+            position: relative;
+            animation: admFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .dash-shell {
+            animation: admFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes admFadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .adm-loader {
+            position: absolute;
+            inset: 0;
+            background: rgba(246, 248, 247, 0.88);
+            backdrop-filter: blur(4px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            z-index: 15;
+            color: var(--brand-dark);
+            font-weight: 600;
+            font-size: 0.94rem;
+            opacity: 1;
+            transition: opacity 0.18s ease;
+        }
+
+        .adm-loader.is-done {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .adm-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(21, 128, 61, 0.18);
+            border-top-color: var(--brand);
+            border-radius: 50%;
+            animation: admSpin 0.7s linear infinite;
+        }
+
+        @keyframes admSpin {
+            to { transform: rotate(360deg); }
         }
 
         .adm-frame {
@@ -252,6 +339,18 @@
             border: none;
             background: var(--bg);
             display: block;
+        }
+
+        .adm-back-btn,
+        .adm-logout-btn,
+        .dash-btn {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .adm-back-btn:active,
+        .adm-logout-btn:active {
+            transform: scale(0.96);
         }
 
         .is-hidden {
@@ -309,11 +408,18 @@
         </div>
     </header>
 
+    <div id="nadufmTopProgress" class="nadufm-top-progress" aria-hidden="true"></div>
     <main id="view-grid" class="dash-shell <%= currentMod ? 'is-hidden' : '' %>">
         <div class="dash-inner">
             <div class="dash-head">
-                <p class="dash-inst"><%= institutionName %></p>
-                <h1 class="dash-heading">সকল ফিচার পরিচালনা</h1>
+                <div>
+                    <p class="dash-inst"><%= institutionName %></p>
+                    <h1 class="dash-heading">সকল ফিচার পরিচালনা</h1>
+                </div>
+                <div class="dash-search-wrap">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                    <input type="search" id="dashQuickSearch" class="dash-search-input" placeholder="মডিউল খুঁজুন..." aria-label="ড্যাশবোর্ড মডিউল খুঁজুন">
+                </div>
             </div>
 
             <div class="dash-grid" role="list" aria-label="ফিচার বাটন তালিকা">
@@ -333,6 +439,10 @@
     </main>
 
     <section id="view-workspace" class="adm-workspace <%= currentMod ? '' : 'is-hidden' %>">
+        <div id="workspaceLoader" class="adm-loader <%= currentMod ? '' : 'is-done' %>">
+            <div class="adm-spinner" aria-hidden="true"></div>
+            <span>লোড হচ্ছে...</span>
+        </div>
         <iframe
             id="workspaceFrame"
             name="nadufm-dashboard-frame"
@@ -417,8 +527,26 @@
             var gridEl = document.getElementById('view-grid');
             var workspaceEl = document.getElementById('view-workspace');
             var frameEl = document.getElementById('workspaceFrame');
+            var loaderEl = document.getElementById('workspaceLoader');
             var backBtn = document.getElementById('backToGridBtn');
             var topbarTitle = document.getElementById('topbarTitle');
+            var dashSearch = document.getElementById('dashQuickSearch');
+
+            if (frameEl && loaderEl) {
+                frameEl.addEventListener('load', function () {
+                    loaderEl.classList.add('is-done');
+                });
+            }
+
+            if (dashSearch) {
+                dashSearch.addEventListener('input', function () {
+                    var q = dashSearch.value.trim().toLowerCase();
+                    document.querySelectorAll('.dash-btn[data-feature]').forEach(function (btn) {
+                        var txt = (btn.textContent || '').toLowerCase();
+                        btn.style.display = (!q || txt.indexOf(q) !== -1) ? 'flex' : 'none';
+                    });
+                });
+            }
 
             function openFeature(featureId, pushHistory) {
                 var mod = featureId ? modulesMap[featureId] : null;
@@ -427,6 +555,7 @@
                     workspaceEl.classList.add('is-hidden');
                     backBtn.classList.add('is-hidden');
                     topbarTitle.textContent = 'অ্যাডমিন ড্যাশবোর্ড';
+                    if (loaderEl) loaderEl.classList.add('is-done');
                     frameEl.setAttribute('src', 'about:blank');
                     if (pushHistory) {
                         history.pushState({ feature: '' }, '', '/dashboard.php');
@@ -439,6 +568,7 @@
                 backBtn.classList.remove('is-hidden');
                 topbarTitle.textContent = mod.label;
                 if (frameEl.getAttribute('src') !== mod.src) {
+                    if (loaderEl) loaderEl.classList.remove('is-done');
                     frameEl.setAttribute('src', mod.src);
                 }
                 if (pushHistory) {

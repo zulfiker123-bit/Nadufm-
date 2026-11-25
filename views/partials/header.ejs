@@ -49,6 +49,7 @@
 <% const _cp = typeof currentPath !== 'undefined' ? String(currentPath) : '/'; %>
 <% const _isHomePage = (_cp === '/' || _cp === '/index.php'); %>
 <% if (!isEmbedded) { %>
+    <div id="nadufmTopProgress" class="nadufm-top-progress" aria-hidden="true"></div>
     <header class="app-topbar">
         <div class="app-topbar-inner">
             <a href="/index.php" class="app-brand">
