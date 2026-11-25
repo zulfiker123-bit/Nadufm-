@@ -6,7 +6,8 @@ import { bnToEnNumber, classMap, convertToBengali, getGradeInfo } from './seed.j
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const STORE_PATH = path.join(__dirname, 'excel-store.json');
+const DATA_ROOT = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : __dirname;
+const STORE_PATH = path.join(DATA_ROOT, 'excel-store.json');
 
 function createDefaultStore() {
   return {
@@ -128,6 +129,7 @@ export function loadExcelStore() {
 export function saveExcelStore(store) {
   memoryStore = store;
   try {
+    fs.mkdirSync(path.dirname(STORE_PATH), { recursive: true });
     fs.writeFileSync(STORE_PATH, JSON.stringify(store, null, 2), 'utf8');
   } catch (err) {
     console.warn('Failed to persist excel-store.json:', err.message);

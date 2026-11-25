@@ -1,5 +1,6 @@
 import express from 'express';
 import crypto from 'node:crypto';
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import multer from 'multer';
@@ -35,16 +36,44 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Load local .env if present (helpful for cPanel/VPS hosting) without overriding host-injected env vars
+try {
+  const envFilePath = path.join(__dirname, '.env');
+  if (fs.existsSync(envFilePath)) {
+    const lines = fs.readFileSync(envFilePath, 'utf8').split(/\r?\n/);
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+      if (!line || line.startsWith('#')) continue;
+      const eqIdx = line.indexOf('=');
+      if (eqIdx <= 0) continue;
+      const key = line.slice(0, eqIdx).trim();
+      let val = line.slice(eqIdx + 1).trim();
+      if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+        val = val.slice(1, -1);
+      }
+      if (key && process.env[key] === undefined) {
+        process.env[key] = val;
+      }
+    }
+  }
+} catch {}
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
 });
 
 const app = express();
-const PORT = process.env.NGINX_PORT
-  ? Number(process.env.DEFAULT_APP_PORT) || 3000
-  : Number(process.env.PORT) || 3000;
-const HOST = '0.0.0.0';
+const IS_DEV_NGINX_PROXY = (
+  Boolean(process.env.NGINX_PORT) &&
+  process.env.NODE_ENV !== 'production' &&
+  String(process.env.PORT || '') === String(process.env.NGINX_PORT)
+);
+const RAW_PORT = IS_DEV_NGINX_PROXY
+  ? (process.env.DEFAULT_APP_PORT || 3000)
+  : (process.env.PORT || process.env.DEFAULT_APP_PORT || 3000);
+const PORT = /^\d+$/.test(String(RAW_PORT)) ? Number(RAW_PORT) : RAW_PORT;
+const HOST = process.env.HOST || '0.0.0.0';
 
 function getHeadlines() {
   const store = loadPortalStore();
@@ -97,6 +126,10 @@ app.use((req, res, next) => {
   res.locals.isEmbedded = req.query.embed === '1';
   res.locals.currentPath = req.path || '/';
   next();
+});
+
+app.get(['/health', '/healthz', '/api/health'], (req, res) => {
+  res.status(200).json({ status: 'ok', uptime: Math.round(process.uptime()) });
 });
 
 const ADMIN_COOKIE_NAME = 'nadufm_admin_sid';
@@ -183,13 +216,37 @@ function getValidAdminSession(req) {
   return { sid, ...sess };
 }
 
+function normalizeHostPort(hostStr) {
+  return String(hostStr || '')
+    .split(',')[0]
+    .trim()
+    .toLowerCase()
+    .replace(/:(80|443)$/, '');
+}
+
 function verifySameOrigin(req, res, next) {
   const origin = req.headers.origin;
   if (origin) {
     try {
-      const originHost = new URL(origin).host;
-      const expectedHost = String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim();
-      if (expectedHost && originHost !== expectedHost) {
+      const parsedOrigin = new URL(origin);
+      const originHost = normalizeHostPort(parsedOrigin.host);
+      const originHostname = parsedOrigin.hostname.toLowerCase();
+      const xfHost = normalizeHostPort(req.headers['x-forwarded-host']);
+      const rawHost = normalizeHostPort(req.headers.host);
+      const allowedEnv = String(process.env.ALLOWED_HOSTS || '')
+        .split(',')
+        .map((h) => normalizeHostPort(h))
+        .filter(Boolean);
+
+      const candidates = [xfHost, rawHost, ...allowedEnv].filter(Boolean);
+      const isMatch = candidates.some((c) => c === originHost || c.split(':')[0] === originHostname);
+      const isInternalReverseProxy = (
+        !xfHost &&
+        Boolean(req.headers['x-forwarded-for']) &&
+        (rawHost.startsWith('127.0.0.1') || rawHost.startsWith('localhost') || rawHost.startsWith('[::1]'))
+      );
+
+      if (candidates.length > 0 && !isMatch && !isInternalReverseProxy) {
         return res.status(403).json({ error: 'অননুমোদিত অনুরোধ।' });
       }
     } catch {
@@ -1776,9 +1833,26 @@ app.all(['/student-search', '/student-search.php'], (req, res) => {
   });
 });
 
-const server = app.listen(PORT, HOST, () => {
-  console.log(`Madrasah portal server running at http://${HOST}:${PORT}`);
+app.use((err, req, res, next) => {
+  if (!err) return next();
+  console.error('Unhandled request error:', err.message);
+  if (res.headersSent) return next(err);
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({ error: 'ফাইলটি ১০ মেগাবাইটের চেয়ে বড়। অনুগ্রহ করে ছোট ফাইল আপলোড করুন।' });
+  }
+  if (req.path.startsWith('/api/')) {
+    return res.status(err.status || 500).json({ error: 'সার্ভারে একটি সাময়িক ত্রুটি হয়েছে।' });
+  }
+  return res.status(err.status || 500).send('সার্ভারে সাময়িক ত্রুটি হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
 });
+
+const server = typeof PORT === 'number'
+  ? app.listen(PORT, HOST, () => {
+      console.log(`Madrasah portal server running at http://${HOST}:${PORT}`);
+    })
+  : app.listen(PORT, () => {
+      console.log(`Madrasah portal server running on socket ${PORT}`);
+    });
 
 function shutdown() {
   if (typeof server.closeAllConnections === 'function') {
@@ -1791,3 +1865,9 @@ function shutdown() {
 
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled Promise Rejection:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
