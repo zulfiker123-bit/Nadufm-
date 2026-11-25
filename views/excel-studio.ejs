@@ -14,11 +14,14 @@
     <style>
         :root {
             --brand: #14532d;
+            --brand-dark: #14532d;
             --brand-strong: #15803d;
             --brand-tint: #f0fdf4;
-            --bg: #f4f7f5;
+            --bg: #f6f8f7;
             --surface: #ffffff;
-            --border: rgba(15, 23, 42, 0.1);
+            --surface-subtle: #f8faf9;
+            --border: rgba(15, 23, 42, 0.09);
+            --border-strong: rgba(15, 23, 42, 0.16);
             --text: #0f172a;
             --muted: #475569;
             --danger: #b91c1c;
@@ -40,8 +43,13 @@
             font-family: inherit;
         }
 
+        :focus-visible {
+            outline: 2px solid var(--brand-strong);
+            outline-offset: 2px;
+        }
+
         .studio-topbar {
-            background: #ffffff;
+            background: var(--surface);
             border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
@@ -61,8 +69,8 @@
         }
 
         .studio-brand img {
-            width: 38px;
-            height: 38px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             object-fit: cover;
             border: 1px solid var(--border);
@@ -90,38 +98,38 @@
         }
 
         .studio-container {
-            max-width: 1400px;
-            margin: 18px auto 40px auto;
-            padding: 0 16px;
+            max-width: 1360px;
+            margin: 16px auto 40px auto;
+            padding: 0 18px;
         }
 
         .studio-tabs {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             flex-wrap: wrap;
-            background: #ffffff;
-            padding: 8px;
+            background: var(--surface);
+            padding: 6px;
             border: 1px solid var(--border);
-            border-radius: 14px;
-            margin-bottom: 18px;
+            border-radius: 12px;
+            margin-bottom: 16px;
         }
 
         .studio-tab {
-            flex: 1 1 190px;
-            min-height: 44px;
-            border: 1px solid transparent;
-            border-radius: 10px;
+            flex: 1 1 180px;
+            min-height: 42px;
+            border: none;
+            border-radius: 8px;
             background: transparent;
             color: var(--muted);
-            font-family: inherit;
-            font-size: 0.94rem;
+            font-size: 0.92rem;
             font-weight: 600;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            padding: 8px 14px;
+            padding: 6px 14px;
+            white-space: nowrap;
             transition: background-color 0.15s ease, color 0.15s ease;
         }
 
@@ -138,12 +146,13 @@
         .tab-panel { display: none; }
         .tab-panel.active { display: block; }
 
+        /* Flat single-elevation surfaces */
         .card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 16px;
+            border-radius: 14px;
             padding: 18px;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
 
         .card-head {
@@ -159,7 +168,7 @@
 
         .card-title {
             margin: 0;
-            font-size: 1.06rem;
+            font-size: 1.04rem;
             font-weight: 700;
             color: var(--brand);
             display: flex;
@@ -173,25 +182,39 @@
             color: var(--muted);
         }
 
+        .dirty-note {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--amber);
+            display: none;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .dirty-note.show {
+            display: inline-flex;
+        }
+
         .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 7px;
-            min-height: 44px;
-            padding: 0 15px;
-            border-radius: 10px;
+            min-height: 40px;
+            padding: 0 14px;
+            border-radius: 9px;
             border: 1px solid transparent;
-            font-family: inherit;
-            font-size: 0.89rem;
+            font-size: 0.88rem;
             font-weight: 600;
             cursor: pointer;
             text-decoration: none;
             white-space: nowrap;
-            transition: background-color 0.15s ease, transform 0.1s ease;
+            flex-shrink: 0;
+            transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
         }
 
-        .btn:active { transform: scale(0.98); }
+        .btn:active { transform: scale(0.985); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn-sm { min-height: 36px; padding: 0 11px; font-size: 0.82rem; border-radius: 8px; }
         .btn-primary { background: var(--brand-strong); color: #ffffff; }
         .btn-primary:hover { background: var(--brand); }
@@ -203,9 +226,9 @@
         .btn-rose:hover { background: #9f1239; }
         .btn-amber { background: #d97706; color: #ffffff; }
         .btn-amber:hover { background: #b45309; }
-        .btn-outline { background: #ffffff; color: var(--text); border-color: var(--border); }
-        .btn-outline:hover { background: #f8fafc; }
-        .btn-danger-outline { background: #ffffff; color: var(--danger); border-color: #fecaca; }
+        .btn-outline { background: var(--surface); color: var(--text); border-color: var(--border-strong); }
+        .btn-outline:hover { background: var(--surface-subtle); }
+        .btn-danger-outline { background: var(--surface); color: var(--danger); border-color: #fecaca; }
         .btn-danger-outline:hover { background: #fef2f2; }
 
         .btn-group {
@@ -215,9 +238,9 @@
             flex-wrap: wrap;
         }
 
-        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
-        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
-        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 12px; }
 
         .field label {
             display: block;
@@ -236,11 +259,10 @@
             width: 100%;
             min-height: 40px;
             padding: 7px 11px;
-            border: 1px solid rgba(15, 23, 42, 0.15);
+            border: 1px solid var(--border-strong);
             border-radius: 9px;
-            font-family: inherit;
             font-size: 0.9rem;
-            background: #f8faf9;
+            background: var(--surface-subtle);
             color: var(--text);
             outline: none;
         }
@@ -249,100 +271,207 @@
         .field select:focus,
         .field textarea:focus {
             border-color: var(--brand-strong);
-            background: #ffffff;
+            background: var(--surface);
         }
 
+        /* Clean Dropzone Upload Area */
         .upload-zone {
-            border: 2px dashed rgba(21, 128, 61, 0.35);
-            background: #f8fcf9;
-            border-radius: 14px;
-            padding: 16px;
+            border: 1.5px dashed rgba(21, 128, 61, 0.42);
+            background: #f9fcf9;
+            border-radius: 12px;
+            padding: 14px 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 14px;
             flex-wrap: wrap;
+            transition: background-color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .upload-zone.is-dragover {
+            background: #ecfdf3;
+            border-color: var(--brand-strong);
         }
 
         .upload-zone-info {
             display: flex;
             align-items: center;
             gap: 12px;
+            min-width: 0;
         }
 
         .upload-zone-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
             background: #dcfce7;
             color: var(--brand);
             display: grid;
             place-items: center;
-            font-size: 1.2rem;
+            font-size: 1.15rem;
             flex-shrink: 0;
         }
 
-        .col-chip-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-            gap: 10px;
-            margin-top: 12px;
+        .upload-file-input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            overflow: hidden;
+            pointer-events: none;
         }
 
-        .col-chip {
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 10px;
-            background: #f8faf9;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .col-chip-top {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .col-chip-top input {
-            flex: 1;
-            min-width: 0;
-            height: 34px;
-            padding: 4px 8px;
-            border: 1px solid rgba(15, 23, 42, 0.14);
-            border-radius: 7px;
-            font-family: inherit;
-            font-size: 0.85rem;
+        .upload-status-box {
+            display: none;
+            margin-top: 10px;
+            padding: 10px 13px;
+            border-radius: 9px;
+            font-size: 0.87rem;
             font-weight: 600;
-            background: #ffffff;
         }
 
-        .col-chip-meta {
+        /* Class-wise Segmented Filter Bar */
+        .class-filter-wrap {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 10px 0 12px 0;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .class-filter-bar {
+            display: flex;
+            align-items: center;
             gap: 6px;
-            font-size: 0.8rem;
+            flex-wrap: wrap;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .class-filter-label {
+            font-size: 0.84rem;
+            font-weight: 700;
             color: var(--muted);
+            margin-right: 4px;
+            white-space: nowrap;
         }
 
-        .col-chip-meta input[type="number"] {
-            width: 66px;
-            height: 30px;
+        .class-seg-btn {
+            min-height: 36px;
+            padding: 0 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface-subtle);
+            color: var(--text);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .class-seg-btn:hover {
+            background: var(--brand-tint);
+            border-color: rgba(21, 128, 61, 0.35);
+            color: var(--brand-dark);
+        }
+
+        .class-seg-btn.active {
+            background: var(--brand-strong);
+            border-color: var(--brand-strong);
+            color: #ffffff;
+        }
+
+        .search-toolbar-input {
+            height: 38px;
+            padding: 0 12px;
+            border: 1px solid var(--border-strong);
+            border-radius: 9px;
+            background: var(--surface-subtle);
+            color: var(--text);
+            font-size: 0.88rem;
+            min-width: 220px;
+            outline: none;
+        }
+
+        .search-toolbar-input:focus {
+            border-color: var(--brand-strong);
+            background: var(--surface);
+        }
+
+        /* Collapsible Advanced Mapping / Subject Full-marks (no add-column option) */
+        .adv-details {
+            margin-top: 12px;
+            border-top: 1px solid var(--border);
+            padding-top: 10px;
+        }
+
+        .adv-details summary {
+            cursor: pointer;
+            font-size: 0.86rem;
+            font-weight: 600;
+            color: var(--muted);
+            user-select: none;
+            list-style: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 4px 0;
+        }
+
+        .adv-details summary::-webkit-details-marker { display: none; }
+        .adv-details summary:hover { color: var(--brand); }
+        .adv-details[open] summary { color: var(--brand); margin-bottom: 12px; }
+
+        .subject-marks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .subject-mark-item {
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 9px 11px;
+            background: var(--surface-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .subject-mark-item span {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .subject-mark-item input[type="number"] {
+            width: 68px;
+            height: 32px;
             padding: 2px 6px;
-            border: 1px solid rgba(15, 23, 42, 0.14);
+            border: 1px solid var(--border-strong);
             border-radius: 6px;
-            font-family: inherit;
-            font-size: 0.82rem;
             text-align: center;
+            font-size: 0.84rem;
+            background: var(--surface);
         }
 
+        /* High-Density Data Table */
         .table-wrap {
             overflow-x: auto;
             border: 1px solid var(--border);
-            border-radius: 12px;
-            background: #ffffff;
+            border-radius: 10px;
+            background: var(--surface);
         }
 
         table.sheet-table {
@@ -363,14 +492,15 @@
         }
 
         table.sheet-table td {
-            border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-            border-right: 1px solid rgba(15, 23, 42, 0.06);
-            padding: 5px 6px;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.07);
+            border-right: 1px solid rgba(15, 23, 42, 0.05);
+            padding: 4px 6px;
             text-align: center;
             vertical-align: middle;
         }
 
-        table.sheet-table tr:nth-child(even) td { background: #f8faf9; }
+        table.sheet-table tr:nth-child(even) td { background: #f9fbfa; }
+        table.sheet-table tbody tr:hover td { background: #f0fdf4; }
 
         .cell-input {
             width: 100%;
@@ -379,7 +509,6 @@
             border: 1px solid transparent;
             border-radius: 6px;
             background: transparent;
-            font-family: inherit;
             font-size: 0.88rem;
             color: var(--text);
             text-align: inherit;
@@ -391,23 +520,24 @@
             background: #ffffff;
         }
 
+        /* Stats Strip */
         .stats-bar {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 10px;
             margin-bottom: 14px;
             font-variant-numeric: tabular-nums;
         }
 
         .stat-box {
-            background: #f8faf9;
+            background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 10px 14px;
+            padding: 12px 14px;
         }
 
-        .stat-box-label { font-size: 0.78rem; color: var(--muted); }
-        .stat-box-val { font-size: 1.3rem; font-weight: 700; color: var(--text); margin-top: 2px; }
+        .stat-box-label { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+        .stat-box-val { font-size: 1.35rem; font-weight: 700; color: var(--text); margin-top: 2px; }
 
         .status-pass { color: #15803d; font-weight: 700; }
         .status-promoted { color: #b45309; font-weight: 700; }
@@ -434,7 +564,7 @@
             background: #0f172a;
             color: #ffffff;
             padding: 12px 18px;
-            border-radius: 12px;
+            border-radius: 11px;
             font-size: 0.9rem;
             font-weight: 600;
             box-shadow: 0 12px 28px rgba(15, 23, 42, 0.22);
@@ -442,11 +572,39 @@
             max-width: 380px;
         }
 
+        /* Segmented Control */
+        .seg-group {
+            display: inline-flex;
+            background: #f1f5f9;
+            padding: 3px;
+            border-radius: 9px;
+            gap: 3px;
+        }
+
+        .seg-btn {
+            min-height: 34px;
+            padding: 0 12px;
+            border: none;
+            border-radius: 7px;
+            background: transparent;
+            color: var(--muted);
+            font-size: 0.84rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .seg-btn.active {
+            background: var(--surface);
+            color: var(--brand-dark);
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+        }
+
         /* Tab 4: A4 Document Studio */
         .doc-studio-grid {
             display: grid;
-            grid-template-columns: 360px 1fr;
-            gap: 18px;
+            grid-template-columns: 350px 1fr;
+            gap: 16px;
             align-items: start;
         }
 
@@ -458,7 +616,7 @@
 
         .doc-preview-panel {
             background: #cbd5e1;
-            border-radius: 16px;
+            border-radius: 14px;
             padding: 18px;
             overflow-x: auto;
         }
@@ -629,6 +787,12 @@
             margin: 0;
         }
 
+        @media (max-width: 640px) {
+            .studio-container { padding: 0 12px; }
+            .card { padding: 14px; }
+            .search-toolbar-input { min-width: 100%; }
+        }
+
         @media print {
             .no-print { display: none !important; }
             body { background: #ffffff !important; margin: 0 !important; padding: 0 !important; }
@@ -647,16 +811,16 @@
 <% if (!isEmbedded) { %>
 <header class="studio-topbar no-print">
     <div class="studio-brand">
-        <img src="/logo.png" alt="মাদ্রাসা লোগো">
+        <img src="/logo.png" alt="মাদ্রাসার লোগো" referrerpolicy="no-referrer">
         <div>
             <h1>এক্সেল ও A4 ডকুমেন্ট স্টুডিও</h1>
             <p>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</p>
         </div>
     </div>
     <div class="studio-top-actions">
-        <a href="/result.php" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-poll"></i> পাবলিক ফলাফল</a>
-        <a href="/merit-list.php" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-trophy"></i> মেধা তালিকা</a>
-        <a href="/dashboard.php" class="btn btn-dark btn-sm"><i class="fas fa-arrow-left"></i> ড্যাশবোর্ড</a>
+        <a href="/result.php" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-poll" aria-hidden="true"></i> পাবলিক ফলাফল</a>
+        <a href="/merit-list.php" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-trophy" aria-hidden="true"></i> মেধা তালিকা</a>
+        <a href="/dashboard.php" class="btn btn-dark btn-sm"><i class="fas fa-arrow-left" aria-hidden="true"></i> ড্যাশবোর্ড</a>
     </div>
 </header>
 <% } %>
@@ -665,19 +829,19 @@
 <% if (!hideTabs) { %>
     <nav class="studio-tabs no-print" role="tablist">
         <button type="button" class="studio-tab active" data-tab="students" onclick="switchTab('students')">
-            <i class="fas fa-user-graduate"></i>
+            <i class="fas fa-user-graduate" aria-hidden="true"></i>
             <span>১. শিক্ষার্থী তথ্য Excel</span>
         </button>
         <button type="button" class="studio-tab" data-tab="results" onclick="switchTab('results')">
-            <i class="fas fa-calculator"></i>
+            <i class="fas fa-calculator" aria-hidden="true"></i>
             <span>২. রেজাল্ট, GPA ও মেধা তালিকা</span>
         </button>
         <button type="button" class="studio-tab" data-tab="documents" onclick="switchTab('documents')">
-            <i class="fas fa-folder-open"></i>
+            <i class="fas fa-folder-open" aria-hidden="true"></i>
             <span>৩. সকল ডকুমেন্টস Excel</span>
         </button>
         <button type="button" class="studio-tab" data-tab="docstudio" onclick="switchTab('docstudio')">
-            <i class="fas fa-print"></i>
+            <i class="fas fa-print" aria-hidden="true"></i>
             <span>৪. A4 ডকুমেন্ট (Word / PDF / Print)</span>
         </button>
     </nav>
@@ -690,63 +854,54 @@
         <div class="card">
             <div class="card-head">
                 <div>
-                    <h2 class="card-title"><i class="fas fa-file-excel"></i> শিক্ষার্থীদের তথ্য Excel আপলোড ও ব্যবস্থাপনা</h2>
-                    <p class="card-sub">যেকোনো কলাম সংখ্যা ও ফরম্যাটের .xlsx / .xls / .csv ফাইল আপলোড করুন, কলাম যোগ/বাদ দিন বা এডিট করুন।</p>
+                    <h2 class="card-title"><i class="fas fa-user-graduate" aria-hidden="true"></i> শিক্ষার্থী তথ্য Excel আপলোড ও সংরক্ষণ</h2>
+                    <p class="card-sub">আপনার তৈরি .xlsx, .xls বা .csv ফাইল আপলোড করুন, শ্রেণি অনুযায়ী দেখুন ও সম্পাদনা শেষে সংরক্ষণ করুন।</p>
                 </div>
                 <div class="btn-group">
-                    <a href="/api/excel/template/students" class="btn btn-outline btn-sm"><i class="fas fa-download"></i> নমুনা Excel</a>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="exportSheetExcel('students')"><i class="fas fa-file-export"></i> Excel এক্সপোর্ট</button>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="saveStudentsSheet()"><i class="fas fa-save"></i> সংরক্ষণ করুন</button>
+                    <span id="studentsDirtyNote" class="dirty-note"><i class="fas fa-circle" style="font-size:0.5rem;" aria-hidden="true"></i> অসংরক্ষিত পরিবর্তন</span>
+                    <a href="/api/excel/template/students" class="btn btn-outline btn-sm"><i class="fas fa-download" aria-hidden="true"></i> নমুনা Excel</a>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="exportSheetExcel('students')"><i class="fas fa-file-export" aria-hidden="true"></i> Excel এক্সপোর্ট</button>
+                    <button type="button" id="studentsSaveBtnTop" class="btn btn-primary btn-sm" onclick="saveStudentsSheet()"><i class="fas fa-save" aria-hidden="true"></i> সংরক্ষণ করুন</button>
                 </div>
             </div>
 
-            <div class="upload-zone">
+            <div class="upload-zone" id="studentsDropZone">
                 <div class="upload-zone-info">
-                    <div class="upload-zone-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <div class="upload-zone-icon"><i class="fas fa-cloud-upload-alt" aria-hidden="true"></i></div>
                     <div>
-                        <div style="font-weight: 700;">শিক্ষার্থী তথ্যের Excel ফাইল নির্বাচন করুন</div>
-                        <div style="font-size: 0.82rem; color: var(--muted);">ফাইল নির্বাচন করলেই স্বয়ংক্রিয়ভাবে আপলোড হবে (.xlsx, .xls, .csv)।</div>
+                        <div style="font-weight: 700; font-size: 0.96rem;">শিক্ষার্থী তথ্যের Excel ফাইল আপলোড করুন</div>
+                        <div style="font-size: 0.82rem; color: var(--muted);">এখানে ফাইল টেনে আনুন অথবা বাটনে ক্লিক করে নির্বাচন করুন (.xlsx, .xls, .csv)।</div>
                     </div>
                 </div>
                 <div class="btn-group">
-                    <input type="file" id="studentsFileInput" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain" onchange="uploadExcelFile('students')" style="max-width: 240px;">
-                    <button type="button" id="studentsUploadBtn" class="btn btn-primary btn-sm" onclick="triggerOrUploadExcel('students')"><i class="fas fa-upload"></i> ফাইল আপলোড</button>
+                    <input type="file" id="studentsFileInput" class="upload-file-input" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain" onchange="uploadExcelFile('students')">
+                    <button type="button" id="studentsUploadBtn" class="btn btn-primary" onclick="triggerFileSelect('students')"><i class="fas fa-upload" aria-hidden="true"></i> ফাইল নির্বাচন ও আপলোড</button>
                 </div>
             </div>
-            <div id="studentsUploadStatus" style="display:none; margin-top:10px; padding:10px 14px; border-radius:10px; font-size:0.88rem; font-weight:600;"></div>
-        </div>
+            <div id="studentsUploadStatus" class="upload-status-box"></div>
 
-        <div class="card">
-            <div class="card-head">
-                <div>
-                    <h3 class="card-title"><i class="fas fa-columns"></i> কলাম ম্যানেজার (কলাম কম/বেশি ও নাম পরিবর্তন)</h3>
-                    <p class="card-sub">নতুন কলাম যোগ করুন, অপ্রয়োজনীয় কলাম মুছুন অথবা নাম পরিবর্তন করুন।</p>
-                </div>
-                <div class="btn-group">
-                    <input type="text" id="newStudentColLabel" placeholder="নতুন কলামের নাম (যেমন: রক্তের গ্রুপ)" style="height:38px; padding:0 10px; border:1px solid var(--border); border-radius:8px; min-width:220px;">
-                    <button type="button" class="btn btn-dark btn-sm" onclick="addSimpleColumn('students')"><i class="fas fa-plus"></i> কলাম যোগ</button>
-                </div>
-            </div>
-
-            <div class="col-chip-list" id="studentsColList"></div>
-
-            <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border);">
-                <div style="font-weight:700; font-size:0.86rem; color:var(--brand); margin-bottom:8px;">ডকুমেন্ট স্টুডিও ফিল্ড ম্যাপিং (স্বয়ংক্রিয়ভাবে প্রত্যয়ন/প্রশংসা পত্রে বসানোর জন্য):</div>
+            <details class="adv-details">
+                <summary><i class="fas fa-sliders-h" aria-hidden="true"></i> ডকুমেন্ট ও এডমিট কার্ড ফিল্ড ম্যাপিং (ঐচ্ছিক)</summary>
                 <div class="grid-4" id="studentsMappingGrid"></div>
-            </div>
+            </details>
         </div>
 
         <div class="card">
             <div class="card-head">
                 <div>
-                    <h3 class="card-title"><i class="fas fa-table"></i> শিক্ষার্থীদের ডেটা তালিকা (<span id="studentsCount">0</span> জন)</h3>
+                    <h3 class="card-title"><i class="fas fa-table" aria-hidden="true"></i> শ্রেণি ভিত্তিক শিক্ষার্থী তালিকা (<span id="studentsCount">০</span> জন)</h3>
                 </div>
                 <div class="btn-group">
-                    <input type="search" id="studentsSearchInput" placeholder="নাম, রোল বা মোবাইল খুঁজুন..." oninput="renderStudentsTable()" style="height:38px; padding:0 12px; border:1px solid var(--border); border-radius:8px; min-width:210px;">
-                    <button type="button" class="btn btn-outline btn-sm" onclick="addSimpleRow('students')"><i class="fas fa-plus"></i> নতুন সারি</button>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="saveStudentsSheet()"><i class="fas fa-save"></i> সংরক্ষণ</button>
+                    <input type="search" id="studentsSearchInput" class="search-toolbar-input" placeholder="নাম, রোল বা মোবাইল খুঁজুন..." oninput="renderStudentsTable()">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="addSimpleRow('students')"><i class="fas fa-plus" aria-hidden="true"></i> নতুন শিক্ষার্থী</button>
+                    <button type="button" id="studentsSaveBtnBottom" class="btn btn-primary btn-sm" onclick="saveStudentsSheet()"><i class="fas fa-save" aria-hidden="true"></i> সংরক্ষণ করুন</button>
                 </div>
             </div>
+
+            <div class="class-filter-wrap">
+                <div class="class-filter-bar" id="studentsClassBar" role="tablist" aria-label="শ্রেণি অনুযায়ী শিক্ষার্থী ফিল্টার"></div>
+            </div>
+
             <div id="studentsTableContainer"></div>
         </div>
     </section>
@@ -758,14 +913,24 @@
         <div class="card">
             <div class="card-head">
                 <div>
-                    <h2 class="card-title"><i class="fas fa-award"></i> রেজাল্ট শিট আপলোড, অটো GPA, মেধা তালিকা ও প্রমোশন</h2>
-                    <p class="card-sub">বিষয়ের কলাম কম-বেশি করুন, পূর্ণমান নির্ধারণ করুন, অটো GPA/মেধা তালিকা ও ফেলকৃত শিক্ষার্থীদের প্রমোশন নিয়ন্ত্রণ করুন।</p>
+                    <h2 class="card-title"><i class="fas fa-award" aria-hidden="true"></i> রেজাল্ট ও অটো GPA ব্যবস্থাপনা</h2>
+                    <p class="card-sub">শ্রেণি অনুযায়ী রেজাল্ট শিট নির্বাচন করুন, Excel আপলোড করুন, মেধাক্রম ও প্রমোশন নিয়ন্ত্রণ করে সংরক্ষণ করুন।</p>
                 </div>
                 <div class="btn-group">
-                    <a href="/api/excel/template/results" class="btn btn-outline btn-sm"><i class="fas fa-download"></i> নমুনা রেজাল্ট Excel</a>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="exportComputedResultsExcel()"><i class="fas fa-file-export"></i> GPA ও মেধাসহ Excel</button>
-                    <button type="button" class="btn btn-blue btn-sm" onclick="openBatchMarksheets()"><i class="fas fa-copy"></i> সকল শিক্ষার্থীর মার্কশিট (A4)</button>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="saveResultsSheet()"><i class="fas fa-save"></i> ফলাফল সংরক্ষণ</button>
+                    <span id="resultsDirtyNote" class="dirty-note"><i class="fas fa-circle" style="font-size:0.5rem;" aria-hidden="true"></i> অসংরক্ষিত পরিবর্তন</span>
+                    <a href="/api/excel/template/results" class="btn btn-outline btn-sm"><i class="fas fa-download" aria-hidden="true"></i> নমুনা রেজাল্ট</a>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="exportComputedResultsExcel()"><i class="fas fa-file-export" aria-hidden="true"></i> GPA সহ Excel</button>
+                    <button type="button" class="btn btn-blue btn-sm" onclick="openBatchMarksheets()"><i class="fas fa-print" aria-hidden="true"></i> সব মার্কশিট (A4)</button>
+                    <button type="button" id="resultsSaveBtnTop" class="btn btn-primary btn-sm" onclick="saveResultsSheet()"><i class="fas fa-save" aria-hidden="true"></i> ফলাফল সংরক্ষণ</button>
+                </div>
+            </div>
+
+            <!-- Class-wise Exam Tabs / Quick Switcher -->
+            <div class="class-filter-wrap" style="padding-top:0;">
+                <div class="class-filter-bar" id="examClassTabsBar" role="tablist" aria-label="শ্রেণি ভিত্তিক রেজাল্ট শিট"></div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-dark btn-sm" onclick="createNewExam()"><i class="fas fa-plus-circle" aria-hidden="true"></i> নতুন শ্রেণি / পরীক্ষা</button>
+                    <button type="button" class="btn btn-danger-outline btn-sm" onclick="deleteCurrentExam()"><i class="fas fa-trash" aria-hidden="true"></i> শিট মুছুন</button>
                 </div>
             </div>
 
@@ -775,7 +940,7 @@
                     <select id="activeExamSelect" onchange="switchActiveExam(this.value)"></select>
                 </div>
                 <div class="field">
-                    <label>শ্রেণি (পাবলিক রেজাল্টে যুক্ত করতে)</label>
+                    <label>শ্রেণি (পাবলিক রেজাল্টে প্রদর্শিত)</label>
                     <select id="examClassId" onchange="updateExamMeta()"></select>
                 </div>
                 <div class="field">
@@ -788,64 +953,30 @@
                 </div>
             </div>
 
-            <div class="btn-group" style="margin-bottom: 14px;">
-                <button type="button" class="btn btn-dark btn-sm" onclick="createNewExam()"><i class="fas fa-plus-circle"></i> নতুন পরীক্ষা / শ্রেণি তৈরি</button>
-                <button type="button" class="btn btn-danger-outline btn-sm" onclick="deleteCurrentExam()"><i class="fas fa-trash"></i> এই শিট মুছুন</button>
-            </div>
-
-            <div class="upload-zone">
+            <div class="upload-zone" id="resultsDropZone">
                 <div class="upload-zone-info">
-                    <div class="upload-zone-icon"><i class="fas fa-file-upload"></i></div>
+                    <div class="upload-zone-icon"><i class="fas fa-file-upload" aria-hidden="true"></i></div>
                     <div>
-                        <div style="font-weight: 700;">রেজাল্ট শিট Excel আপলোড করুন</div>
-                        <div style="font-size: 0.82rem; color: var(--muted);">উদাহরণ হেডার: <code>রোল</code>, <code>শিক্ষার্থীর নাম</code>, <code>কুরআন মাজিদ (100)</code>, <code>আরবি (100)</code> — ফাইল নির্বাচন করলেই আপলোড ও GPA হিসাব হবে।</div>
+                        <div style="font-weight: 700; font-size: 0.96rem;">নির্বাচিত শ্রেণির রেজাল্ট Excel আপলোড করুন</div>
+                        <div style="font-size: 0.82rem; color: var(--muted);">হেডার উদাহরণ: <code>রোল</code>, <code>শিক্ষার্থীর নাম</code>, <code>কুরআন মাজিদ (100)</code>, <code>আরবি (100)</code> — আপলোডেই স্বয়ংক্রিয় GPA হিসাব হবে।</div>
                     </div>
                 </div>
                 <div class="btn-group">
-                    <input type="file" id="resultsFileInput" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain" onchange="uploadExcelFile('results')" style="max-width: 240px;">
-                    <button type="button" id="resultsUploadBtn" class="btn btn-primary btn-sm" onclick="triggerOrUploadExcel('results')"><i class="fas fa-upload"></i> আপলোড ও ক্যালকুলেট</button>
+                    <input type="file" id="resultsFileInput" class="upload-file-input" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain" onchange="uploadExcelFile('results')">
+                    <button type="button" id="resultsUploadBtn" class="btn btn-primary" onclick="triggerFileSelect('results')"><i class="fas fa-upload" aria-hidden="true"></i> ফাইল নির্বাচন ও আপলোড</button>
                 </div>
             </div>
-            <div id="resultsUploadStatus" style="display:none; margin-top:10px; padding:10px 14px; border-radius:10px; font-size:0.88rem; font-weight:600;"></div>
-        </div>
+            <div id="resultsUploadStatus" class="upload-status-box"></div>
 
-        <!-- Column manager + Auto Promotion rules -->
-        <div class="grid-2">
-            <div class="card">
-                <div class="card-head">
-                    <div>
-                        <h3 class="card-title"><i class="fas fa-sliders-h"></i> বিষয়ের কলাম ম্যানেজার (কলাম কম-বেশি)</h3>
-                        <p class="card-sub">বিষয় বা তথ্য কলাম যোগ/বাদ দিন এবং পূর্ণমান নির্ধারণ করুন।</p>
-                    </div>
-                </div>
-                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
-                    <input type="text" id="newResultColLabel" placeholder="বিষয়ের নাম (যেমন: বিজ্ঞান)" style="flex:1; min-width:140px; height:38px; padding:0 10px; border:1px solid var(--border); border-radius:8px;">
-                    <input type="number" id="newResultColFM" value="100" min="10" max="500" title="পূর্ণমান" style="width:82px; height:38px; padding:0 8px; border:1px solid var(--border); border-radius:8px;">
-                    <select id="newResultColType" style="height:38px; padding:0 8px; border:1px solid var(--border); border-radius:8px;">
-                        <option value="subject">বিষয় (নম্বর)</option>
-                        <option value="info">তথ্য কলাম</option>
-                    </select>
-                    <button type="button" class="btn btn-dark btn-sm" onclick="addResultColumn()"><i class="fas fa-plus"></i> যোগ</button>
-                </div>
-                <div class="col-chip-list" id="resultsColList"></div>
-
-                <div style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border);" class="grid-4" id="resultsMappingGrid"></div>
-            </div>
-
-            <div class="card">
-                <div class="card-head">
-                    <div>
-                        <h3 class="card-title"><i class="fas fa-level-up-alt"></i> ফেলকৃত প্রমোশন ও পাস নিয়মাবলি</h3>
-                        <p class="card-sub">বিষয়ে ফেলকৃত শিক্ষার্থীদের অটোমেটিক বা ম্যানুয়ালি প্রমোট করার অপশন।</p>
-                    </div>
-                </div>
-                <div class="grid-2">
+            <details class="adv-details">
+                <summary><i class="fas fa-cog" aria-hidden="true"></i> পাস নম্বর, প্রমোশন নিয়ম, বিষয় পূর্ণমান ও ফিল্ড ম্যাপিং</summary>
+                <div class="grid-3" style="margin-bottom: 12px;">
                     <div class="field">
                         <label>পাস নম্বর শতকরা হার (%)</label>
                         <input type="number" id="examPassPercent" min="10" max="80" value="33" oninput="updatePromoConfig()">
                     </div>
                     <div class="field">
-                        <label>অটো-প্রমোশন সীমা (ফেল বিষয় সংখ্যা)</label>
+                        <label>অটো-প্রমোশন সীমা (ফেল বিষয়)</label>
                         <select id="examMaxPromoteFail" onchange="updatePromoConfig()">
                             <option value="0">প্রমোশন বন্ধ (সকল ফেল অকৃতকার্য)</option>
                             <option value="1">সর্বোচ্চ ১ বিষয়ে ফেল করলে প্রমোট</option>
@@ -854,17 +985,20 @@
                             <option value="99">সকল ফেলকৃত শিক্ষার্থী প্রমোট</option>
                         </select>
                     </div>
+                    <div class="field">
+                        <label>প্রমোশন মন্তব্য</label>
+                        <input type="text" id="examPromoLabel" value="বিশেষ বিবেচনায় প্রমোটেড" oninput="updatePromoConfig()">
+                    </div>
                 </div>
-                <div class="field" style="margin-top: 10px;">
-                    <label>প্রমোশন মন্তব্য (মার্কশিট ও মেধাতালিকায় দেখাবে)</label>
-                    <input type="text" id="examPromoLabel" value="বিশেষ বিবেচনায় প্রমোটেড" oninput="updatePromoConfig()">
+                <div class="btn-group" style="margin-bottom: 14px;">
+                    <button type="button" class="btn btn-amber btn-sm" onclick="bulkPromoteFailed(true)"><i class="fas fa-check-double" aria-hidden="true"></i> সকল ফেলকৃত প্রমোট করুন</button>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="bulkPromoteFailed(null)"><i class="fas fa-undo" aria-hidden="true"></i> প্রমোশন রিসেট</button>
                 </div>
-                <div class="btn-group" style="margin-top: 12px;">
-                    <button type="button" class="btn btn-amber btn-sm" onclick="bulkPromoteFailed(true)"><i class="fas fa-check-double"></i> সকল ফেলকৃত প্রমোট করুন</button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="bulkPromoteFailed(null)"><i class="fas fa-undo"></i> ম্যানুয়াল প্রমোশন রিসেট</button>
-                </div>
-                <p style="font-size:0.8rem; color:var(--muted); margin:10px 0 0 0;">নিচের টেবিল থেকেও প্রতিটি শিক্ষার্থীর জন্য আলাদাভাবে <strong>প্রমোট / বাতিল</strong> করতে পারবেন।</p>
-            </div>
+                <div style="font-weight:700; font-size:0.84rem; color:var(--brand); margin-bottom:8px;">বিষয়সমূহের পূর্ণমান:</div>
+                <div class="subject-marks-grid" id="resultsSubjectsGrid"></div>
+                <div style="font-weight:700; font-size:0.84rem; color:var(--brand); margin:8px 0;">কলাম ফিল্ড ম্যাপিং:</div>
+                <div class="grid-4" id="resultsMappingGrid"></div>
+            </details>
         </div>
 
         <!-- Live Stats -->
@@ -874,13 +1008,21 @@
         <div class="card">
             <div class="card-head">
                 <div class="btn-group">
-                    <button type="button" class="btn btn-sm btn-primary" id="btnViewEditor" onclick="setResultSubView('editor')"><i class="fas fa-edit"></i> মার্কস এডিট ও প্রমোশন</button>
-                    <button type="button" class="btn btn-sm btn-outline" id="btnViewMerit" onclick="setResultSubView('merit')"><i class="fas fa-trophy"></i> অটো মেধা তালিকা (GPA ভিত্তিক)</button>
+                    <div class="seg-group" role="tablist" aria-label="ফলাফল দেখার ধরন">
+                        <button type="button" class="seg-btn active" id="btnViewEditor" onclick="setResultSubView('editor')">মার্কস এডিট ও প্রমোশন</button>
+                        <button type="button" class="seg-btn" id="btnViewMerit" onclick="setResultSubView('merit')">অটো মেধা তালিকা</button>
+                    </div>
+                    <div class="seg-group" role="tablist" aria-label="ফলাফল স্ট্যাটাস ফিল্টার">
+                        <button type="button" class="seg-btn active" data-res-status="all" onclick="setResultStatusFilter('all')">সকল</button>
+                        <button type="button" class="seg-btn" data-res-status="Passed" onclick="setResultStatusFilter('Passed')">উত্তীর্ণ</button>
+                        <button type="button" class="seg-btn" data-res-status="Promoted" onclick="setResultStatusFilter('Promoted')">প্রমোটেড</button>
+                        <button type="button" class="seg-btn" data-res-status="Failed" onclick="setResultStatusFilter('Failed')">অকৃতকার্য</button>
+                    </div>
                 </div>
                 <div class="btn-group">
-                    <input type="search" id="resultsSearchInput" placeholder="নাম বা রোল খুঁজুন..." oninput="renderResultsTable()" style="height:38px; padding:0 12px; border:1px solid var(--border); border-radius:8px; min-width:190px;">
-                    <button type="button" class="btn btn-outline btn-sm" onclick="addResultRow()"><i class="fas fa-plus"></i> নতুন শিক্ষার্থী</button>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="saveResultsSheet()"><i class="fas fa-save"></i> সংরক্ষণ</button>
+                    <input type="search" id="resultsSearchInput" class="search-toolbar-input" placeholder="নাম বা রোল খুঁজুন..." oninput="renderResultsTable()" style="min-width:180px;">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="addResultRow()"><i class="fas fa-plus" aria-hidden="true"></i> নতুন শিক্ষার্থী</button>
+                    <button type="button" id="resultsSaveBtnBottom" class="btn btn-primary btn-sm" onclick="saveResultsSheet()"><i class="fas fa-save" aria-hidden="true"></i> সংরক্ষণ করুন</button>
                 </div>
             </div>
             <div id="resultsTableContainer"></div>
@@ -894,55 +1036,52 @@
         <div class="card">
             <div class="card-head">
                 <div>
-                    <h2 class="card-title"><i class="fas fa-file-alt"></i> সকল ডকুমেন্টস Excel শিট</h2>
-                    <p class="card-sub">প্রশংসা পত্র, প্রত্যায়ন পত্র বা যেকোনো দাপ্তরিক ডকুমেন্টের তথ্য Excel-এ আপলোড করুন, কলাম কম-বেশি করুন এবং প্রিন্ট/PDF/Word তৈরি করুন।</p>
+                    <h2 class="card-title"><i class="fas fa-folder-open" aria-hidden="true"></i> সকল ডকুমেন্টস Excel আপলোড ও সংরক্ষণ</h2>
+                    <p class="card-sub">প্রশংসা পত্র ও প্রত্যায়ন পত্রের তথ্য Excel-এ আপলোড করুন, শ্রেণি অনুযায়ী দেখুন এবং সরাসরি A4 ডকুমেন্ট তৈরি করুন।</p>
                 </div>
                 <div class="btn-group">
-                    <a href="/api/excel/template/documents" class="btn btn-outline btn-sm"><i class="fas fa-download"></i> নমুনা ডকুমেন্ট Excel</a>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="exportSheetExcel('documents')"><i class="fas fa-file-export"></i> Excel এক্সপোর্ট</button>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="saveDocumentsSheet()"><i class="fas fa-save"></i> সংরক্ষণ করুন</button>
+                    <span id="documentsDirtyNote" class="dirty-note"><i class="fas fa-circle" style="font-size:0.5rem;" aria-hidden="true"></i> অসংরক্ষিত পরিবর্তন</span>
+                    <a href="/api/excel/template/documents" class="btn btn-outline btn-sm"><i class="fas fa-download" aria-hidden="true"></i> নমুনা ডকুমেন্ট</a>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="exportSheetExcel('documents')"><i class="fas fa-file-export" aria-hidden="true"></i> Excel এক্সপোর্ট</button>
+                    <button type="button" id="documentsSaveBtnTop" class="btn btn-primary btn-sm" onclick="saveDocumentsSheet()"><i class="fas fa-save" aria-hidden="true"></i> সংরক্ষণ করুন</button>
                 </div>
             </div>
 
-            <div class="upload-zone">
+            <div class="upload-zone" id="documentsDropZone">
                 <div class="upload-zone-info">
-                    <div class="upload-zone-icon"><i class="fas fa-folder-plus"></i></div>
+                    <div class="upload-zone-icon"><i class="fas fa-folder-plus" aria-hidden="true"></i></div>
                     <div>
-                        <div style="font-weight: 700;">সকল ডকুমেন্টস Excel ফাইল আপলোড করুন</div>
-                        <div style="font-size: 0.82rem; color: var(--muted);">ফাইল নির্বাচন করলেই স্বয়ংক্রিয়ভাবে আপলোড হবে (.xlsx, .xls, .csv)।</div>
+                        <div style="font-weight: 700; font-size: 0.96rem;">সকল ডকুমেন্টস Excel ফাইল আপলোড করুন</div>
+                        <div style="font-size: 0.82rem; color: var(--muted);">এখানে ফাইল টেনে আনুন অথবা বাটনে ক্লিক করে নির্বাচন করুন (.xlsx, .xls, .csv)।</div>
                     </div>
                 </div>
                 <div class="btn-group">
-                    <input type="file" id="documentsFileInput" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain" onchange="uploadExcelFile('documents')" style="max-width: 240px;">
-                    <button type="button" id="documentsUploadBtn" class="btn btn-primary btn-sm" onclick="triggerOrUploadExcel('documents')"><i class="fas fa-upload"></i> ফাইল আপলোড</button>
+                    <input type="file" id="documentsFileInput" class="upload-file-input" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain" onchange="uploadExcelFile('documents')">
+                    <button type="button" id="documentsUploadBtn" class="btn btn-primary" onclick="triggerFileSelect('documents')"><i class="fas fa-upload" aria-hidden="true"></i> ফাইল নির্বাচন ও আপলোড</button>
                 </div>
             </div>
-            <div id="documentsUploadStatus" style="display:none; margin-top:10px; padding:10px 14px; border-radius:10px; font-size:0.88rem; font-weight:600;"></div>
+            <div id="documentsUploadStatus" class="upload-status-box"></div>
+
+            <details class="adv-details">
+                <summary><i class="fas fa-sliders-h" aria-hidden="true"></i> ডকুমেন্ট ফিল্ড ম্যাপিং (ঐচ্ছিক)</summary>
+                <div class="grid-4" id="documentsMappingGrid"></div>
+            </details>
         </div>
 
         <div class="card">
             <div class="card-head">
-                <div>
-                    <h3 class="card-title"><i class="fas fa-columns"></i> কলাম ম্যানেজার ও ফিল্ড ম্যাপিং</h3>
-                </div>
+                <h3 class="card-title"><i class="fas fa-list" aria-hidden="true"></i> শ্রেণি ভিত্তিক ডকুমেন্ট তালিকা (<span id="documentsCount">০</span> টি)</h3>
                 <div class="btn-group">
-                    <input type="text" id="newDocColLabel" placeholder="নতুন কলামের নাম" style="height:38px; padding:0 10px; border:1px solid var(--border); border-radius:8px; min-width:200px;">
-                    <button type="button" class="btn btn-dark btn-sm" onclick="addSimpleColumn('documents')"><i class="fas fa-plus"></i> কলাম যোগ</button>
+                    <input type="search" id="documentsSearchInput" class="search-toolbar-input" placeholder="নাম, রোল বা রেজিঃ খুঁজুন..." oninput="renderDocumentsTable()">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="addSimpleRow('documents')"><i class="fas fa-plus" aria-hidden="true"></i> নতুন সারি</button>
+                    <button type="button" id="documentsSaveBtnBottom" class="btn btn-primary btn-sm" onclick="saveDocumentsSheet()"><i class="fas fa-save" aria-hidden="true"></i> সংরক্ষণ করুন</button>
                 </div>
             </div>
-            <div class="col-chip-list" id="documentsColList"></div>
-            <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border);" class="grid-4" id="documentsMappingGrid"></div>
-        </div>
 
-        <div class="card">
-            <div class="card-head">
-                <h3 class="card-title"><i class="fas fa-list"></i> ডকুমেন্ট ডেটা সারি (<span id="documentsCount">0</span> টি)</h3>
-                <div class="btn-group">
-                    <input type="search" id="documentsSearchInput" placeholder="খুঁজুন..." oninput="renderDocumentsTable()" style="height:38px; padding:0 12px; border:1px solid var(--border); border-radius:8px;">
-                    <button type="button" class="btn btn-outline btn-sm" onclick="addSimpleRow('documents')"><i class="fas fa-plus"></i> নতুন সারি</button>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="saveDocumentsSheet()"><i class="fas fa-save"></i> সংরক্ষণ</button>
-                </div>
+            <div class="class-filter-wrap">
+                <div class="class-filter-bar" id="documentsClassBar" role="tablist" aria-label="শ্রেণি অনুযায়ী ডকুমেন্ট ফিল্টার"></div>
             </div>
+
             <div id="documentsTableContainer"></div>
         </div>
     </section>
@@ -955,7 +1094,7 @@
             <!-- Left Controls -->
             <aside class="no-print">
                 <div class="card">
-                    <h3 class="card-title" style="margin-bottom: 12px;"><i class="fas fa-file-signature"></i> ডকুমেন্ট ও উৎস নির্বাচন</h3>
+                    <h3 class="card-title" style="margin-bottom: 12px;"><i class="fas fa-file-signature" aria-hidden="true"></i> ডকুমেন্ট ও শ্রেণি নির্বাচন</h3>
 
                     <div class="field" style="margin-bottom: 10px;">
                         <label>ডকুমেন্টের ধরন</label>
@@ -972,7 +1111,7 @@
                         <label>প্রিন্ট মোড</label>
                         <select id="docBatchMode" onchange="onDocConfigChange()">
                             <option value="single">একক শিক্ষার্থী (Single A4)</option>
-                            <option value="batch">সকল শিক্ষার্থী (ব্যাচ প্রিন্ট A4)</option>
+                            <option value="batch">শ্রেণির সকল শিক্ষার্থী (ব্যাচ প্রিন্ট A4)</option>
                         </select>
                     </div>
 
@@ -986,21 +1125,21 @@
                     </div>
 
                     <div class="field" style="margin-bottom: 10px;">
-                        <label>শ্রেণি অনুযায়ী ফিল্টার (ড্রপডাউন)</label>
+                        <label>শ্রেণি অনুযায়ী ফিল্টার</label>
                         <select id="docClassFilter" onchange="onDocClassFilterChange()">
                             <option value="">-- সকল শ্রেণি --</option>
                         </select>
                     </div>
 
-                    <div class="field" style="margin-bottom: 10px;" id="singleRecordWrap">
-                        <label>রোল / শিক্ষার্থী নির্বাচন (অটো তালিকা)</label>
+                    <div class="field" style="margin-bottom: 4px;" id="singleRecordWrap">
+                        <label>রোল / শিক্ষার্থী নির্বাচন</label>
                         <select id="docRecordSelect" onchange="loadSelectedRecordIntoForm()"></select>
                         <input type="text" id="docRollQuickInput" placeholder="অথবা সরাসরি রোল লিখে খুঁজুন..." oninput="jumpToDocRoll(this.value)" style="margin-top:6px;">
                     </div>
                 </div>
 
                 <div class="card">
-                    <h3 class="card-title" style="margin-bottom: 12px;"><i class="fas fa-text-height"></i> A4 পেজ ফন্ট ও মার্জিন (mm)</h3>
+                    <h3 class="card-title" style="margin-bottom: 12px;"><i class="fas fa-text-height" aria-hidden="true"></i> A4 পেজ ফন্ট ও মার্জিন (mm)</h3>
 
                     <div class="field" style="margin-bottom: 12px;">
                         <label>মূল ফন্ট সাইজ: <strong id="docFontSizeLabel">14px</strong></label>
@@ -1037,7 +1176,7 @@
                 </div>
 
                 <div class="card">
-                    <h3 class="card-title" style="margin-bottom: 12px;"><i class="fas fa-pen-nib"></i> ডকুমেন্টের তথ্য সম্পাদনা</h3>
+                    <h3 class="card-title" style="margin-bottom: 12px;"><i class="fas fa-pen-nib" aria-hidden="true"></i> ডকুমেন্টের তথ্য সম্পাদনা</h3>
                     <div class="grid-2">
                         <div class="field"><label>স্মারক নং</label><input type="text" id="docMemoNo" value="নালতা/ফা.মা./২০২৬/০১" oninput="renderA4Document()"></div>
                         <div class="field"><label>তারিখ</label><input type="text" id="docDateText" value="" oninput="renderA4Document()"></div>
@@ -1068,16 +1207,16 @@
                 <div class="card no-print">
                     <div class="card-head" style="margin-bottom: 0; padding-bottom: 0; border-bottom: none;">
                         <div>
-                            <h3 class="card-title"><i class="fas fa-file-invoice"></i> A4 প্রিভিউ (২১০ মি.মি. × ২৯৭ মি.মি.)</h3>
+                            <h3 class="card-title"><i class="fas fa-file-invoice" aria-hidden="true"></i> A4 প্রিভিউ (২১০ মি.মি. × ২৯৭ মি.মি.)</h3>
                             <p class="card-sub">ফন্ট ও মার্জিন পরিবর্তন করে সরাসরি প্রিন্ট, PDF অথবা Word (.doc) ডাউনলোড করুন।</p>
                         </div>
                         <div class="btn-group">
                             <% if (hideTabs && initialTab !== 'docstudio') { %>
-                                <button type="button" class="btn btn-outline btn-sm" onclick="switchTab(initialTab)"><i class="fas fa-arrow-left"></i> শিটে ফিরুন</button>
+                                <button type="button" class="btn btn-outline btn-sm" onclick="switchTab(initialTab)"><i class="fas fa-arrow-left" aria-hidden="true"></i> শিটে ফিরুন</button>
                             <% } %>
-                            <button type="button" class="btn btn-primary" onclick="printA4()"><i class="fas fa-print"></i> সরাসরি প্রিন্ট (A4)</button>
-                            <button type="button" id="btnDownloadA4Pdf" class="btn btn-rose" onclick="downloadA4Pdf()"><i class="fas fa-file-pdf"></i> PDF ডাউনলোড</button>
-                            <button type="button" id="btnDownloadA4Word" class="btn btn-blue" onclick="downloadA4Word()"><i class="fas fa-file-word"></i> Word (.doc)</button>
+                            <button type="button" class="btn btn-primary" onclick="printA4()"><i class="fas fa-print" aria-hidden="true"></i> সরাসরি প্রিন্ট (A4)</button>
+                            <button type="button" id="btnDownloadA4Pdf" class="btn btn-rose" onclick="downloadA4Pdf()"><i class="fas fa-file-pdf" aria-hidden="true"></i> PDF ডাউনলোড</button>
+                            <button type="button" id="btnDownloadA4Word" class="btn btn-blue" onclick="downloadA4Word()"><i class="fas fa-file-word" aria-hidden="true"></i> Word (.doc)</button>
                         </div>
                     </div>
                     <div id="docExportStatus" style="display:none; margin-top:10px; padding:9px 13px; border-radius:9px; font-size:0.86rem; font-weight:600;"></div>
@@ -1098,6 +1237,11 @@
 <script>
     const state = JSON.parse(document.getElementById('initial-excel-state').textContent);
     let resultSubView = 'editor';
+    let resultStatusFilter = 'all';
+    const activeClassFilter = {
+        students: 'all',
+        documents: 'all',
+    };
 
     const STUDENT_MAP_FIELDS = [
         { key: 'roll', label: 'রোল' },
@@ -1172,6 +1316,11 @@
         el._timer = setTimeout(() => { el.style.display = 'none'; }, 3600);
     }
 
+    function markDirty(target, isDirty) {
+        const el = document.getElementById(target + 'DirtyNote');
+        if (el) el.classList.toggle('show', Boolean(isDirty));
+    }
+
     function switchTab(tabName) {
         document.querySelectorAll('.studio-tab').forEach((btn) => {
             btn.classList.toggle('active', btn.dataset.tab === tabName);
@@ -1190,6 +1339,9 @@
         state.results = newState.results;
         state.documents = newState.documents;
         if (newState.classMap) state.classMap = newState.classMap;
+        markDirty('students', false);
+        markDirty('results', false);
+        markDirty('documents', false);
         renderAll();
     }
 
@@ -1341,10 +1493,9 @@
         return exam.computed;
     }
 
-    // ============ UPLOAD EXCEL ============
+    // ============ UPLOAD EXCEL (CLICK OR DRAG-AND-DROP) ============
     function setUploadStatus(target, message, kind) {
-        const id = target + 'UploadStatus';
-        const el = document.getElementById(id);
+        const el = document.getElementById(target + 'UploadStatus');
         if (!el) return;
         if (!message) {
             el.style.display = 'none';
@@ -1367,28 +1518,22 @@
         }
     }
 
-    function triggerOrUploadExcel(target) {
-        const inputId = target === 'students' ? 'studentsFileInput' : target === 'results' ? 'resultsFileInput' : 'documentsFileInput';
-        const input = document.getElementById(inputId);
-        if (!input) return;
-        if (input.files && input.files[0]) {
-            uploadExcelFile(target);
-        } else {
-            input.click();
-        }
+    function triggerFileSelect(target) {
+        const input = document.getElementById(target + 'FileInput');
+        if (input) input.click();
     }
 
-    async function uploadExcelFile(target) {
-        const inputId = target === 'students' ? 'studentsFileInput' : target === 'results' ? 'resultsFileInput' : 'documentsFileInput';
-        const btnId = target + 'UploadBtn';
-        const input = document.getElementById(inputId);
-        const btn = document.getElementById(btnId);
-        if (!input || !input.files || !input.files[0]) {
+    async function uploadExcelFile(target, droppedFile) {
+        const input = document.getElementById(target + 'FileInput');
+        const btn = document.getElementById(target + 'UploadBtn');
+        const selectedFile = droppedFile || (input && input.files && input.files[0]);
+
+        if (!selectedFile) {
             setUploadStatus(target, 'প্রথমে একটি .xlsx, .xls অথবা .csv ফাইল নির্বাচন করুন।', 'error');
             showToast('প্রথমে একটি .xlsx, .xls অথবা .csv ফাইল নির্বাচন করুন।', true);
             return;
         }
-        const selectedFile = input.files[0];
+
         const fd = new FormData();
         fd.append('file', selectedFile);
         fd.append('target', target);
@@ -1405,8 +1550,11 @@
             fd.append('promotionLabel', exam.promotionLabel || 'বিশেষ বিবেচনায় প্রমোটেড');
         }
 
-        if (btn) btn.disabled = true;
-        setUploadStatus(target, `"${selectedFile.name}" আপলোড ও প্রসেস হচ্ছে...`, 'loading');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> আপলোড হচ্ছে...';
+        }
+        setUploadStatus(target, `"${selectedFile.name}" আপলোড ও সংরক্ষণ হচ্ছে...`, 'loading');
 
         try {
             const res = await fetch('/api/excel/upload', { method: 'POST', body: fd });
@@ -1418,36 +1566,99 @@
                 throw new Error('সার্ভার থেকে সঠিক উত্তর পাওয়া যায়নি। ফাইল ফরম্যাট যাচাই করুন।');
             }
             if (!res.ok) throw new Error(data.error || 'আপলোড ব্যর্থ হয়েছে');
+            if (target === 'students' || target === 'documents') {
+                activeClassFilter[target] = 'all';
+            }
             applyState(data.state);
-            input.value = '';
+            if (input) input.value = '';
             setUploadStatus(target, data.message, 'success');
             showToast(data.message);
         } catch (err) {
             setUploadStatus(target, err.message || 'আপলোড ব্যর্থ হয়েছে', 'error');
             showToast(err.message || 'আপলোড ব্যর্থ হয়েছে', true);
         } finally {
-            if (btn) btn.disabled = false;
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-upload" aria-hidden="true"></i> ফাইল নির্বাচন ও আপলোড';
+            }
         }
     }
 
-    // ============ STUDENTS & DOCUMENTS SHARED HELPERS ============
-    function renderSimpleColumnsAndMapping(type) {
-        const sheet = state[type];
-        const colListEl = document.getElementById(type + 'ColList');
-        const mapGridEl = document.getElementById(type + 'MappingGrid');
+    function initDropZones() {
+        [
+            { id: 'studentsDropZone', target: 'students' },
+            { id: 'resultsDropZone', target: 'results' },
+            { id: 'documentsDropZone', target: 'documents' },
+        ].forEach(({ id, target }) => {
+            const zone = document.getElementById(id);
+            if (!zone) return;
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                zone.classList.add('is-dragover');
+            });
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('is-dragover');
+            });
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.classList.remove('is-dragover');
+                const file = e.dataTransfer?.files?.[0];
+                if (file) uploadExcelFile(target, file);
+            });
+        });
+    }
 
-        colListEl.innerHTML = sheet.columns.map((col, idx) => `
-            <div class="col-chip">
-                <div class="col-chip-top">
-                    <input type="text" value="${esc(col.label)}" onchange="renameSimpleColumn('${type}', ${idx}, this.value)">
-                    <button type="button" class="btn btn-danger-outline btn-sm" title="কলাম মুছুন" onclick="removeSimpleColumn('${type}', ${idx})"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="col-chip-meta">
-                    <span>কী: <code>${esc(col.key)}</code></span>
-                    <span>ক্রম: ${bnNum(idx + 1)}</span>
-                </div>
-            </div>
-        `).join('');
+    // ============ STUDENTS & DOCUMENTS SHARED HELPERS (CLASS-WISE VIEW) ============
+    function getRowClassValue(type, row) {
+        const sheet = state[type];
+        const m = sheet.mapping || {};
+        const colKey = m.class_name || (sheet.columns.find((c) => /শ্রেণি|শ্রেণী|class/i.test(c.label + ' ' + c.key))?.key || '');
+        if (!colKey) return '';
+        return String(row[colKey] ?? '').trim();
+    }
+
+    function setSimpleClassFilter(type, classVal) {
+        activeClassFilter[type] = classVal;
+        if (type === 'students') renderStudentsSection();
+        else renderDocumentsSection();
+    }
+
+    function renderSimpleClassFilterBar(type) {
+        const sheet = state[type];
+        const barEl = document.getElementById(type + 'ClassBar');
+        if (!barEl) return;
+
+        const counts = new Map();
+        (sheet.rows || []).forEach((r) => {
+            const cls = getRowClassValue(type, r) || 'অনির্ধারিত';
+            counts.set(cls, (counts.get(cls) || 0) + 1);
+        });
+
+        const current = activeClassFilter[type] || 'all';
+        if (current !== 'all' && !counts.has(current)) {
+            activeClassFilter[type] = 'all';
+        }
+
+        const totalCount = (sheet.rows || []).length;
+        const buttons = [
+            `<span class="class-filter-label"><i class="fas fa-layer-group" aria-hidden="true"></i> শ্রেণি অনুযায়ী:</span>`,
+            `<button type="button" role="tab" aria-selected="${activeClassFilter[type] === 'all'}" class="class-seg-btn ${activeClassFilter[type] === 'all' ? 'active' : ''}" onclick="setSimpleClassFilter('${type}', 'all')">সকল শ্রেণি (${bnNum(totalCount)})</button>`,
+        ];
+
+        counts.forEach((cnt, clsName) => {
+            const isAct = activeClassFilter[type] === clsName;
+            buttons.push(
+                `<button type="button" role="tab" aria-selected="${isAct}" class="class-seg-btn ${isAct ? 'active' : ''}" data-cls="${esc(clsName)}" onclick="setSimpleClassFilter('${type}', this.dataset.cls)">${esc(clsName)} (${bnNum(cnt)})</button>`
+            );
+        });
+
+        barEl.innerHTML = buttons.join('');
+    }
+
+    function renderSimpleMapping(type) {
+        const sheet = state[type];
+        const mapGridEl = document.getElementById(type + 'MappingGrid');
+        if (!mapGridEl) return;
 
         mapGridEl.innerHTML = STUDENT_MAP_FIELDS.map((mf) => `
             <div class="field">
@@ -1460,76 +1671,73 @@
         `).join('');
     }
 
-    function addSimpleColumn(type) {
-        const input = document.getElementById(type === 'students' ? 'newStudentColLabel' : 'newDocColLabel');
-        const label = String(input.value || '').trim();
-        if (!label) {
-            showToast('কলামের নাম লিখুন।', true);
-            return;
-        }
-        const key = 'col_' + Date.now();
-        state[type].columns.push({ key, label });
-        state[type].rows.forEach((r) => { r[key] = ''; });
-        input.value = '';
-        if (type === 'students') renderStudentsSection();
-        else renderDocumentsSection();
-        showToast('নতুন কলাম যোগ করা হয়েছে।');
-    }
-
-    function renameSimpleColumn(type, idx, newLabel) {
-        state[type].columns[idx].label = String(newLabel || '').trim() || `কলাম ${idx + 1}`;
-        if (type === 'students') renderStudentsTable();
-        else renderDocumentsTable();
-    }
-
-    function removeSimpleColumn(type, idx) {
-        if (state[type].columns.length <= 1) {
-            showToast('অন্তত ১টি কলাম থাকতে হবে।', true);
-            return;
-        }
-        const removed = state[type].columns.splice(idx, 1)[0];
-        state[type].rows.forEach((r) => { delete r[removed.key]; });
-        if (type === 'students') renderStudentsSection();
-        else renderDocumentsSection();
-    }
-
     function updateSimpleMapping(type, fieldKey, colKey) {
         if (!state[type].mapping) state[type].mapping = {};
         state[type].mapping[fieldKey] = colKey;
+        markDirty(type, true);
+        if (type === 'students') renderStudentsSection();
+        else renderDocumentsSection();
     }
 
     function addSimpleRow(type) {
         const row = { _id: `row_${Date.now()}` };
         state[type].columns.forEach((c) => { row[c.key] = ''; });
+        const clsFilter = activeClassFilter[type];
+        const clsCol = state[type].mapping?.class_name;
+        if (clsFilter && clsFilter !== 'all' && clsFilter !== 'অনির্ধারিত' && clsCol) {
+            row[clsCol] = clsFilter;
+        }
         state[type].rows.push(row);
-        if (type === 'students') renderStudentsTable();
-        else renderDocumentsTable();
+        markDirty(type, true);
+        if (type === 'students') renderStudentsSection();
+        else renderDocumentsSection();
     }
 
     function deleteSimpleRow(type, rowIndex) {
         state[type].rows.splice(rowIndex, 1);
-        if (type === 'students') renderStudentsTable();
-        else renderDocumentsTable();
+        markDirty(type, true);
+        if (type === 'students') renderStudentsSection();
+        else renderDocumentsSection();
     }
 
     function updateSimpleCell(type, rowIndex, colKey, val) {
         state[type].rows[rowIndex][colKey] = val;
+        markDirty(type, true);
+        if (colKey === state[type].mapping?.class_name) {
+            renderSimpleClassFilterBar(type);
+        }
     }
 
     function renderSimpleTable(type, searchInputId, containerId, countId) {
         const sheet = state[type];
         const q = String(document.getElementById(searchInputId)?.value || '').trim().toLowerCase();
-        document.getElementById(countId).textContent = bnNum(sheet.rows.length);
+        const clsFilter = activeClassFilter[type] || 'all';
         const container = document.getElementById(containerId);
-
-        if (sheet.rows.length === 0) {
-            container.innerHTML = `<div class="empty-state"><i class="fas fa-table"></i><p>এখনো কোনো সারি নেই। উপরে Excel আপলোড করুন অথবা <strong>নতুন সারি</strong> বাটনে ক্লিক করুন।</p></div>`;
-            return;
-        }
 
         const indexedRows = sheet.rows
             .map((r, i) => ({ r, i }))
-            .filter(({ r }) => !q || sheet.columns.some((c) => String(r[c.key] || '').toLowerCase().includes(q)));
+            .filter(({ r }) => {
+                if (clsFilter !== 'all') {
+                    const rowCls = getRowClassValue(type, r) || 'অনির্ধারিত';
+                    if (rowCls !== clsFilter) return false;
+                }
+                if (q) {
+                    return sheet.columns.some((c) => String(r[c.key] || '').toLowerCase().includes(q));
+                }
+                return true;
+            });
+
+        document.getElementById(countId).textContent = bnNum(indexedRows.length);
+
+        if (sheet.rows.length === 0) {
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-table" aria-hidden="true"></i><p>এখনো কোনো তথ্য নেই। উপরে Excel ফাইল আপলোড করুন অথবা <strong>নতুন সারি</strong> বাটনে ক্লিক করুন।</p></div>`;
+            return;
+        }
+
+        if (indexedRows.length === 0) {
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-filter" aria-hidden="true"></i><p>নির্বাচিত শ্রেণি বা অনুসন্ধানের সাথে মিলে এমন কোনো সারি পাওয়া যায়নি।</p></div>`;
+            return;
+        }
 
         container.innerHTML = `
             <div class="table-wrap">
@@ -1556,7 +1764,7 @@
                                     ` : ''}
                                     <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('${type}', ${i}, 'attestation')" title="প্রত্যায়ন পত্র">প্রত্যায়ন</button>
                                     <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('${type}', ${i}, 'testimonial')" title="প্রশংসা পত্র">প্রশংসা</button>
-                                    <button type="button" class="btn btn-danger-outline btn-sm" onclick="deleteSimpleRow('${type}', ${i})" title="মুছুন"><i class="fas fa-trash"></i></button>
+                                    <button type="button" class="btn btn-danger-outline btn-sm" onclick="deleteSimpleRow('${type}', ${i})" title="মুছুন"><i class="fas fa-trash" aria-hidden="true"></i></button>
                                 </td>
                             </tr>
                         `).join('')}
@@ -1575,16 +1783,24 @@
     }
 
     function renderStudentsSection() {
-        renderSimpleColumnsAndMapping('students');
+        renderSimpleMapping('students');
+        renderSimpleClassFilterBar('students');
         renderStudentsTable();
     }
 
     function renderDocumentsSection() {
-        renderSimpleColumnsAndMapping('documents');
+        renderSimpleMapping('documents');
+        renderSimpleClassFilterBar('documents');
         renderDocumentsTable();
     }
 
     async function saveStudentsSheet() {
+        const btns = [document.getElementById('studentsSaveBtnTop'), document.getElementById('studentsSaveBtnBottom')].filter(Boolean);
+        btns.forEach((b) => {
+            b.dataset.origHtml = b.innerHTML;
+            b.disabled = true;
+            b.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> সংরক্ষণ হচ্ছে...';
+        });
         try {
             const res = await fetch('/api/excel/students/save', {
                 method: 'POST',
@@ -1596,11 +1812,22 @@
             applyState(data.state);
             showToast(data.message);
         } catch (err) {
-            showToast(err.message, true);
+            showToast(err.message || 'সংরক্ষণ ব্যর্থ হয়েছে।', true);
+        } finally {
+            btns.forEach((b) => {
+                b.disabled = false;
+                if (b.dataset.origHtml) b.innerHTML = b.dataset.origHtml;
+            });
         }
     }
 
     async function saveDocumentsSheet() {
+        const btns = [document.getElementById('documentsSaveBtnTop'), document.getElementById('documentsSaveBtnBottom')].filter(Boolean);
+        btns.forEach((b) => {
+            b.dataset.origHtml = b.innerHTML;
+            b.disabled = true;
+            b.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> সংরক্ষণ হচ্ছে...';
+        });
         try {
             const res = await fetch('/api/excel/documents/save', {
                 method: 'POST',
@@ -1612,7 +1839,12 @@
             applyState(data.state);
             showToast(data.message);
         } catch (err) {
-            showToast(err.message, true);
+            showToast(err.message || 'সংরক্ষণ ব্যর্থ হয়েছে।', true);
+        } finally {
+            btns.forEach((b) => {
+                b.disabled = false;
+                if (b.dataset.origHtml) b.innerHTML = b.dataset.origHtml;
+            });
         }
     }
 
@@ -1620,6 +1852,17 @@
     function renderExamSelectors() {
         const exams = Object.values(state.results.exams || {});
         const active = getActiveExam();
+
+        // Class-wise quick tab buttons for uploaded exams
+        const barEl = document.getElementById('examClassTabsBar');
+        if (barEl) {
+            barEl.innerHTML = `<span class="class-filter-label"><i class="fas fa-layer-group" aria-hidden="true"></i> শ্রেণি ভিত্তিক শিট:</span>` +
+                exams.map((ex) => {
+                    const isAct = ex.id === active.id;
+                    const clsLabel = ex.className || (state.classMap?.[ex.classId]?.name || 'শ্রেণি');
+                    return `<button type="button" role="tab" aria-selected="${isAct}" class="class-seg-btn ${isAct ? 'active' : ''}" data-exam-id="${esc(ex.id)}" onclick="switchActiveExam(this.dataset.examId)">${esc(clsLabel)} (${bnNum((ex.rows || []).length)})</button>`;
+                }).join('');
+        }
 
         document.getElementById('activeExamSelect').innerHTML = exams.map((ex) => `
             <option value="${esc(ex.id)}" ${ex.id === active.id ? 'selected' : ''}>${esc(ex.title || ex.examName)} (${bnNum((ex.rows || []).length)} জন)</option>
@@ -1652,6 +1895,7 @@
         exam.examName = document.getElementById('examNameInput').value;
         exam.year = document.getElementById('examYearInput').value;
         exam.title = `${exam.examName} - ${exam.className || 'শ্রেণি'}`;
+        markDirty('results', true);
         renderExamSelectors();
     }
 
@@ -1660,6 +1904,7 @@
         exam.passPercent = Number(document.getElementById('examPassPercent').value) || 33;
         exam.maxPromoteFail = Number(document.getElementById('examMaxPromoteFail').value) || 0;
         exam.promotionLabel = document.getElementById('examPromoLabel').value || 'বিশেষ বিবেচনায় প্রমোটেড';
+        markDirty('results', true);
         renderResultsTableAndStats();
     }
 
@@ -1675,6 +1920,7 @@
                 delete exam.rows[idx]._promoted;
             }
         });
+        markDirty('results', true);
         renderResultsTableAndStats();
         showToast(val === true ? 'সকল ফেলকৃত শিক্ষার্থীকে প্রমোটেড করা হয়েছে।' : 'ম্যানুয়াল প্রমোশন রিসেট হয়েছে।');
     }
@@ -1685,6 +1931,7 @@
         const ev = computed.evaluatedRows[rowIndex];
         if (!ev) return;
         exam.rows[rowIndex]._promoted = !ev.isPromoted;
+        markDirty('results', true);
         renderResultsTableAndStats();
     }
 
@@ -1717,95 +1964,50 @@
         }
     }
 
-    function renderResultColumns() {
+    function renderResultSubjectsAndMapping() {
         const exam = getActiveExam();
-        const colListEl = document.getElementById('resultsColList');
+        const subGridEl = document.getElementById('resultsSubjectsGrid');
         const mapGridEl = document.getElementById('resultsMappingGrid');
 
-        colListEl.innerHTML = exam.columns.map((col, idx) => `
-            <div class="col-chip">
-                <div class="col-chip-top">
-                    <input type="text" value="${esc(col.label)}" onchange="renameResultColumn(${idx}, this.value)">
-                    <button type="button" class="btn btn-danger-outline btn-sm" onclick="removeResultColumn(${idx})" title="কলাম মুছুন"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="col-chip-meta">
-                    <label style="display:inline-flex; align-items:center; gap:4px; cursor:pointer;">
-                        <input type="checkbox" ${col.isSubject ? 'checked' : ''} onchange="toggleResultColSubject(${idx}, this.checked)">
-                        <span>বিষয়</span>
-                    </label>
-                    ${col.isSubject ? `<label style="display:inline-flex; align-items:center; gap:4px;">পূর্ণমান: <input type="number" min="5" max="500" value="${Number(col.fullMarks) || 100}" onchange="updateResultColFM(${idx}, this.value)"></label>` : '<span>তথ্য কলাম</span>'}
-                </div>
-            </div>
-        `).join('');
-
-        mapGridEl.innerHTML = RESULT_MAP_FIELDS.map((mf) => `
-            <div class="field">
-                <label>${mf.label}</label>
-                <select onchange="updateResultMapping('${mf.key}', this.value)">
-                    <option value="">-- নেই --</option>
-                    ${exam.columns.map((c) => `<option value="${esc(c.key)}" ${exam.mapping?.[mf.key] === c.key ? 'selected' : ''}>${esc(c.label)}</option>`).join('')}
-                </select>
-            </div>
-        `).join('');
-    }
-
-    function addResultColumn() {
-        const exam = getActiveExam();
-        const labelEl = document.getElementById('newResultColLabel');
-        const fmEl = document.getElementById('newResultColFM');
-        const typeEl = document.getElementById('newResultColType');
-        const rawLabel = String(labelEl.value || '').trim();
-        if (!rawLabel) {
-            showToast('কলাম বা বিষয়ের নাম লিখুন।', true);
-            return;
+        if (subGridEl) {
+            const subCols = exam.columns
+                .map((col, idx) => ({ col, idx }))
+                .filter(({ col }) => col.isSubject);
+            subGridEl.innerHTML = subCols.length
+                ? subCols.map(({ col, idx }) => `
+                    <div class="subject-mark-item">
+                        <span title="${esc(col.label)}">${esc(cleanSubTitle(col.label))}</span>
+                        <input type="number" min="5" max="500" value="${Number(col.fullMarks) || 100}" onchange="updateResultColFM(${idx}, this.value)" aria-label="${esc(col.label)} পূর্ণমান">
+                    </div>
+                `).join('')
+                : '<p style="font-size:0.84rem; color:var(--muted);">কোনো বিষয়ের কলাম পাওয়া যায়নি।</p>';
         }
-        const isSubject = typeEl.value === 'subject';
-        const fm = isSubject ? (Number(fmEl.value) || 100) : 0;
-        const label = isSubject && !/\(\d+\)/.test(rawLabel) ? `${rawLabel} (${fm})` : rawLabel;
-        const key = 'col_' + Date.now();
-        exam.columns.push({ key, label, isSubject, fullMarks: fm });
-        exam.rows.forEach((r) => { r[key] = ''; });
-        labelEl.value = '';
-        renderResultsSection();
-        showToast('নতুন কলাম যোগ করা হয়েছে।');
-    }
 
-    function renameResultColumn(idx, val) {
-        const exam = getActiveExam();
-        exam.columns[idx].label = String(val || '').trim() || `কলাম ${idx + 1}`;
-        renderResultsTableAndStats();
-    }
-
-    function toggleResultColSubject(idx, checked) {
-        const exam = getActiveExam();
-        exam.columns[idx].isSubject = checked;
-        if (checked && (!exam.columns[idx].fullMarks || exam.columns[idx].fullMarks <= 0)) {
-            exam.columns[idx].fullMarks = 100;
+        if (mapGridEl) {
+            mapGridEl.innerHTML = RESULT_MAP_FIELDS.map((mf) => `
+                <div class="field">
+                    <label>${mf.label}</label>
+                    <select onchange="updateResultMapping('${mf.key}', this.value)">
+                        <option value="">-- নেই --</option>
+                        ${exam.columns.map((c) => `<option value="${esc(c.key)}" ${exam.mapping?.[mf.key] === c.key ? 'selected' : ''}>${esc(c.label)}</option>`).join('')}
+                    </select>
+                </div>
+            `).join('');
         }
-        renderResultsSection();
     }
 
     function updateResultColFM(idx, val) {
         const exam = getActiveExam();
         exam.columns[idx].fullMarks = Number(val) > 0 ? Number(val) : 100;
+        markDirty('results', true);
         renderResultsTableAndStats();
-    }
-
-    function removeResultColumn(idx) {
-        const exam = getActiveExam();
-        if (exam.columns.length <= 1) {
-            showToast('অন্তত ১টি কলাম থাকতে হবে।', true);
-            return;
-        }
-        const removed = exam.columns.splice(idx, 1)[0];
-        exam.rows.forEach((r) => { delete r[removed.key]; });
-        renderResultsSection();
     }
 
     function updateResultMapping(fieldKey, colKey) {
         const exam = getActiveExam();
         if (!exam.mapping) exam.mapping = {};
         exam.mapping[fieldKey] = colKey;
+        markDirty('results', true);
         renderResultsTableAndStats();
     }
 
@@ -1814,25 +2016,36 @@
         const row = { _id: `r_${Date.now()}` };
         exam.columns.forEach((c) => { row[c.key] = ''; });
         exam.rows.push(row);
+        markDirty('results', true);
         renderResultsTableAndStats();
     }
 
     function deleteResultRow(rowIndex) {
         const exam = getActiveExam();
         exam.rows.splice(rowIndex, 1);
+        markDirty('results', true);
         renderResultsTableAndStats();
     }
 
     function updateResultCell(rowIndex, colKey, val) {
         const exam = getActiveExam();
         exam.rows[rowIndex][colKey] = val;
+        markDirty('results', true);
         renderResultsTableAndStats();
     }
 
     function setResultSubView(view) {
         resultSubView = view;
-        document.getElementById('btnViewEditor').className = view === 'editor' ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline';
-        document.getElementById('btnViewMerit').className = view === 'merit' ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline';
+        document.getElementById('btnViewEditor').classList.toggle('active', view === 'editor');
+        document.getElementById('btnViewMerit').classList.toggle('active', view === 'merit');
+        renderResultsTable();
+    }
+
+    function setResultStatusFilter(status) {
+        resultStatusFilter = status;
+        document.querySelectorAll('[data-res-status]').forEach((btn) => {
+            btn.classList.toggle('active', btn.getAttribute('data-res-status') === status);
+        });
         renderResultsTable();
     }
 
@@ -1846,7 +2059,7 @@
             <div class="stat-box"><div class="stat-box-label">উত্তীর্ণ (Passed)</div><div class="stat-box-val" style="color:#15803d;">${bnNum(s.passed)}</div></div>
             <div class="stat-box"><div class="stat-box-label">প্রমোটেড (Promoted)</div><div class="stat-box-val" style="color:#b45309;">${bnNum(s.promoted)}</div></div>
             <div class="stat-box"><div class="stat-box-label">অকৃতকার্য (Failed)</div><div class="stat-box-val" style="color:#b91c1c;">${bnNum(s.failed)}</div></div>
-            <div class="stat-box"><div class="stat-box-label">পাসের হার (উত্তীর্ণ+প্রমোটেড)</div><div class="stat-box-val">${bnNum(s.passRate)}%</div></div>
+            <div class="stat-box"><div class="stat-box-label">পাসের হার</div><div class="stat-box-val">${bnNum(s.passRate)}%</div></div>
         `;
         renderResultsTable();
     }
@@ -1858,12 +2071,24 @@
         const q = String(document.getElementById('resultsSearchInput')?.value || '').trim().toLowerCase();
 
         if (!exam.rows || exam.rows.length === 0) {
-            container.innerHTML = `<div class="empty-state"><i class="fas fa-poll-h"></i><p>রেজাল্ট শিটে কোনো শিক্ষার্থী নেই। Excel আপলোড করুন অথবা <strong>নতুন শিক্ষার্থী</strong> যোগ করুন।</p></div>`;
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-poll-h" aria-hidden="true"></i><p>এই শ্রেণির রেজাল্ট শিটে কোনো শিক্ষার্থী নেই। উপরে Excel আপলোড করুন অথবা <strong>নতুন শিক্ষার্থী</strong> যোগ করুন।</p></div>`;
             return;
         }
 
+        const matchesFilter = (item) => {
+            if (resultStatusFilter !== 'all' && item.status !== resultStatusFilter) return false;
+            if (q) {
+                return String(item.name).toLowerCase().includes(q) || String(item.roll).toLowerCase().includes(q);
+            }
+            return true;
+        };
+
         if (resultSubView === 'merit') {
-            const list = computed.meritList.filter((m) => !q || String(m.name).toLowerCase().includes(q) || String(m.roll).toLowerCase().includes(q));
+            const list = computed.meritList.filter(matchesFilter);
+            if (!list.length) {
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-filter" aria-hidden="true"></i><p>নির্বাচিত ফিল্টার অনুযায়ী কোনো শিক্ষার্থী পাওয়া যায়নি।</p></div>`;
+                return;
+            }
             container.innerHTML = `
                 <div class="table-wrap">
                     <table class="sheet-table">
@@ -1877,7 +2102,7 @@
                                 <th>শতকরা (%)</th>
                                 <th>GPA</th>
                                 <th>ফেল বিষয়</th>
-                                <th>অবস্থা / স্ট্যাটাস</th>
+                                <th>ফলাফল</th>
                                 <th>মার্কশিট</th>
                             </tr>
                         </thead>
@@ -1909,7 +2134,12 @@
 
         const indexed = computed.evaluatedRows
             .map((ev, idx) => ({ ev, idx }))
-            .filter(({ ev }) => !q || String(ev.name).toLowerCase().includes(q) || String(ev.roll).toLowerCase().includes(q));
+            .filter(({ ev }) => matchesFilter(ev));
+
+        if (!indexed.length) {
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-filter" aria-hidden="true"></i><p>নির্বাচিত ফিল্টার অনুযায়ী কোনো শিক্ষার্থী পাওয়া যায়নি।</p></div>`;
+            return;
+        }
 
         container.innerHTML = `
             <div class="table-wrap">
@@ -1947,7 +2177,7 @@
                                             </button>
                                         ` : ''}
                                         <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('results', ${idx}, 'marksheet')">মার্কশিট</button>
-                                        <button type="button" class="btn btn-danger-outline btn-sm" onclick="deleteResultRow(${idx})"><i class="fas fa-trash"></i></button>
+                                        <button type="button" class="btn btn-danger-outline btn-sm" onclick="deleteResultRow(${idx})"><i class="fas fa-trash" aria-hidden="true"></i></button>
                                     </td>
                                 </tr>
                             `;
@@ -1960,11 +2190,17 @@
 
     function renderResultsSection() {
         renderExamSelectors();
-        renderResultColumns();
+        renderResultSubjectsAndMapping();
         renderResultsTableAndStats();
     }
 
     async function saveResultsSheet() {
+        const btns = [document.getElementById('resultsSaveBtnTop'), document.getElementById('resultsSaveBtnBottom')].filter(Boolean);
+        btns.forEach((b) => {
+            b.dataset.origHtml = b.innerHTML;
+            b.disabled = true;
+            b.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> সংরক্ষণ হচ্ছে...';
+        });
         try {
             const exam = getActiveExam();
             const payloadExam = { ...exam };
@@ -1979,7 +2215,12 @@
             applyState(data.state);
             showToast(data.message);
         } catch (err) {
-            showToast(err.message, true);
+            showToast(err.message || 'সংরক্ষণ ব্যর্থ হয়েছে।', true);
+        } finally {
+            btns.forEach((b) => {
+                b.disabled = false;
+                if (b.dataset.origHtml) b.innerHTML = b.dataset.origHtml;
+            });
         }
     }
 
@@ -1987,7 +2228,12 @@
     async function exportSheetExcel(type) {
         const sheet = state[type];
         const headers = sheet.columns.map((c) => c.label);
-        const rows = sheet.rows.map((r) => sheet.columns.map((c) => r[c.key] ?? ''));
+        const clsFilter = activeClassFilter[type] || 'all';
+        const filteredRows = sheet.rows.filter((r) => {
+            if (clsFilter === 'all') return true;
+            return (getRowClassValue(type, r) || 'অনির্ধারিত') === clsFilter;
+        });
+        const rows = filteredRows.map((r) => sheet.columns.map((c) => r[c.key] ?? ''));
         await downloadExportedXlsx(headers, rows, `${type}-export.xlsx`, type);
     }
 
@@ -2422,7 +2668,6 @@
             }
 
             if (!ev) {
-                // Build sample single marksheet using exam subjects if student has no exam marks yet
                 const subCols = (exam.columns || []).filter((c) => c.isSubject);
                 ev = {
                     name: fName,
@@ -2456,9 +2701,12 @@
             if (batchMode) {
                 if (source === 'results') {
                     const exam = getActiveExam();
-                    records = recomputeExamClient(exam).evaluatedRows.map((r) => ({
-                        name: r.name, roll: r.roll, father: r.father, mother: '', cls: exam.className, session: exam.year || '২০২৬', reg: r.studentId || '', dob: '', address: fAddress
-                    }));
+                    const exCls = normalizeClassClient(exam.className || '');
+                    if (!filterCls || !exCls || exCls === filterCls) {
+                        records = recomputeExamClient(exam).evaluatedRows.map((r) => ({
+                            name: r.name, roll: r.roll, father: r.father, mother: '', cls: exam.className, session: exam.year || '২০২৬', reg: r.studentId || '', dob: '', address: fAddress
+                        }));
+                    }
                 } else {
                     const sheet = state[source] || { rows: [], mapping: {} };
                     const m = sheet.mapping || {};
@@ -2520,7 +2768,6 @@
                 return;
             }
 
-            // docType === 'idcard'
             const buildStudioIdCard = (st) => `
                 <div style="width:74mm; min-height:110mm; border:2px solid #14532d; border-radius:8px; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; background:#fff; break-inside:avoid;">
                     <div>
@@ -2713,7 +2960,7 @@
         populateDocRecordPicker();
     }
 
-    // Initialize today's date in Bengali format and render
+    initDropZones();
     document.getElementById('docDateText').value = bnNum(new Date().toISOString().slice(0, 10));
     renderAll();
     const initialTab = <%- JSON.stringify(initialTab || 'students') %>;
