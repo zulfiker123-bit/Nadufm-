@@ -637,6 +637,95 @@
             font-weight: 600;
         }
 
+        .toolbar-class-select {
+            height: 38px;
+            padding: 0 11px;
+            border: 1px solid var(--border-strong);
+            border-radius: 9px;
+            background: var(--surface-subtle);
+            color: var(--text);
+            font-size: 0.86rem;
+            font-weight: 600;
+            min-width: 170px;
+            max-width: 100%;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .toolbar-class-select:focus {
+            border-color: var(--brand-strong);
+            background: var(--surface);
+        }
+
+        .inline-ms-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--surface-subtle);
+        }
+
+        .inline-ms-card {
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            background: #ffffff;
+            padding: 16px;
+        }
+
+        .inline-ms-header {
+            text-align: center;
+            border-bottom: 1.5px solid #166534;
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+        }
+
+        .inline-ms-header h4 {
+            margin: 0 0 2px;
+            color: #14532d;
+            font-size: 1.05rem;
+        }
+
+        .inline-ms-header p {
+            margin: 0;
+            font-size: 0.83rem;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .inline-ms-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 8px 14px;
+            padding: 10px 12px;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            margin-bottom: 12px;
+            font-size: 0.86rem;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .inline-ms-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 8px;
+            margin-top: 12px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .inline-ms-sum-item {
+            padding: 9px 11px;
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            background: #f8fafc;
+            font-size: 0.85rem;
+        }
+
         .empty-state {
             text-align: center;
             padding: 36px 20px;
@@ -1071,13 +1160,15 @@
             <div class="stats-bar" id="resultStatsBar"></div>
         </div>
 
-        <!-- Result & Merit Data Table -->
+        <!-- Result, Merit List & Marksheet Data Card -->
         <div class="card">
             <div class="card-head">
                 <div class="btn-group">
+                    <select id="resultsTableClassSelect" class="toolbar-class-select" aria-label="শ্রেণি নির্বাচন" onchange="selectClassResult(this.value)"></select>
                     <div class="seg-group" role="tablist" aria-label="ফলাফল দেখার ধরন">
-                        <button type="button" class="seg-btn active" id="btnViewEditor" onclick="setResultSubView('editor')">মার্কস এডিট ও প্রমোশন</button>
-                        <button type="button" class="seg-btn" id="btnViewMerit" onclick="setResultSubView('merit')">অটো মেধা তালিকা</button>
+                        <button type="button" class="seg-btn active" id="btnViewEditor" onclick="setResultSubView('editor')">রেজাল্ট শিট</button>
+                        <button type="button" class="seg-btn" id="btnViewMerit" onclick="setResultSubView('merit')">মেধা তালিকা</button>
+                        <button type="button" class="seg-btn" id="btnViewMarksheet" onclick="setResultSubView('marksheet')">মার্কশিট</button>
                     </div>
                     <div class="seg-group" role="tablist" aria-label="ফলাফল স্ট্যাটাস ফিল্টার">
                         <button type="button" class="seg-btn active" data-res-status="all" onclick="setResultStatusFilter('all')">সকল</button>
@@ -1304,6 +1395,7 @@
     const state = JSON.parse(document.getElementById('initial-excel-state').textContent);
     let resultSubView = 'editor';
     let resultStatusFilter = 'all';
+    let selectedInlineMarksheetRowId = '';
     const activeClassFilter = {
         students: 'all',
         documents: 'all',
@@ -1971,6 +2063,7 @@
     function selectClassResult(classId) {
         const ex = ensureClassExamRecord(classId);
         state.results.activeExamId = ex.id;
+        selectedInlineMarksheetRowId = '';
         renderResultsSection();
     }
 
@@ -2245,8 +2338,9 @@
 
     function setResultSubView(view) {
         resultSubView = view;
-        document.getElementById('btnViewEditor').classList.toggle('active', view === 'editor');
-        document.getElementById('btnViewMerit').classList.toggle('active', view === 'merit');
+        document.getElementById('btnViewEditor')?.classList.toggle('active', view === 'editor');
+        document.getElementById('btnViewMerit')?.classList.toggle('active', view === 'merit');
+        document.getElementById('btnViewMarksheet')?.classList.toggle('active', view === 'marksheet');
         renderResultsTable();
     }
 
@@ -2258,11 +2352,42 @@
         renderResultsTable();
     }
 
+    function renderResultsTableClassSelect() {
+        const sel = document.getElementById('resultsTableClassSelect');
+        if (!sel) return;
+        const active = getActiveExam();
+        const activeCid = String(active?.classId || '6');
+        const entries = Object.entries(state.classMap || {});
+        sel.innerHTML = entries.map(([cid, info]) => {
+            const ex = getExamForClass(cid);
+            const cnt = (ex?.rows || []).length;
+            const clsLabel = formatClassLabelClient(info.name, cid);
+            const suffix = cnt > 0 ? ` (${bnNum(cnt)} জন)` : '';
+            return `<option value="${esc(cid)}" ${String(cid) === activeCid ? 'selected' : ''}>${esc(clsLabel + suffix)}</option>`;
+        }).join('');
+        sel.value = activeCid;
+    }
+
+    function onInlineMarksheetStudentChange(rowId) {
+        selectedInlineMarksheetRowId = String(rowId || '');
+        renderResultsTable();
+    }
+
+    function stepInlineMarksheet(delta) {
+        const sel = document.getElementById('inlineMarksheetStudentSelect');
+        if (!sel || sel.options.length === 0) return;
+        const nextIdx = Math.max(0, Math.min(sel.options.length - 1, sel.selectedIndex + delta));
+        selectedInlineMarksheetRowId = sel.options[nextIdx].value;
+        renderResultsTable();
+    }
+
     function renderResultsTableAndStats() {
         const exam = getActiveExam();
         const computed = recomputeExamClient(exam);
         const s = computed.stats;
         const clsLabel = formatClassLabelClient(exam?.className, exam?.classId);
+
+        renderResultsTableClassSelect();
 
         const titleEl = document.getElementById('statsSelectedClassTitle');
         if (titleEl) titleEl.textContent = clsLabel;
@@ -2305,6 +2430,94 @@
             }
             return true;
         };
+
+        if (resultSubView === 'marksheet') {
+            const list = computed.evaluatedRows.filter(matchesFilter);
+            const clsLabel = formatClassLabelClient(exam.className, exam.classId);
+            if (!list.length) {
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-filter" aria-hidden="true"></i><p>নির্বাচিত ফিল্টার অনুযায়ী কোনো শিক্ষার্থীর মার্কশিট পাওয়া যায়নি।</p></div>`;
+                return;
+            }
+
+            let selectedEv = list.find((item) => item._id === selectedInlineMarksheetRowId) || list[0];
+            selectedInlineMarksheetRowId = selectedEv._id;
+            const origIdx = exam.rows.findIndex((r) => (r._id || '') === selectedEv._id);
+            const safeIdx = origIdx >= 0 ? origIdx : 0;
+
+            buildUnifiedStudioPool();
+            const ck = normalizeClassClient(exam.className || (state.classMap?.[exam.classId]?.name || ''));
+            const rk = normalizeRollClient(selectedEv.roll);
+            const stuMatch = unifiedPoolCache.find((u) => u.clsKey === ck && normalizeRollClient(u.roll) === rk)
+                || unifiedPoolCache.find((u) => normalizeRollClient(u.roll) === rk);
+            const father = selectedEv.father || stuMatch?.father || '';
+            const mother = stuMatch?.mother || '';
+            const regNo = selectedEv.studentId || stuMatch?.reg || stuMatch?.id || '';
+            const statusClass = selectedEv.status === 'Passed' ? 'status-pass' : selectedEv.status === 'Promoted' ? 'status-promoted' : selectedEv.status === 'Failed' ? 'status-fail' : 'status-abs';
+
+            container.innerHTML = `
+                <div class="inline-ms-toolbar">
+                    <div class="btn-group">
+                        <select id="inlineMarksheetStudentSelect" class="toolbar-class-select" style="min-width:230px;" onchange="onInlineMarksheetStudentChange(this.value)" aria-label="মার্কশিটের শিক্ষার্থী নির্বাচন">
+                            ${list.map((m) => `<option value="${esc(m._id)}" ${m._id === selectedEv._id ? 'selected' : ''}>রোল ${bnNum(m.roll || '—')} — ${esc(m.name || 'নাম নেই')} (GPA ${bnNum(m.gpa.toFixed(2))})</option>`).join('')}
+                        </select>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="stepInlineMarksheet(-1)" title="আগের শিক্ষার্থী"><i class="fas fa-chevron-left" aria-hidden="true"></i></button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="stepInlineMarksheet(1)" title="পরের শিক্ষার্থী"><i class="fas fa-chevron-right" aria-hidden="true"></i></button>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-primary btn-sm" onclick="openInDocStudio('results', ${safeIdx}, 'marksheet')"><i class="fas fa-print" aria-hidden="true"></i> A4 প্রিন্ট / PDF</button>
+                        <button type="button" class="btn btn-blue btn-sm" onclick="openBatchMarksheets()"><i class="fas fa-copy" aria-hidden="true"></i> সব মার্কশিট (A4)</button>
+                    </div>
+                </div>
+                <div class="inline-ms-card">
+                    <div class="inline-ms-header">
+                        <h4>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h4>
+                        <p>${esc(clsLabel)} · ${esc(exam.examName || 'বার্ষিক পরীক্ষা')} (${esc(exam.year || '২০২৬')}) — একাডেমিক ট্রান্সক্রিপ্ট</p>
+                    </div>
+                    <div class="inline-ms-meta">
+                        <div><strong>শিক্ষার্থীর নাম:</strong> ${esc(selectedEv.name || '—')}</div>
+                        <div><strong>রোল:</strong> ${bnNum(selectedEv.roll || '—')}</div>
+                        <div><strong>শ্রেণি:</strong> ${esc(clsLabel)}</div>
+                        ${father ? `<div><strong>পিতার নাম:</strong> ${esc(father)}</div>` : ''}
+                        ${mother ? `<div><strong>মাতার নাম:</strong> ${esc(mother)}</div>` : ''}
+                        ${regNo ? `<div><strong>রেজিঃ / আইডি:</strong> ${esc(regNo)}</div>` : ''}
+                    </div>
+                    <div class="table-wrap">
+                        <table class="sheet-table">
+                            <thead>
+                                <tr>
+                                    <th>নং</th>
+                                    <th style="text-align:left;">বিষয়ের নাম</th>
+                                    <th>পূর্ণমান</th>
+                                    <th>প্রাপ্ত নম্বর</th>
+                                    <th>লেটার গ্রেড</th>
+                                    <th>গ্রেড পয়েন্ট</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${selectedEv.subjects.map((sub, i) => `
+                                    <tr>
+                                        <td>${bnNum(i + 1)}</td>
+                                        <td style="text-align:left; font-weight:600;">${esc(sub.name)}</td>
+                                        <td>${bnNum(sub.fullMarks)}</td>
+                                        <td style="font-weight:700;">${esc(sub.obtained)}</td>
+                                        <td style="font-weight:700; color:${sub.isFail ? '#b91c1c' : '#15803d'};">${esc(sub.grade)}</td>
+                                        <td>${bnNum(sub.gp)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="inline-ms-summary">
+                        <div class="inline-ms-sum-item"><strong>মোট নম্বর:</strong> ${bnNum(selectedEv.totalObtained)} / ${bnNum(selectedEv.totalFullMarks)}</div>
+                        <div class="inline-ms-sum-item"><strong>শতকরা:</strong> ${bnNum(selectedEv.percentage)}%</div>
+                        <div class="inline-ms-sum-item"><strong>GPA:</strong> ${bnNum(selectedEv.gpa.toFixed(2))}</div>
+                        <div class="inline-ms-sum-item"><strong>মেধাক্রম:</strong> ${selectedEv.meritRank ? bnNum(selectedEv.meritRank) : '—'}</div>
+                        <div class="inline-ms-sum-item"><strong>ফলাফল:</strong> <span class="${statusClass}">${esc(selectedEv.statusBn)}</span></div>
+                    </div>
+                </div>
+            `;
+            return;
+        }
 
         if (resultSubView === 'merit') {
             const list = computed.meritList.filter(matchesFilter);
