@@ -1,0 +1,219 @@
+(function (window) {
+    function bnNum(input) {
+        const en = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+        const bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+        return String(input ?? '').replace(/[0-9]/g, function (c) {
+            const idx = en.indexOf(c);
+            return idx >= 0 ? bn[idx] : c;
+        });
+    }
+
+    function enNum(input) {
+        const bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+        return String(input ?? '').replace(/[০-৯]/g, function (c) {
+            const idx = bn.indexOf(c);
+            return idx >= 0 ? String(idx) : c;
+        });
+    }
+
+    function escapeHtml(str) {
+        return String(str ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function safePhotoUrl(rawUrl) {
+        const val = String(rawUrl || '').trim();
+        if (!val) return '/logo.png';
+        if (val.startsWith('/') && !val.startsWith('//')) return val;
+        if (/^https?:\/\//i.test(val)) return val;
+        if (/^data:image\/(png|jpe?g|webp|gif);base64,[a-z0-9+/=]+$/i.test(val)) return val;
+        return '/logo.png';
+    }
+
+    /**
+     * Attaches automatic Class dropdown + Auto Roll List + Direct Roll Input behavior.
+     * Options:
+     *   classSelect: HTMLSelectElement
+     *   rollInput: HTMLInputElement
+     *   rollAutoSelect: HTMLSelectElement (optional auto-list dropdown inside roll field)
+     *   rollListWrap: HTMLElement (optional container for roll auto-list)
+     *   rollChipsContainer: HTMLElement (optional clickable roll chips list)
+     *   rollDatalist: HTMLDataListElement (optional)
+     *   preserveExistingClassOptions: boolean (if true, keeps existing optgroups like result.ejs)
+     *   onRollPicked: function(rollObj) (optional callback when roll chosen from auto list)
+     */
+    async function attachClassRollPicker(opts) {
+        const classSelect = opts.classSelect;
+        const rollInput = opts.rollInput;
+        const rollAutoSelect = opts.rollAutoSelect;
+        const rollListWrap = opts.rollListWrap;
+        const rollChipsContainer = opts.rollChipsContainer;
+        const rollDatalist = opts.rollDatalist;
+        const rollCountBadge = opts.rollCountBadge;
+
+        if (!classSelect || !rollInput) return null;
+
+        let currentRolls = [];
+
+        if (!opts.preserveExistingClassOptions) {
+            try {
+                const res = await fetch('/api/portal/classes-and-rolls');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (Array.isArray(data.classes) && data.classes.length) {
+                        const prevVal = classSelect.value;
+                        const placeholder = classSelect.querySelector('option[value=""]')?.outerHTML || '<option value="">-- শ্রেণি নির্বাচন করুন --</option>';
+                        classSelect.innerHTML = placeholder + data.classes.map(function (c) {
+                            const countText = c.count > 0 ? ' (' + bnNum(c.count) + ' জন)' : '';
+                            return '<option value="' + escapeHtml(c.value) + '">' + escapeHtml(c.label + countText) + '</option>';
+                        }).join('');
+                        if (prevVal) classSelect.value = prevVal;
+                    }
+                }
+            } catch (_) {
+                // Keep server-rendered class options on error
+            }
+        }
+
+        function renderRolls(rolls, hasClassSelected) {
+            currentRolls = Array.isArray(rolls) ? rolls : [];
+            const queryNorm = enNum(String(rollInput.value || '').trim()).toLowerCase();
+
+            if (rollCountBadge) {
+                rollCountBadge.textContent = currentRolls.length > 0
+                    ? bnNum(currentRolls.length) + ' জন'
+                    : (hasClassSelected ? 'তালিকা খালি' : '');
+            }
+
+            if (rollListWrap) {
+                rollListWrap.style.display = hasClassSelected ? 'block' : 'none';
+            }
+
+            if (rollDatalist) {
+                rollDatalist.innerHTML = currentRolls.map(function (r) {
+                    return '<option value="' + escapeHtml(r.roll) + '">' + escapeHtml('রোল ' + r.rollBn + ' - ' + r.name) + '</option>';
+                }).join('');
+            }
+
+            if (rollAutoSelect) {
+                if (!hasClassSelected) {
+                    rollAutoSelect.innerHTML = '<option value="">প্রথমে শ্রেণি নির্বাচন করুন</option>';
+                } else if (currentRolls.length === 0) {
+                    rollAutoSelect.innerHTML = '<option value="">এই শ্রেণিতে সংরক্ষিত রোল তালিকা নেই (রোল সরাসরি লিখুন)</option>';
+                } else {
+                    rollAutoSelect.innerHTML = '<option value="">-- রোল তালিকা থেকে বেছে নিন (' + bnNum(currentRolls.length) + ' জন) --</option>' +
+                        currentRolls.map(function (r) {
+                            const extra = r.id ? ' [' + r.id + ']' : '';
+                            return '<option value="' + escapeHtml(r.roll) + '">রোল ' + escapeHtml(r.rollBn) + ' — ' + escapeHtml(r.name) + escapeHtml(extra) + '</option>';
+                        }).join('');
+                }
+            }
+
+            if (rollChipsContainer) {
+                if (!hasClassSelected || currentRolls.length === 0) {
+                    rollChipsContainer.innerHTML = hasClassSelected
+                        ? '<span class="roll-empty-note">এই শ্রেণির কোনো রোল এখনও সংরক্ষিত হয়নি — উপরে রোল নম্বর লিখে খুঁজুন।</span>'
+                        : '';
+                } else {
+                    const filtered = currentRolls.filter(function (r) {
+                        if (!queryNorm) return true;
+                        const rNorm = enNum(r.roll).toLowerCase();
+                        const nameNorm = String(r.name || '').toLowerCase();
+                        return rNorm.includes(queryNorm) || nameNorm.includes(queryNorm);
+                    }).slice(0, 60);
+
+                    if (filtered.length === 0) {
+                        rollChipsContainer.innerHTML = '<span class="roll-empty-note">মিলে এমন কোনো রোল তালিকায় নেই — সরাসরি লিখে সাবমিট করতে পারেন।</span>';
+                    } else {
+                        rollChipsContainer.innerHTML = filtered.map(function (r) {
+                            const isActive = enNum(r.roll).toLowerCase() === queryNorm && queryNorm !== '';
+                            return '<button type="button" class="roll-chip-btn' + (isActive ? ' active' : '') + '" data-roll="' + escapeHtml(r.roll) + '">' +
+                                '<strong>' + escapeHtml(r.rollBn) + '</strong><span>' + escapeHtml(r.name) + '</span>' +
+                                '</button>';
+                        }).join('');
+                    }
+                }
+            }
+        }
+
+        async function loadRollsForClass(clsVal) {
+            const val = String(clsVal || '').trim();
+            if (!val) {
+                renderRolls([], false);
+                return [];
+            }
+            try {
+                const res = await fetch('/api/portal/classes-and-rolls?class=' + encodeURIComponent(val));
+                if (res.ok) {
+                    const data = await res.json();
+                    renderRolls(data.rolls || [], true);
+                    return data.rolls || [];
+                }
+            } catch (_) {
+                // Ignore network failure gracefully
+            }
+            renderRolls([], true);
+            return [];
+        }
+
+        classSelect.addEventListener('change', function () {
+            loadRollsForClass(classSelect.value);
+        });
+
+        if (rollAutoSelect) {
+            rollAutoSelect.addEventListener('change', function () {
+                const picked = rollAutoSelect.value;
+                if (!picked) return;
+                rollInput.value = picked;
+                renderRolls(currentRolls, Boolean(classSelect.value));
+                if (typeof opts.onRollPicked === 'function') {
+                    const found = currentRolls.find(function (r) { return r.roll === picked; }) || { roll: picked };
+                    opts.onRollPicked(found);
+                }
+            });
+        }
+
+        if (rollChipsContainer) {
+            rollChipsContainer.addEventListener('click', function (ev) {
+                const btn = ev.target.closest('.roll-chip-btn');
+                if (!btn) return;
+                const picked = btn.getAttribute('data-roll') || '';
+                if (!picked) return;
+                rollInput.value = picked;
+                if (rollAutoSelect) rollAutoSelect.value = picked;
+                renderRolls(currentRolls, Boolean(classSelect.value));
+                if (typeof opts.onRollPicked === 'function') {
+                    const found = currentRolls.find(function (r) { return r.roll === picked; }) || { roll: picked };
+                    opts.onRollPicked(found);
+                }
+            });
+        }
+
+        rollInput.addEventListener('input', function () {
+            if (currentRolls.length > 0) {
+                renderRolls(currentRolls, Boolean(classSelect.value));
+            }
+        });
+
+        if (classSelect.value) {
+            await loadRollsForClass(classSelect.value);
+        }
+
+        return {
+            loadRollsForClass: loadRollsForClass,
+            getRolls: function () { return currentRolls; },
+        };
+    }
+
+    window.NadufmStudentPicker = {
+        bnNum: bnNum,
+        enNum: enNum,
+        escapeHtml: escapeHtml,
+        safePhotoUrl: safePhotoUrl,
+        attachClassRollPicker: attachClassRollPicker,
+    };
+})(window);

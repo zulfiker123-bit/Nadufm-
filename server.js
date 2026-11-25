@@ -20,6 +20,13 @@ import {
   buildExcelBuffer,
 } from './data/excelStore.js';
 import { loadPortalStore, savePortalStore } from './data/portalStore.js';
+import {
+  getClassesAndRolls,
+  findUnifiedStudents,
+  normalizeClassInput,
+  normalizeRollKey,
+  sanitizeImageUrl,
+} from './data/studentHub.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -30,7 +37,9 @@ const upload = multer({
 });
 
 const app = express();
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = process.env.NGINX_PORT
+  ? Number(process.env.DEFAULT_APP_PORT) || 3000
+  : Number(process.env.PORT) || 3000;
 const HOST = '0.0.0.0';
 
 function getHeadlines() {
@@ -676,6 +685,14 @@ app.all(['/dashboard', '/dashboard.php'], requireAdminPage, (req, res) => {
       src: '/admit.php?embed=1',
     },
     {
+      id: 'id-card',
+      label: 'শিক্ষার্থী আইডি কার্ড',
+      meta: 'শ্রেণি ও রোল ভিত্তিক আইডি কার্ড',
+      icon: 'fas fa-id-badge',
+      tone: 'ic-teal',
+      src: '/id-card.php?embed=1',
+    },
+    {
       id: 'teachers',
       label: 'শিক্ষক ও কর্মচারী',
       meta: `${convertToBengali(teachersCount)} জন তালিকাভুক্ত`,
@@ -880,46 +897,65 @@ app.delete('/api/portal/admissions/:id', requireAdminApi, verifySameOrigin, (req
   res.json({ ok: true, admissions: portal.admissions });
 });
 
+app.get('/api/portal/classes-and-rolls', (req, res) => {
+  const excelStore = loadExcelStore();
+  const portal = loadPortalStore();
+  const classParam = String(req.query.class || '').trim();
+  const data = getClassesAndRolls(excelStore, portal, classParam);
+  res.json(data);
+});
+
+app.get('/api/portal/student-record', (req, res) => {
+  const excelStore = loadExcelStore();
+  const portal = loadPortalStore();
+  const classParam = String(req.query.class || '').trim();
+  const rollParam = String(req.query.roll || '').trim();
+  const query = String(req.query.q || '').trim();
+
+  const { matches, exact } = findUnifiedStudents(excelStore, portal, {
+    classParam,
+    rollParam,
+    query,
+  });
+
+  if (!matches.length) {
+    return res.json({ status: 'not_found', matches: [] });
+  }
+
+  return res.json({
+    status: 'success',
+    student: exact || matches[0],
+    matches,
+  });
+});
+
 app.get('/api/portal/admit-lookup', (req, res) => {
-  const rollQuery = bnToEnNumber(String(req.query.roll || '').trim()).toLowerCase();
-  const classQuery = String(req.query.class || '').trim().toLowerCase();
-  if (!rollQuery) {
+  const rollParam = String(req.query.roll || '').trim();
+  const classParam = String(req.query.class || '').trim();
+  if (!rollParam) {
     return res.json({ status: 'not_found' });
   }
 
-  const portal = loadPortalStore();
-  const foundAdm = (portal.admissions || []).find((a) => {
-    const r = bnToEnNumber(String(a.roll_no || '').trim()).toLowerCase();
-    const cls = String(a.student_class || '').trim().toLowerCase();
-    return r === rollQuery && (!classQuery || cls.includes(classQuery) || classQuery.includes(cls));
-  });
-  if (foundAdm) {
-    return res.json({
-      status: 'success',
-      name: foundAdm.name_bn || foundAdm.name_en,
-      father: foundAdm.father_bn,
-      class: foundAdm.student_class,
-      roll: foundAdm.roll_no,
-      id: foundAdm.id_no,
-      photo: foundAdm.photo || '/logo.png',
-    });
-  }
-
   const excelStore = loadExcelStore();
-  const sMapping = excelStore.students?.mapping || {};
-  const sRow = (excelStore.students?.rows || []).find((row) => {
-    const r = bnToEnNumber(String(row[sMapping.roll] || '').trim()).toLowerCase();
-    return r === rollQuery;
+  const portal = loadPortalStore();
+  const { exact, matches } = findUnifiedStudents(excelStore, portal, {
+    classParam,
+    rollParam,
   });
-  if (sRow) {
+  const student = exact || matches[0];
+
+  if (student) {
     return res.json({
       status: 'success',
-      name: sRow[sMapping.name] || '',
-      father: sRow[sMapping.father] || '',
-      class: sRow[sMapping.className] || req.query.class || '',
-      roll: sRow[sMapping.roll] || '',
-      id: sRow[sMapping.reg] || '',
-      photo: '/logo.png',
+      name: student.name_bn || student.name_en || '—',
+      father: student.father_bn || '',
+      mother: student.mother_bn || '',
+      class: student.class_name || classParam || '',
+      classKey: student.classKey || '',
+      roll: student.roll || rollParam,
+      id: student.id || student.reg_no || '',
+      session: student.session || '',
+      photo: sanitizeImageUrl(student.photo),
     });
   }
 
@@ -1326,16 +1362,27 @@ app.all(['/add_notice', '/add_notice.php'], requireAdminPage, verifySameOrigin, 
 
 app.all(['/result', '/result.php', '/view_result.php'], async (req, res) => {
   const excelStore = loadExcelStore();
+  const portal = loadPortalStore();
   const uploadedExams = getUploadedExamsSummary(excelStore);
   let studentResult = null;
   let selectedClassName = '';
+  let selectedClassValue = '';
   let selectedExamTitle = '';
   let searchError = '';
 
-  if (req.method === 'POST' && req.body.view_result) {
-    const searchClass = String(req.body.student_class || '');
-    const searchRollRaw = String(req.body.roll_number || '').trim();
-    const searchRollNorm = bnToEnNumber(searchRollRaw).toLowerCase();
+  const hasPostSearch = req.method === 'POST' && Boolean(req.body.view_result);
+  const hasQuerySearch = Boolean(req.query.class && req.query.roll);
+
+  if (hasPostSearch || hasQuerySearch) {
+    const searchClass = hasPostSearch
+      ? String(req.body.student_class || '')
+      : String(req.query.class || '');
+    const searchRollRaw = (hasPostSearch
+      ? String(req.body.roll_number || '')
+      : String(req.query.roll || '')).trim();
+    const searchRollNorm = normalizeRollKey(searchRollRaw);
+    selectedClassValue = searchClass;
+    const normCls = normalizeClassInput(searchClass);
 
     // 1) Check uploaded Excel result sheet first
     let matchedExcelExam = null;
@@ -1343,9 +1390,12 @@ app.all(['/result', '/result.php', '/view_result.php'], async (req, res) => {
       const eid = searchClass.slice(6);
       matchedExcelExam = excelStore.results?.exams?.[eid] || null;
     } else {
-      matchedExcelExam = Object.values(excelStore.results?.exams || {}).find(
-        (ex) => String(ex.classId) === searchClass && Array.isArray(ex.rows) && ex.rows.length > 0
-      ) || null;
+      matchedExcelExam = Object.values(excelStore.results?.exams || {}).find((ex) => {
+        if (!Array.isArray(ex.rows) || ex.rows.length === 0) return false;
+        if (String(ex.classId) === searchClass) return true;
+        const exCls = normalizeClassInput(ex.className || ex.classId || '');
+        return Boolean(normCls.key && exCls.key && normCls.key === exCls.key);
+      }) || null;
     }
 
     if (matchedExcelExam && Array.isArray(matchedExcelExam.rows) && matchedExcelExam.rows.length > 0) {
@@ -1353,13 +1403,20 @@ app.all(['/result', '/result.php', '/view_result.php'], async (req, res) => {
       selectedExamTitle = matchedExcelExam.title || `${matchedExcelExam.examName || 'বার্ষিক পরীক্ষা'} (${matchedExcelExam.year || '২০২৬'})`;
       const { evaluatedRows } = computeResultSheet(matchedExcelExam);
       const found = evaluatedRows.find(
-        (r) => bnToEnNumber(String(r.roll || '').trim()).toLowerCase() === searchRollNorm
+        (r) => normalizeRollKey(r.roll) === searchRollNorm
       );
 
       if (found) {
+        const unified = findUnifiedStudents(excelStore, portal, {
+          classParam: selectedClassName || searchClass,
+          rollParam: found.roll,
+        }).exact;
+
         studentResult = {
-          name: found.name,
-          father: found.father,
+          name: found.name || unified?.name_bn || '—',
+          father: found.father || unified?.father_bn || '',
+          mother: unified?.mother_bn || '',
+          id: found.studentId || unified?.id || '',
           roll: found.roll,
           subs: found.subjects.map((s) => ({
             name: s.name,
@@ -1387,10 +1444,13 @@ app.all(['/result', '/result.php', '/view_result.php'], async (req, res) => {
     }
 
     // 2) Fallback to Google Sheets CSV if not found in uploaded Excel sheets
-    if (!studentResult && Object.prototype.hasOwnProperty.call(classMap, searchClass)) {
-      selectedClassName = classMap[searchClass].name;
+    const csvClassKey = Object.prototype.hasOwnProperty.call(classMap, searchClass)
+      ? searchClass
+      : (Object.prototype.hasOwnProperty.call(classMap, normCls.key) ? normCls.key : '');
+    if (!studentResult && csvClassKey) {
+      selectedClassName = classMap[csvClassKey].name;
       selectedExamTitle = 'বার্ষিক পরীক্ষা - একাডেমিক ট্রান্সক্রিপ্ট';
-      const gid = classMap[searchClass].gid;
+      const gid = classMap[csvClassKey].gid;
       const csvUrl = `https://docs.google.com/spreadsheets/d/e/2PACX-1vSYfZ7IOoN4gbjjSgT02E1ugUQvhPmL39Ch4gJns0GGbb9OrCO4Wm9hdmbpPaEerRC5m2S0-WOJQcV4/pub?output=csv&gid=${gid}`;
 
       try {
@@ -1512,6 +1572,7 @@ app.all(['/result', '/result.php', '/view_result.php'], async (req, res) => {
     uploadedExams,
     studentResult,
     selectedClassName,
+    selectedClassValue,
     selectedExamTitle,
     searchError,
     convertToBengali,
@@ -1541,12 +1602,24 @@ app.all(['/admission', '/admission.php'], (req, res) => {
 app.all(['/admit', '/admit.php'], (req, res) => {
   res.render('admit', {
     pageTitle: 'এডমিট কার্ড ডাউনলোড - নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা',
+    classMap,
+    convertToBengali,
+  });
+});
+
+app.all(['/id-card', '/id-card.php'], (req, res) => {
+  res.render('id-card', {
+    pageTitle: 'শিক্ষার্থী আইডি কার্ড - নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা',
+    classMap,
+    convertToBengali,
   });
 });
 
 app.all(['/student-search', '/student-search.php'], (req, res) => {
   res.render('student-search', {
     pageTitle: 'শিক্ষার্থী তথ্য অনুসন্ধান - নলতা আহছানিয়া দারুল উলুম মাদ্রাসা',
+    classMap,
+    convertToBengali,
   });
 });
 

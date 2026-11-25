@@ -2,13 +2,13 @@
 
 <style>
     .admit-shell {
-        max-width: 820px;
+        max-width: 860px;
         margin: 24px auto 32px auto;
         padding: 0 16px;
     }
 
     .admit-search-card {
-        max-width: 500px;
+        max-width: 540px;
         margin: 0 auto;
         background: #ffffff;
         border: 1px solid rgba(15, 23, 42, 0.09);
@@ -30,8 +30,17 @@
     .admit-search-body { padding: 24px; }
 
     .input-group { margin-bottom: 16px; }
-    .input-group label { display: block; font-weight: 600; font-size: 0.94rem; margin-bottom: 6px; color: #0f172a; }
-    .input-group input {
+    .input-group label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-weight: 600;
+        font-size: 0.94rem;
+        margin-bottom: 6px;
+        color: #0f172a;
+    }
+    .input-group input,
+    .input-group select {
         width: 100%;
         height: 44px;
         padding: 0 14px;
@@ -39,10 +48,72 @@
         border-radius: 10px;
         background: #f8faf9;
         color: #0f172a;
+        font-family: inherit;
         font-size: 0.95rem;
         outline: none;
     }
-    .input-group input:focus { border-color: #15803d; background: #ffffff; }
+    .input-group input:focus,
+    .input-group select:focus { border-color: #15803d; background: #ffffff; }
+
+    .roll-auto-panel {
+        margin-top: 10px;
+        background: #f8faf9;
+        border: 1px solid rgba(21, 128, 61, 0.22);
+        border-radius: 12px;
+        padding: 10px 12px;
+    }
+
+    .roll-auto-title {
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: #14532d;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .roll-auto-select {
+        height: 40px !important;
+        background: #ffffff !important;
+        margin-bottom: 8px;
+        font-size: 0.9rem !important;
+    }
+
+    .roll-chips-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        max-height: 150px;
+        overflow-y: auto;
+    }
+
+    .roll-chip-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(21, 128, 61, 0.28);
+        background: #ffffff;
+        color: #0f172a;
+        font-family: inherit;
+        font-size: 0.84rem;
+        cursor: pointer;
+    }
+    .roll-chip-btn:hover,
+    .roll-chip-btn.active { background: #15803d; color: #ffffff; border-color: #15803d; }
+
+    .roll-empty-note { font-size: 0.83rem; color: #64748b; }
+
+    .id-count-pill {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #15803d;
+        background: #dcfce7;
+        padding: 2px 8px;
+        border-radius: 999px;
+    }
 
     .btn-search {
         width: 100%;
@@ -51,6 +122,7 @@
         color: #ffffff;
         border: none;
         border-radius: 10px;
+        font-family: inherit;
         font-weight: 700;
         cursor: pointer;
         font-size: 1rem;
@@ -62,7 +134,7 @@
     .admit-toolbar {
         display: flex;
         justify-content: center;
-        gap: 12px;
+        gap: 10px;
         flex-wrap: wrap;
         margin-bottom: 18px;
     }
@@ -70,17 +142,21 @@
     .btn-admit-action {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        min-height: 44px;
-        padding: 0 20px;
+        gap: 7px;
+        min-height: 42px;
+        padding: 0 16px;
         border-radius: 10px;
         border: none;
-        font-size: 0.95rem;
+        text-decoration: none;
+        font-family: inherit;
+        font-size: 0.9rem;
         font-weight: 600;
         cursor: pointer;
     }
 
     .btn-print-admit { background: #15803d; color: #ffffff; }
+    .btn-pdf-admit { background: #be123c; color: #ffffff; }
+    .btn-link-admit { background: #1d4ed8; color: #ffffff; }
     .btn-reset-admit { background: #f1f5f9; color: #0f172a; border: 1px solid rgba(15, 23, 42, 0.12); }
 
     .admit-scroll-wrap { overflow-x: auto; }
@@ -126,7 +202,7 @@
     .sig { border-top: 1px solid #0f172a; width: 130px; text-align: center; font-size: 12px; font-weight: 700; padding-top: 4px; }
 
     @media print {
-        .no-print, .app-footer { display: none !important; }
+        .no-print, .app-footer, .app-topbar, .mobile-bottom-nav { display: none !important; }
         body { background: #ffffff; }
         .admit-shell { margin: 0; max-width: 100%; padding: 0; }
         #admit-card-result { display: block !important; }
@@ -138,27 +214,37 @@
     <div class="admit-search-card no-print" id="admitSearchCard">
         <div class="admit-search-head">
             <h1>এডমিট কার্ড ডাউনলোড</h1>
-            <p>শ্রেণি ও রোল নম্বর দিয়ে প্রবেশপত্র সংগ্রহ করুন</p>
+            <p>শ্রেণি বাছাই করে অটো তালিকা থেকে রোল বেছে নিন অথবা রোল নম্বর লিখুন</p>
         </div>
         <div class="admit-search-body">
             <form id="searchForm">
                 <div class="input-group">
                     <label for="search_class">শ্রেণি (Class)</label>
-                    <input type="text" id="search_class" list="classSuggestions" placeholder="যেমন: ৬ষ্ঠ / ফাজিল ১ম বর্ষ" required>
-                    <datalist id="classSuggestions">
-                        <option value="৬ষ্ঠ">
-                        <option value="৭ম">
-                        <option value="৮ম">
-                        <option value="৯ম">
-                        <option value="১০ম">
-                        <option value="আলিম ১ম বর্ষ">
-                        <option value="আলিম ২য় বর্ষ">
-                        <option value="ফাজিল ১ম বর্ষ">
-                    </datalist>
+                    <select id="search_class" required>
+                        <option value="">-- শ্রেণি নির্বাচন করুন --</option>
+                        <% if (typeof classMap !== 'undefined') { %>
+                            <% Object.entries(classMap).forEach(function([k, v]) { %>
+                                <option value="<%= k %>"><%= v.name %> শ্রেণি</option>
+                            <% }); %>
+                        <% } %>
+                    </select>
                 </div>
                 <div class="input-group">
-                    <label for="search_roll">রোল নম্বর (Roll)</label>
-                    <input type="text" id="search_roll" placeholder="রোল নম্বর লিখুন" required>
+                    <label for="search_roll">
+                        <span>রোল নম্বর (Roll)</span>
+                        <span id="admitRollCountBadge" class="id-count-pill"></span>
+                    </label>
+                    <input type="text" id="search_roll" list="admitRollDatalist" placeholder="রোল নম্বর লিখুন (যেমন: 1 বা ১) অথবা তালিকা থেকে বেছে নিন" required>
+                    <datalist id="admitRollDatalist"></datalist>
+
+                    <div id="admitRollAutoWrap" class="roll-auto-panel" style="display:none;">
+                        <div class="roll-auto-title">
+                            <span><i class="fas fa-list-ol"></i> শ্রেণিভিত্তিক অটো রোল তালিকা</span>
+                            <span style="font-size:0.78rem; color:#475569;">রোল নির্বাচন করুন</span>
+                        </div>
+                        <select id="admitRollAutoSelect" class="roll-auto-select"></select>
+                        <div id="admitRollChips" class="roll-chips-list"></div>
+                    </div>
                 </div>
                 <button type="submit" class="btn-search" id="searchBtn">প্রবেশপত্র খুঁজুন</button>
             </form>
@@ -170,21 +256,39 @@
         <div class="admit-toolbar no-print">
             <button type="button" class="btn-admit-action btn-print-admit" onclick="window.print()">
                 <i class="fas fa-print" aria-hidden="true"></i>
-                <span>প্রবেশপত্র প্রিন্ট করুন</span>
+                <span>প্রিন্ট করুন</span>
             </button>
+            <button type="button" class="btn-admit-action btn-pdf-admit" onclick="downloadAdmitPdf()">
+                <i class="fas fa-file-pdf" aria-hidden="true"></i>
+                <span>PDF ডাউনলোড</span>
+            </button>
+            <a id="linkAdmitToId" href="/id-card.php" class="btn-admit-action btn-link-admit">
+                <i class="fas fa-id-badge" aria-hidden="true"></i>
+                <span>আইডি কার্ড</span>
+            </a>
+            <a id="linkAdmitToResult" href="/result.php" class="btn-admit-action btn-link-admit">
+                <i class="fas fa-poll" aria-hidden="true"></i>
+                <span>মার্কশিট</span>
+            </a>
+            <a id="linkAdmitToProfile" href="/student-search.php" class="btn-admit-action btn-reset-admit">
+                <i class="fas fa-certificate" aria-hidden="true"></i>
+                <span>প্রত্যায়ন / প্রশংসা পত্র</span>
+            </a>
             <button type="button" class="btn-admit-action btn-reset-admit" onclick="resetAdmitSearch()">
                 <i class="fas fa-redo" aria-hidden="true"></i>
                 <span>আবার খুঁজুন</span>
             </button>
         </div>
 
+        <div id="admitExportStatus" class="no-print" style="display:none; max-width:540px; margin:0 auto 14px auto; padding:9px 13px; border-radius:9px; font-size:0.88rem; font-weight:600; text-align:center;"></div>
+
         <div class="admit-scroll-wrap">
-            <div class="admit-card">
+            <div class="admit-card" id="admitCardPrintable">
                 <div class="admit-header">
                     <img src="/logo.png" alt="Logo" referrerpolicy="no-referrer">
                     <div class="admit-title">
-                        <h2>নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা</h2>
-                        <p>ডাকঘর: নলতা মোবারকনগর, কালিগঞ্জ, সাতক্ষীরা</p>
+                        <h2>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h2>
+                        <p>ডাকঘর: নলতা মোবারকনগর, কালিগঞ্জ, সাতক্ষীরা · EIIN: ১১৮৭৭৮</p>
                         <div class="admit-doc-label">প্রবেশপত্র (Admit Card)</div>
                     </div>
                 </div>
@@ -193,9 +297,10 @@
                     <div class="student-info">
                         <div class="info-row"><span class="info-label">শিক্ষার্থীর নাম:</span><span class="info-value" id="res_name"></span></div>
                         <div class="info-row"><span class="info-label">পিতার নাম:</span><span class="info-value" id="res_father"></span></div>
+                        <div class="info-row"><span class="info-label">মাতার নাম:</span><span class="info-value" id="res_mother"></span></div>
                         <div class="info-row"><span class="info-label">শ্রেণি:</span><span class="info-value" id="res_class"></span></div>
                         <div class="info-row"><span class="info-label">রোল নম্বর:</span><span class="info-value" id="res_roll"></span></div>
-                        <div class="info-row"><span class="info-label">আইডি নম্বর:</span><span class="info-value" id="res_id"></span></div>
+                        <div class="info-row"><span class="info-label">আইডি / রেজিঃ নং:</span><span class="info-value" id="res_id"></span></div>
                     </div>
                     <div class="student-photo" id="res_photo"></div>
                 </div>
@@ -210,8 +315,14 @@
     </div>
 </div>
 
+<script src="/vendor/html2pdf.bundle.min.js" defer></script>
+<script src="/doc-export.js" defer></script>
+<script src="/student-picker.js"></script>
 <script>
     const scriptURL = 'https://script.google.com/macros/s/AKfycbxZR0c6PLITftRWpUKe0usjXg-orylIVmTxQ0lYwolDKx1G84wIb_sg8RxDqAoVg7Wh1g/exec';
+    const pickerLib = window.NadufmStudentPicker;
+    const admitClassEl = document.getElementById('search_class');
+    const admitRollEl = document.getElementById('search_roll');
 
     function resetAdmitSearch() {
         document.getElementById('admit-card-result').style.display = 'none';
@@ -221,51 +332,117 @@
         btn.innerText = "প্রবেশপত্র খুঁজুন";
     }
 
-    document.getElementById('searchForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const roll = document.getElementById('search_roll').value;
-        const sClass = document.getElementById('search_class').value;
+    function showAdmitData(data, rawClass) {
+        document.getElementById('res_name').innerText = data.name || '—';
+        document.getElementById('res_father').innerText = data.father || '—';
+        document.getElementById('res_mother').innerText = data.mother || '—';
+        document.getElementById('res_class').innerText = data.class || '—';
+        document.getElementById('res_roll').innerText = pickerLib.bnNum(data.roll || '—');
+        document.getElementById('res_id').innerText = data.id || '—';
+
+        const photoBox = document.getElementById('res_photo');
+        photoBox.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = pickerLib.safePhotoUrl(data.photo);
+        img.alt = 'শিক্ষার্থীর ছবি';
+        img.onerror = function () { this.src = '/logo.png'; };
+        photoBox.appendChild(img);
+
+        const qCls = encodeURIComponent(data.classKey || rawClass || data.class || '');
+        const qRoll = encodeURIComponent(data.roll || '');
+        document.getElementById('linkAdmitToId').href = '/id-card.php?class=' + qCls + '&roll=' + qRoll;
+        document.getElementById('linkAdmitToResult').href = '/result.php?class=' + qCls + '&roll=' + qRoll;
+        document.getElementById('linkAdmitToProfile').href = '/student-search.php?class=' + qCls + '&roll=' + qRoll + '&doc=attestation';
+
+        document.getElementById('admitSearchCard').style.display = 'none';
+        document.getElementById('admit-card-result').style.display = 'block';
+    }
+
+    async function performAdmitLookup(sClass, roll) {
         const btn = document.getElementById('searchBtn');
         const errorMsg = document.getElementById('error-msg');
+        if (!roll) return;
 
         btn.disabled = true;
         btn.innerText = "খোঁজা হচ্ছে...";
         errorMsg.style.display = "none";
 
-        function showAdmitData(data) {
-            document.getElementById('res_name').innerText = data.name || '—';
-            document.getElementById('res_father').innerText = data.father || '—';
-            document.getElementById('res_class').innerText = data.class || '—';
-            document.getElementById('res_roll').innerText = data.roll || '—';
-            document.getElementById('res_id').innerText = data.id || '—';
-            document.getElementById('res_photo').innerHTML = data.photo ? `<img src="${data.photo}" alt="শিক্ষার্থীর ছবি">` : '<img src="/logo.png" alt="লোগো">';
-            document.getElementById('admitSearchCard').style.display = 'none';
-            document.getElementById('admit-card-result').style.display = 'block';
-        }
-
         try {
-            const localRes = await fetch(`/api/portal/admit-lookup?roll=${encodeURIComponent(roll)}&class=${encodeURIComponent(sClass)}`);
+            const localRes = await fetch('/api/portal/admit-lookup?roll=' + encodeURIComponent(roll) + '&class=' + encodeURIComponent(sClass || ''));
             if (localRes.ok) {
                 const localData = await localRes.json();
                 if (localData && localData.status === 'success') {
-                    showAdmitData(localData);
+                    showAdmitData(localData, sClass);
                     return;
                 }
             }
             const response = await fetch(`${scriptURL}?action=getStudent&roll=${encodeURIComponent(roll)}&class=${encodeURIComponent(sClass)}`);
             const data = await response.json();
             if (data.status === "success") {
-                showAdmitData(data);
+                showAdmitData(data, sClass);
             } else {
+                errorMsg.innerText = "দুঃখিত! কোনো তথ্য পাওয়া যায়নি।";
                 errorMsg.style.display = "block";
-                btn.disabled = false;
-                btn.innerText = "প্রবেশপত্র খুঁজুন";
             }
         } catch (err) {
-            errorMsg.innerText = "সার্ভার সমস্যা! অনুগ্রহ করে আবার চেষ্টা করুন।";
+            errorMsg.innerText = "দুঃখিত! তথ্য খুঁজে পাওয়া যায়নি বা সার্ভার সমস্যা হয়েছে।";
             errorMsg.style.display = "block";
+        } finally {
             btn.disabled = false;
             btn.innerText = "প্রবেশপত্র খুঁজুন";
+        }
+    }
+
+    async function downloadAdmitPdf() {
+        const card = document.getElementById('admitCardPrintable');
+        const stEl = document.getElementById('admitExportStatus');
+        const setSt = function (msg, isErr) {
+            stEl.style.display = 'block';
+            stEl.textContent = msg;
+            stEl.style.background = isErr ? '#fef2f2' : '#f0fdf4';
+            stEl.style.color = isErr ? '#b91c1c' : '#15803d';
+            stEl.style.border = isErr ? '1px solid #fecaca' : '1px solid #bbf7d0';
+        };
+        try {
+            if (!window.NadufmExport) throw new Error('এক্সপোর্ট স্ক্রিপ্ট লোড হয়নি।');
+            await window.NadufmExport.exportElementToA4Pdf({
+                element: card,
+                filename: 'admit-card-' + Date.now() + '.pdf',
+                marginMm: 10,
+                onStatus: setSt
+            });
+        } catch (err) {
+            setSt(err?.message || 'PDF ডাউনলোড ব্যর্থ হয়েছে।', true);
+        }
+    }
+
+    document.getElementById('searchForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        performAdmitLookup(admitClassEl.value, admitRollEl.value.trim());
+    });
+
+    pickerLib.attachClassRollPicker({
+        classSelect: admitClassEl,
+        rollInput: admitRollEl,
+        rollAutoSelect: document.getElementById('admitRollAutoSelect'),
+        rollListWrap: document.getElementById('admitRollAutoWrap'),
+        rollChipsContainer: document.getElementById('admitRollChips'),
+        rollDatalist: document.getElementById('admitRollDatalist'),
+        rollCountBadge: document.getElementById('admitRollCountBadge'),
+        onRollPicked: function (picked) {
+            performAdmitLookup(admitClassEl.value, picked.roll);
+        }
+    }).then(function (ctrl) {
+        const params = new URLSearchParams(window.location.search);
+        const initCls = params.get('class');
+        const initRoll = params.get('roll');
+        if (initCls) {
+            admitClassEl.value = initCls;
+            if (ctrl) ctrl.loadRollsForClass(initCls);
+        }
+        if (initRoll) {
+            admitRollEl.value = initRoll;
+            performAdmitLookup(initCls || admitClassEl.value, initRoll);
         }
     });
 </script>

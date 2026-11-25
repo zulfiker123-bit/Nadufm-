@@ -101,6 +101,77 @@
         margin-top: 8px;
     }
 
+    .result-field label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .roll-auto-panel {
+        margin-top: 10px;
+        background: #f8faf9;
+        border: 1px solid rgba(21, 128, 61, 0.22);
+        border-radius: 12px;
+        padding: 10px 12px;
+    }
+
+    .roll-auto-title {
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: #14532d;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .roll-auto-select {
+        height: 40px !important;
+        background: #ffffff !important;
+        margin-bottom: 8px;
+        font-size: 0.9rem !important;
+    }
+
+    .roll-chips-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        max-height: 150px;
+        overflow-y: auto;
+    }
+
+    .roll-chip-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(21, 128, 61, 0.28);
+        background: #ffffff;
+        color: #0f172a;
+        font-family: inherit;
+        font-size: 0.84rem;
+        cursor: pointer;
+    }
+
+    .roll-chip-btn:hover,
+    .roll-chip-btn.active {
+        background: #15803d;
+        color: #ffffff;
+        border-color: #15803d;
+    }
+
+    .roll-empty-note { font-size: 0.83rem; color: #64748b; }
+
+    .id-count-pill {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #15803d;
+        background: #dcfce7;
+        padding: 2px 8px;
+        border-radius: 999px;
+    }
+
     .r-btn {
         display: inline-flex;
         align-items: center;
@@ -312,7 +383,7 @@
             <% if (searchError) { %>
                 <div class="result-error"><%= searchError %></div>
             <% } %>
-            <form method="POST" action="/result.php">
+            <form method="POST" action="/result.php" id="resultSearchForm">
                 <div class="result-field">
                     <label for="student_class">শিক্ষার্থীর শ্রেণি / পরীক্ষা</label>
                     <select id="student_class" name="student_class" required>
@@ -332,9 +403,23 @@
                     </select>
                 </div>
                 <div class="result-field">
-                    <label for="roll_number">রোল নম্বর</label>
-                    <input id="roll_number" type="text" name="roll_number" placeholder="রোল নম্বর লিখুন (যেমন: 1 বা ১)" required>
+                    <label for="roll_number">
+                        <span>রোল নম্বর</span>
+                        <span id="resultRollCountBadge" class="id-count-pill"></span>
+                    </label>
+                    <input id="roll_number" type="text" name="roll_number" list="resultRollDatalist" placeholder="রোল নম্বর লিখুন (যেমন: 1 বা ১) অথবা তালিকা থেকে বেছে নিন" required>
+                    <datalist id="resultRollDatalist"></datalist>
+
+                    <div id="resultRollAutoWrap" class="roll-auto-panel" style="display:none;">
+                        <div class="roll-auto-title">
+                            <span><i class="fas fa-list-ol"></i> শ্রেণিভিত্তিক অটো রোল তালিকা</span>
+                            <span style="font-size:0.78rem; color:#475569;">রোল নির্বাচন করুন</span>
+                        </div>
+                        <select id="resultRollAutoSelect" class="roll-auto-select"></select>
+                        <div id="resultRollChips" class="roll-chips-list"></div>
+                    </div>
                 </div>
+                <input type="hidden" name="view_result" value="1">
                 <div class="result-btn-row">
                     <button type="submit" name="view_result" value="1" class="r-btn r-btn-primary">
                         <i class="fas fa-search" aria-hidden="true"></i>
@@ -348,7 +433,29 @@
             </form>
         </div>
     </div>
+    <script src="/student-picker.js"></script>
+    <script>
+        (function () {
+            if (!window.NadufmStudentPicker) return;
+            var formEl = document.getElementById('resultSearchForm');
+            window.NadufmStudentPicker.attachClassRollPicker({
+                classSelect: document.getElementById('student_class'),
+                rollInput: document.getElementById('roll_number'),
+                rollAutoSelect: document.getElementById('resultRollAutoSelect'),
+                rollListWrap: document.getElementById('resultRollAutoWrap'),
+                rollChipsContainer: document.getElementById('resultRollChips'),
+                rollDatalist: document.getElementById('resultRollDatalist'),
+                rollCountBadge: document.getElementById('resultRollCountBadge'),
+                preserveExistingClassOptions: true,
+                onRollPicked: function () {
+                    if (formEl) formEl.submit();
+                }
+            });
+        })();
+    </script>
     <% } else { %>
+    <% const _qCls = encodeURIComponent(selectedClassValue || selectedClassName || ''); %>
+    <% const _qRoll = encodeURIComponent(studentResult.roll || ''); %>
     <div class="marksheet-controls no-print">
         <div class="marksheet-toolbar">
             <button type="button" onclick="window.print()" class="r-btn r-btn-primary">
@@ -363,6 +470,18 @@
                 <i class="fas fa-file-word" aria-hidden="true"></i>
                 <span>Word (.doc)</span>
             </button>
+            <a href="/id-card.php?class=<%= _qCls %>&roll=<%= _qRoll %>" class="r-btn r-btn-secondary">
+                <i class="fas fa-id-badge" aria-hidden="true"></i>
+                <span>আইডি কার্ড</span>
+            </a>
+            <a href="/admit.php?class=<%= _qCls %>&roll=<%= _qRoll %>" class="r-btn r-btn-secondary">
+                <i class="fas fa-id-card" aria-hidden="true"></i>
+                <span>এডমিট কার্ড</span>
+            </a>
+            <a href="/student-search.php?class=<%= _qCls %>&roll=<%= _qRoll %>&doc=attestation" class="r-btn r-btn-secondary">
+                <i class="fas fa-certificate" aria-hidden="true"></i>
+                <span>প্রত্যায়ন / প্রশংসা</span>
+            </a>
             <a href="/result.php" class="r-btn r-btn-secondary">
                 <i class="fas fa-redo" aria-hidden="true"></i>
                 <span>নতুনভাবে খুঁজুন</span>

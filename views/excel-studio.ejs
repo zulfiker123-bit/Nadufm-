@@ -961,16 +961,18 @@
                         <label>ডকুমেন্টের ধরন</label>
                         <select id="docTypeSelect" onchange="onDocConfigChange()">
                             <option value="marksheet">মার্কশিট (একাডেমিক ট্রান্সক্রিপ্ট)</option>
+                            <option value="admit">এডমিট কার্ড / প্রবেশপত্র (Admit Card)</option>
+                            <option value="idcard">শিক্ষার্থী আইডি কার্ড (ID Card)</option>
                             <option value="testimonial">প্রশংসা পত্র (Testimonial)</option>
                             <option value="attestation">প্রত্যায়ন পত্র (Attestation / Certificate)</option>
                         </select>
                     </div>
 
                     <div class="field" style="margin-bottom: 10px;" id="batchToggleWrap">
-                        <label>প্রিন্ট মোড (মার্কশিট)</label>
+                        <label>প্রিন্ট মোড</label>
                         <select id="docBatchMode" onchange="onDocConfigChange()">
                             <option value="single">একক শিক্ষার্থী (Single A4)</option>
-                            <option value="batch">সকল শিক্ষার্থী (প্রতি পৃষ্ঠায় ১টি A4)</option>
+                            <option value="batch">সকল শিক্ষার্থী (ব্যাচ প্রিন্ট A4)</option>
                         </select>
                     </div>
 
@@ -983,9 +985,17 @@
                         </select>
                     </div>
 
-                    <div class="field" id="singleRecordWrap">
-                        <label>শিক্ষার্থী / সারি নির্বাচন করুন</label>
+                    <div class="field" style="margin-bottom: 10px;">
+                        <label>শ্রেণি অনুযায়ী ফিল্টার (ড্রপডাউন)</label>
+                        <select id="docClassFilter" onchange="onDocClassFilterChange()">
+                            <option value="">-- সকল শ্রেণি --</option>
+                        </select>
+                    </div>
+
+                    <div class="field" style="margin-bottom: 10px;" id="singleRecordWrap">
+                        <label>রোল / শিক্ষার্থী নির্বাচন (অটো তালিকা)</label>
                         <select id="docRecordSelect" onchange="loadSelectedRecordIntoForm()"></select>
+                        <input type="text" id="docRollQuickInput" placeholder="অথবা সরাসরি রোল লিখে খুঁজুন..." oninput="jumpToDocRoll(this.value)" style="margin-top:6px;">
                     </div>
                 </div>
 
@@ -1528,7 +1538,7 @@
                         <tr>
                             <th style="width:46px;">নং</th>
                             ${sheet.columns.map((c) => `<th>${esc(c.label)}</th>`).join('')}
-                            <th style="width:175px;">অ্যাকশন</th>
+                            <th style="width:${type === 'students' ? '290px' : '175px'};">অ্যাকশন</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1539,8 +1549,13 @@
                                     <td><input class="cell-input" value="${esc(r[c.key] ?? '')}" onchange="updateSimpleCell('${type}', ${i}, '${esc(c.key)}', this.value)"></td>
                                 `).join('')}
                                 <td style="white-space:nowrap;">
-                                    <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('${type}', ${i}, 'testimonial')" title="প্রশংসা পত্র">প্রশংসা</button>
+                                    ${type === 'students' ? `
+                                        <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('students', ${i}, 'admit')" title="এডমিট কার্ড">এডমিট</button>
+                                        <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('students', ${i}, 'marksheet')" title="মার্কশিট">মার্কশিট</button>
+                                        <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('students', ${i}, 'idcard')" title="আইডি কার্ড">আইডি</button>
+                                    ` : ''}
                                     <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('${type}', ${i}, 'attestation')" title="প্রত্যায়ন পত্র">প্রত্যায়ন</button>
+                                    <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('${type}', ${i}, 'testimonial')" title="প্রশংসা পত্র">প্রশংসা</button>
                                     <button type="button" class="btn btn-danger-outline btn-sm" onclick="deleteSimpleRow('${type}', ${i})" title="মুছুন"><i class="fas fa-trash"></i></button>
                                 </td>
                             </tr>
@@ -2035,11 +2050,52 @@
         return '';
     }
 
+    function normalizeRollClient(v) {
+        return enNum(String(v ?? '').trim()).replace(/^0+(?=\d)/, '').toLowerCase();
+    }
+
+    function normalizeClassClient(v) {
+        return enNum(String(v ?? '').replace(/শ্রেণি|শ্রেণী|class/gi, '').replace(/\s+/g, ' ').trim()).toLowerCase();
+    }
+
+    function findMatchedStudentRow(clsName, rollVal) {
+        const sheet = state.students || { rows: [], mapping: {} };
+        const m = sheet.mapping || {};
+        const rNorm = normalizeRollClient(rollVal);
+        const cNorm = normalizeClassClient(clsName);
+        if (!rNorm) return null;
+        return (sheet.rows || []).find((row) => {
+            const rl = normalizeRollClient(getMappedField(row, m, ['roll', 'id']));
+            if (rl !== rNorm) return false;
+            if (!cNorm) return true;
+            const cl = normalizeClassClient(getMappedField(row, m, ['class_name']));
+            return !cl || cl === cNorm || cl.includes(cNorm) || cNorm.includes(cl);
+        }) || null;
+    }
+
+    function findMatchedExamResult(clsName, rollVal) {
+        const rNorm = normalizeRollClient(rollVal);
+        const cNorm = normalizeClassClient(clsName);
+        if (!rNorm) return null;
+        const exams = Object.values(state.results?.exams || {});
+        for (const exam of exams) {
+            if (!Array.isArray(exam.rows) || exam.rows.length === 0) continue;
+            const exCls = normalizeClassClient(exam.className || (state.classMap?.[exam.classId]?.name || ''));
+            if (cNorm && exCls && exCls !== cNorm && !exCls.includes(cNorm) && !cNorm.includes(exCls)) continue;
+            const computed = recomputeExamClient(exam);
+            const ev = computed.evaluatedRows.find((r) => normalizeRollClient(r.roll) === rNorm);
+            if (ev) return { exam, ev };
+        }
+        return null;
+    }
+
     function openInDocStudio(source, rowIndex, docType) {
         switchTab('docstudio');
         document.getElementById('docTypeSelect').value = docType;
         document.getElementById('docBatchMode').value = 'single';
         document.getElementById('docSourceSelect').value = source;
+        const clsFilterEl = document.getElementById('docClassFilter');
+        if (clsFilterEl) clsFilterEl.value = '';
         populateDocRecordPicker();
         document.getElementById('docRecordSelect').value = String(rowIndex);
         loadSelectedRecordIntoForm();
@@ -2064,7 +2120,7 @@
         const docType = document.getElementById('docTypeSelect').value;
         const batchWrap = document.getElementById('batchToggleWrap');
         const singleWrap = document.getElementById('singleRecordWrap');
-        if (docType === 'marksheet') {
+        if (docType === 'marksheet' || docType === 'admit' || docType === 'idcard') {
             batchWrap.classList.remove('hidden');
             const isBatch = document.getElementById('docBatchMode').value === 'batch';
             singleWrap.classList.toggle('hidden', isBatch);
@@ -2076,23 +2132,83 @@
         renderA4Document();
     }
 
-    function populateDocRecordPicker() {
+    function populateDocClassFilter() {
+        const source = document.getElementById('docSourceSelect').value;
+        const clsSelect = document.getElementById('docClassFilter');
+        if (!clsSelect) return;
+        const prev = clsSelect.value;
+        const classSet = new Set();
+
+        if (source === 'results') {
+            const exam = getActiveExam();
+            if (exam?.className) classSet.add(exam.className);
+        } else {
+            const sheet = state[source] || { rows: [], mapping: {} };
+            const m = sheet.mapping || {};
+            (sheet.rows || []).forEach((r) => {
+                const cl = getMappedField(r, m, ['class_name']);
+                if (cl) classSet.add(cl);
+            });
+        }
+
+        clsSelect.innerHTML = '<option value="">-- সকল শ্রেণি --</option>' +
+            Array.from(classSet).map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+        if (prev && classSet.has(prev)) clsSelect.value = prev;
+    }
+
+    function onDocClassFilterChange() {
+        populateDocRecordPicker(true);
+    }
+
+    function jumpToDocRoll(rawRoll) {
+        const target = normalizeRollClient(rawRoll);
+        if (!target) return;
+        const select = document.getElementById('docRecordSelect');
+        const opts = Array.from(select.options);
+        const foundOpt = opts.find((o) => {
+            const r = normalizeRollClient(o.getAttribute('data-roll') || '');
+            return r === target || o.textContent.toLowerCase().includes(rawRoll.trim().toLowerCase());
+        });
+        if (foundOpt && foundOpt.value !== '') {
+            select.value = foundOpt.value;
+            loadSelectedRecordIntoForm();
+        }
+    }
+
+    function populateDocRecordPicker(preserveClassFilter) {
+        if (!preserveClassFilter) {
+            populateDocClassFilter();
+        }
         const source = document.getElementById('docSourceSelect').value;
         const select = document.getElementById('docRecordSelect');
+        const filterCls = normalizeClassClient(document.getElementById('docClassFilter')?.value || '');
+
         if (source === 'results') {
             const exam = getActiveExam();
             const computed = recomputeExamClient(exam);
-            select.innerHTML = computed.evaluatedRows.length
-                ? computed.evaluatedRows.map((r, i) => `<option value="${i}">রোল ${bnNum(r.roll)} - ${esc(r.name || 'নাম নেই')}</option>`).join('')
+            const exCls = normalizeClassClient(exam.className || '');
+            const filtered = computed.evaluatedRows
+                .map((r, i) => ({ r, i }))
+                .filter(() => !filterCls || !exCls || exCls === filterCls);
+            select.innerHTML = filtered.length
+                ? filtered.map(({ r, i }) => `<option value="${i}" data-roll="${esc(r.roll)}">রোল ${bnNum(r.roll)} - ${esc(r.name || 'নাম নেই')}</option>`).join('')
                 : '<option value="">-- কোনো শিক্ষার্থী নেই --</option>';
         } else {
             const sheet = state[source];
             const m = sheet.mapping || {};
-            select.innerHTML = sheet.rows.length
-                ? sheet.rows.map((r, i) => {
+            const filtered = sheet.rows
+                .map((r, i) => ({ r, i }))
+                .filter(({ r }) => {
+                    if (!filterCls) return true;
+                    const cl = normalizeClassClient(getMappedField(r, m, ['class_name']));
+                    return cl === filterCls;
+                });
+            select.innerHTML = filtered.length
+                ? filtered.map(({ r, i }) => {
                     const nm = getMappedField(r, m, ['name_bn', 'name_en']) || Object.values(r).find((v) => v && !String(v).startsWith('row_')) || `সারি ${i + 1}`;
                     const rl = getMappedField(r, m, ['roll', 'id']);
-                    return `<option value="${i}">${rl ? 'রোল ' + bnNum(rl) + ' - ' : ''}${esc(nm)}</option>`;
+                    const cl = getMappedField(r, m, ['class_name']);
+                    return `<option value="${i}" data-roll="${esc(rl)}">${rl ? 'রোল ' + bnNum(rl) + ' - ' : ''}${esc(nm)}${cl ? ' (' + esc(cl) + ')' : ''}</option>`;
                 }).join('')
                 : '<option value="">-- কোনো তথ্য নেই --</option>';
         }
@@ -2112,27 +2228,38 @@
             const computed = recomputeExamClient(exam);
             const ev = computed.evaluatedRows[idx];
             if (!ev) return;
-            document.getElementById('fName').value = ev.name || '';
+            const stuRow = findMatchedStudentRow(exam.className || '', ev.roll);
+            const sm = state.students?.mapping || {};
+            document.getElementById('fName').value = ev.name || (stuRow ? getMappedField(stuRow, sm, ['name_bn', 'name_en']) : '') || '';
             document.getElementById('fRoll').value = ev.roll || '';
-            document.getElementById('fFather').value = ev.father || '';
-            document.getElementById('fMother').value = '';
-            document.getElementById('fClass').value = exam.className || '';
+            document.getElementById('fFather').value = ev.father || (stuRow ? getMappedField(stuRow, sm, ['father_bn']) : '') || '';
+            document.getElementById('fMother').value = stuRow ? getMappedField(stuRow, sm, ['mother_bn']) : '';
+            document.getElementById('fClass').value = exam.className || (stuRow ? getMappedField(stuRow, sm, ['class_name']) : '') || '';
             document.getElementById('fSession').value = exam.year || '২০২৬';
+            if (stuRow) {
+                document.getElementById('fDob').value = getMappedField(stuRow, sm, ['dob']);
+                document.getElementById('fReg').value = getMappedField(stuRow, sm, ['reg_no', 'id']);
+                document.getElementById('fAddress').value = getMappedField(stuRow, sm, ['address']);
+            }
             document.getElementById('fGpa').value = ev.gpa ? ev.gpa.toFixed(2) : ev.statusBn;
         } else {
             const sheet = state[source];
             const row = sheet.rows[idx];
             if (!row) return;
             const m = sheet.mapping || {};
+            const clsVal = getMappedField(row, m, ['class_name']);
+            const rollVal = getMappedField(row, m, ['roll', 'id']);
+            const matchedRes = findMatchedExamResult(clsVal, rollVal);
+
             document.getElementById('fName').value = getMappedField(row, m, ['name_bn', 'name_en']);
-            document.getElementById('fRoll').value = getMappedField(row, m, ['roll', 'id']);
-            document.getElementById('fFather').value = getMappedField(row, m, ['father_bn']);
+            document.getElementById('fRoll').value = rollVal;
+            document.getElementById('fFather').value = getMappedField(row, m, ['father_bn']) || (matchedRes?.ev?.father || '');
             document.getElementById('fMother').value = getMappedField(row, m, ['mother_bn']);
-            document.getElementById('fClass').value = getMappedField(row, m, ['class_name']);
+            document.getElementById('fClass').value = clsVal;
             document.getElementById('fSession').value = getMappedField(row, m, ['session']) || '২০২৫-২০২৬';
             document.getElementById('fDob').value = getMappedField(row, m, ['dob']);
             document.getElementById('fReg').value = getMappedField(row, m, ['reg_no', 'id']);
-            document.getElementById('fGpa').value = getMappedField(row, m, ['gpa']);
+            document.getElementById('fGpa').value = getMappedField(row, m, ['gpa']) || (matchedRes?.ev ? matchedRes.ev.gpa.toFixed(2) : '');
             document.getElementById('fAddress').value = getMappedField(row, m, ['address']);
             const rem = getMappedField(row, m, ['remark']);
             if (rem) document.getElementById('fRemark').value = rem;
@@ -2283,10 +2410,19 @@
 
             const idx = parseInt(document.getElementById('docRecordSelect').value, 10);
             const source = document.getElementById('docSourceSelect').value;
+            let activeExamForSheet = exam;
             let ev = (source === 'results' && !Number.isNaN(idx)) ? computed.evaluatedRows[idx] : null;
 
             if (!ev) {
-                // Build sample single marksheet using exam subjects if user came from students/documents sheet
+                const cross = findMatchedExamResult(fClass, fRoll);
+                if (cross) {
+                    activeExamForSheet = cross.exam;
+                    ev = cross.ev;
+                }
+            }
+
+            if (!ev) {
+                // Build sample single marksheet using exam subjects if student has no exam marks yet
                 const subCols = (exam.columns || []).filter((c) => c.isSubject);
                 ev = {
                     name: fName,
@@ -2309,7 +2445,115 @@
                     })),
                 };
             }
-            container.innerHTML = buildMarksheetPageHtml(ev, exam, style, fName, fRoll, fFather, fClass);
+            container.innerHTML = buildMarksheetPageHtml(ev, activeExamForSheet, style, fName, fRoll, fFather, fClass);
+            return;
+        }
+
+        if (docType === 'admit' || docType === 'idcard') {
+            const source = document.getElementById('docSourceSelect').value;
+            const filterCls = normalizeClassClient(document.getElementById('docClassFilter')?.value || '');
+            let records = [];
+            if (batchMode) {
+                if (source === 'results') {
+                    const exam = getActiveExam();
+                    records = recomputeExamClient(exam).evaluatedRows.map((r) => ({
+                        name: r.name, roll: r.roll, father: r.father, mother: '', cls: exam.className, session: exam.year || '২০২৬', reg: r.studentId || '', dob: '', address: fAddress
+                    }));
+                } else {
+                    const sheet = state[source] || { rows: [], mapping: {} };
+                    const m = sheet.mapping || {};
+                    records = sheet.rows
+                        .map((row) => ({
+                            name: getMappedField(row, m, ['name_bn', 'name_en']),
+                            roll: getMappedField(row, m, ['roll', 'id']),
+                            father: getMappedField(row, m, ['father_bn']),
+                            mother: getMappedField(row, m, ['mother_bn']),
+                            cls: getMappedField(row, m, ['class_name']),
+                            session: getMappedField(row, m, ['session']) || fSession,
+                            reg: getMappedField(row, m, ['reg_no', 'id']),
+                            dob: getMappedField(row, m, ['dob']),
+                            address: getMappedField(row, m, ['address']) || fAddress,
+                        }))
+                        .filter((r) => !filterCls || normalizeClassClient(r.cls) === filterCls);
+                }
+                if (!records.length) {
+                    container.innerHTML = `<div class="a4-page" style="padding:20mm;"><p>ব্যাচ প্রিন্টের জন্য কোনো শিক্ষার্থী পাওয়া যায়নি।</p></div>`;
+                    return;
+                }
+            } else {
+                records = [{ name: fName, roll: fRoll, father: fFather, mother: fMother, cls: fClass, session: fSession, reg: fReg, dob: fDob, address: fAddress }];
+            }
+
+            if (docType === 'admit') {
+                const buildAdmitCard = (st) => `
+                    <div style="border:2px solid #166534; padding:16px 18px; border-radius:6px; margin-bottom:14mm; background:#fff;">
+                        <div class="a4-inst-header" style="margin-bottom:10px; padding-bottom:8px;">
+                            <img src="/logo.png" alt="Logo" style="width:54px; height:54px;">
+                            <div class="a4-inst-title">
+                                <h2 style="font-size:1.18em;">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h2>
+                                <p>নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা · EIIN: ১১৮৭৭৮</p>
+                                <p style="color:#14532d; font-weight:700; text-decoration:underline;">প্রবেশপত্র (ADMIT CARD)</p>
+                            </div>
+                            <div style="width:54px;"></div>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px 14px; font-size:0.95em;">
+                            <div><strong>শিক্ষার্থীর নাম:</strong> ${esc(st.name || '—')}</div>
+                            <div><strong>রোল নম্বর:</strong> ${bnNum(st.roll || '—')}</div>
+                            <div><strong>পিতার নাম:</strong> ${esc(st.father || '—')}</div>
+                            <div><strong>মাতার নাম:</strong> ${esc(st.mother || '—')}</div>
+                            <div><strong>শ্রেণি:</strong> ${esc(st.cls || '—')}</div>
+                            <div><strong>আইডি / রেজিঃ:</strong> ${esc(st.reg || '—')}</div>
+                        </div>
+                        <div class="a4-sign-row" style="margin-top:34px;">
+                            <div class="a4-sign-box"><div class="a4-sign-line">শিক্ষার্থীর স্বাক্ষর</div></div>
+                            <div class="a4-sign-box"><div class="a4-sign-line">পরীক্ষা নিয়ন্ত্রক</div></div>
+                            <div class="a4-sign-box"><div class="a4-sign-line">${esc(fPrincipal.split(',')[0] || 'অধ্যক্ষের স্বাক্ষর')}</div></div>
+                        </div>
+                    </div>
+                `;
+                const pages = [];
+                for (let i = 0; i < records.length; i += 2) {
+                    const pair = records.slice(i, i + 2).map(buildAdmitCard).join('');
+                    pages.push(`<div class="a4-page" style="padding:${style.mTop}mm ${style.mRight}mm ${style.mBottom}mm ${style.mLeft}mm; font-size:${style.fontSize}px;">${pair}</div>`);
+                }
+                container.innerHTML = pages.join('');
+                return;
+            }
+
+            // docType === 'idcard'
+            const buildStudioIdCard = (st) => `
+                <div style="width:74mm; min-height:110mm; border:2px solid #14532d; border-radius:8px; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; background:#fff; break-inside:avoid;">
+                    <div>
+                        <div style="background:#14532d; color:#fff; padding:8px; text-align:center; border-bottom:3px solid #f59e0b;">
+                            <div style="display:flex; align-items:center; justify-content:center; gap:6px;">
+                                <img src="/logo.png" style="width:28px; height:28px; border-radius:50%; background:#fff; padding:2px;" alt="Logo">
+                                <strong style="font-size:11.5px; line-height:1.2;">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</strong>
+                            </div>
+                            <div style="font-size:9.5px; color:#fef3c7; margin-top:2px;">শিক্ষার্থী পরিচয়পত্র · EIIN: ১১৮৭৭৮</div>
+                        </div>
+                        <div style="padding:10px; font-size:11.8px; line-height:1.55;">
+                            <div style="text-align:center; font-size:14.5px; font-weight:700; color:#14532d; margin-bottom:6px;">${esc(st.name || '—')}</div>
+                            <div><strong>শ্রেণি:</strong> ${esc(st.cls || '—')}</div>
+                            <div><strong>রোল নম্বর:</strong> ${bnNum(st.roll || '—')}</div>
+                            <div><strong>আইডি / রেজিঃ:</strong> ${esc(st.reg || '—')}</div>
+                            <div><strong>পিতার নাম:</strong> ${esc(st.father || '—')}</div>
+                            <div><strong>মাতার নাম:</strong> ${esc(st.mother || '—')}</div>
+                            <div><strong>জন্ম তারিখ:</strong> ${esc(st.dob || '—')}</div>
+                            <div><strong>ঠিকানা:</strong> ${esc(st.address || 'নলতা, সাতক্ষীরা')}</div>
+                        </div>
+                    </div>
+                    <div style="background:#f0fdf4; border-top:1px solid #bbf7d0; padding:6px 10px; display:flex; justify-content:space-between; font-size:10.5px;">
+                        <span>শিক্ষাবর্ষ: <strong>${esc(st.session || fSession)}</strong></span>
+                        <span style="border-top:1px solid #14532d; padding-top:2px; font-weight:700;">অধ্যক্ষের স্বাক্ষর</span>
+                    </div>
+                </div>
+            `;
+            const idPages = [];
+            for (let i = 0; i < records.length; i += 4) {
+                const chunk = records.slice(i, i + 4).map(buildStudioIdCard).join('');
+                idPages.push(`<div class="a4-page" style="padding:${style.mTop}mm ${style.mRight}mm ${style.mBottom}mm ${style.mLeft}mm; font-size:${style.fontSize}px;"><div style="display:grid; grid-template-columns:1fr 1fr; gap:10mm; justify-items:center;">${chunk}</div></div>`);
+            }
+            container.innerHTML = idPages.join('');
             return;
         }
 

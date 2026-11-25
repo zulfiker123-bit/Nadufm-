@@ -1,134 +1,385 @@
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= pageTitle %></title>
-    <link rel="icon" href="/pwa-192x192.png" type="image/png" sizes="192x192">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-    <link rel="manifest" href="/manifest.webmanifest">
-    <meta name="theme-color" content="#15803d">
-    <link rel="stylesheet" href="/fonts.css">
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background-color: #f4f7f5; font-family: 'Kalpurush', sans-serif; color: #0f172a; padding: 20px; }
-        .search-card {
-            background: #ffffff;
-            max-width: 620px;
-            margin: 16px auto;
-            padding: 26px;
-            border-radius: 16px;
-            border: 1px solid rgba(15, 23, 42, 0.09);
-            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
-            text-align: center;
-        }
-        .search-card h2 { color: #14532d; font-size: 1.3rem; margin-bottom: 14px; }
-        .search-row { display: flex; gap: 10px; }
-        .search-input {
-            flex: 1;
-            height: 44px;
-            padding: 0 14px;
-            border: 1px solid rgba(15, 23, 42, 0.14);
-            border-radius: 10px;
-            background: #f8faf9;
-            font-family: inherit;
-            font-size: 0.96rem;
-            outline: none;
-        }
-        .search-input:focus { border-color: #15803d; background: #ffffff; }
-        .search-btn {
-            min-height: 44px;
-            padding: 0 22px;
-            border: none;
-            border-radius: 10px;
-            background: #15803d;
-            color: #ffffff;
-            font-family: inherit;
-            font-weight: 700;
-            font-size: 0.95rem;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        .search-btn:hover { background: #14532d; }
-        #loading { display: none; margin-top: 14px; color: #15803d; font-weight: 600; }
-        #searchMsg { display: none; margin-top: 12px; color: #b91c1c; font-weight: 600; }
+<%- include('partials/header') %>
 
-        #multiple-results {
-            display: none;
-            max-width: 880px;
-            margin: 16px auto;
-            background: #ffffff;
-            padding: 22px;
-            border-radius: 16px;
-            border: 1px solid rgba(15, 23, 42, 0.09);
-        }
-        .res-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.92rem; }
-        .res-table th, .res-table td { padding: 10px 12px; border-bottom: 1px solid rgba(15, 23, 42, 0.08); text-align: left; }
-        .res-table th { background: #f8faf9; color: #14532d; }
-        .view-btn { background: #15803d; color: #ffffff; border: none; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 600; }
+<style>
+    .stu-hub-shell {
+        max-width: 960px;
+        margin: 22px auto 36px auto;
+        padding: 0 16px;
+    }
 
-        #print-preview-section { display: none; padding: 16px 0; }
-        .print-toolbar { display: flex; justify-content: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-        .print-scroll { overflow-x: auto; }
-        .print-container {
-            background: #ffffff;
-            width: 210mm;
-            min-height: 297mm;
-            margin: 0 auto;
-            padding: 12mm 16mm;
-            position: relative;
-            border: 2px solid #166534;
-            font-family: 'Nikosh', 'Kalpurush', sans-serif;
-        }
+    .search-card {
+        background: #ffffff;
+        max-width: 620px;
+        margin: 0 auto 20px auto;
+        border-radius: 18px;
+        border: 1px solid rgba(15, 23, 42, 0.09);
+        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.07);
+        overflow: hidden;
+    }
 
-        .print-container * {
-            font-family: 'Nikosh', 'Kalpurush', sans-serif;
-        }
-        .header-wrapper { display: flex; align-items: center; border-bottom: 2px solid #166534; padding-bottom: 10px; margin-bottom: 15px; position: relative; }
-        .logo-top { width: 70px; margin-right: 15px; }
-        .header-text h1 { color: #166534; margin: 0; font-size: 20px; font-weight: 800; }
-        .header-text p { margin: 2px 0; font-size: 12px; color: #334155; font-weight: 600; }
-        .photo-box { width: 100px; height: 120px; border: 1px solid #000; position: absolute; top: 0; right: 0; display: flex; align-items: center; justify-content: center; background: #fff; overflow: hidden; }
-        .photo-box img { width: 100%; height: 100%; object-fit: cover; }
-        .form-title { text-align: center; margin: 10px 0; font-weight: 700; font-size: 15px; color: #166534; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; }
-        .section-title { background: #f0f7f2; padding: 4px 10px; font-weight: 700; margin-top: 10px; margin-bottom: 6px; font-size: 13px; color: #14532d; border: 1px solid #d1e7d9; }
-        .field { display: flex; align-items: flex-end; margin-bottom: 7px; }
-        .label { font-weight: 600; font-size: 12.5px; color: #222; white-space: nowrap; }
-        .dotted-line { border-bottom: 1px dotted #555; flex-grow: 1; margin-left: 6px; height: 18px; color: #000; font-weight: 700; padding-left: 5px; font-size: 13px; }
-        .row { display: flex; gap: 15px; }
-        .col { flex: 1; }
-        .signature-area { margin-top: 40px; display: flex; justify-content: space-between; }
-        .sig-box { border-top: 1.5px solid #333; width: 160px; text-align: center; font-size: 12px; padding-top: 4px; font-weight: 600; }
+    .search-card-head {
+        background: linear-gradient(135deg, #14532d 0%, #15803d 100%);
+        color: #ffffff;
+        padding: 22px 20px;
+        text-align: center;
+    }
 
-        @media (max-width: 600px) { .search-row { flex-direction: column; } }
-        @media print {
-            @page { size: A4; margin: 0; }
-            .no-print { display: none !important; }
-            body { background: #ffffff; padding: 0; }
-            #print-preview-section { padding: 0; }
-        }
-    </style>
-</head>
-<body>
-    <section class="search-card no-print">
-        <h2>শিক্ষার্থী তথ্য অনুসন্ধান</h2>
-        <div class="search-row">
-            <input type="text" id="searchQuery" class="search-input" placeholder="আইডি / নাম / মোবাইল / জন্ম নিবন্ধন">
-            <button type="button" onclick="searchStudent()" id="srchBtn" class="search-btn">অনুসন্ধান করুন</button>
+    .search-card-head h1 { font-size: 1.3rem; font-weight: 700; margin: 0; }
+    .search-card-head p { font-size: 0.9rem; opacity: 0.92; margin-top: 4px; }
+
+    .search-card-body { padding: 22px 24px 24px 24px; }
+
+    .stu-field { margin-bottom: 15px; }
+    .stu-field label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-weight: 700;
+        font-size: 0.94rem;
+        margin-bottom: 6px;
+        color: #0f172a;
+    }
+
+    .search-input,
+    .search-select {
+        width: 100%;
+        height: 44px;
+        padding: 0 14px;
+        border: 1px solid rgba(15, 23, 42, 0.14);
+        border-radius: 10px;
+        background: #f8faf9;
+        color: #0f172a;
+        font-family: inherit;
+        font-size: 0.95rem;
+        outline: none;
+    }
+    .search-input:focus,
+    .search-select:focus { border-color: #15803d; background: #ffffff; }
+
+    .roll-auto-panel {
+        margin-top: 10px;
+        background: #f8faf9;
+        border: 1px solid rgba(21, 128, 61, 0.22);
+        border-radius: 12px;
+        padding: 10px 12px;
+    }
+
+    .roll-auto-title {
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: #14532d;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .roll-auto-select {
+        height: 40px !important;
+        background: #ffffff !important;
+        margin-bottom: 8px;
+        font-size: 0.9rem !important;
+    }
+
+    .roll-chips-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        max-height: 150px;
+        overflow-y: auto;
+    }
+
+    .roll-chip-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(21, 128, 61, 0.28);
+        background: #ffffff;
+        color: #0f172a;
+        font-family: inherit;
+        font-size: 0.84rem;
+        cursor: pointer;
+    }
+    .roll-chip-btn:hover,
+    .roll-chip-btn.active { background: #15803d; color: #ffffff; border-color: #15803d; }
+
+    .roll-empty-note { font-size: 0.83rem; color: #64748b; }
+
+    .id-count-pill {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #15803d;
+        background: #dcfce7;
+        padding: 2px 8px;
+        border-radius: 999px;
+    }
+
+    .search-or-divider {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #64748b;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin: 14px 0;
+    }
+    .search-or-divider::before,
+    .search-or-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: rgba(15, 23, 42, 0.1);
+    }
+
+    .search-btn {
+        width: 100%;
+        min-height: 46px;
+        padding: 0 22px;
+        border: none;
+        border-radius: 10px;
+        background: #15803d;
+        color: #ffffff;
+        font-family: inherit;
+        font-weight: 700;
+        font-size: 0.98rem;
+        cursor: pointer;
+    }
+    .search-btn:hover { background: #14532d; }
+
+    #loading { display: none; margin-top: 12px; color: #15803d; font-weight: 600; text-align: center; }
+    #searchMsg { display: none; margin-top: 12px; color: #b91c1c; font-weight: 600; text-align: center; }
+
+    #multiple-results {
+        display: none;
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 16px;
+        border: 1px solid rgba(15, 23, 42, 0.09);
+        margin-bottom: 20px;
+    }
+    .res-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.92rem; }
+    .res-table th, .res-table td { padding: 10px 12px; border-bottom: 1px solid rgba(15, 23, 42, 0.08); text-align: left; }
+    .res-table th { background: #f8faf9; color: #14532d; }
+    .view-btn { background: #15803d; color: #ffffff; border: none; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 600; }
+
+    #print-preview-section { display: none; }
+
+    .hub-controls-card {
+        background: #ffffff;
+        border: 1px solid rgba(15, 23, 42, 0.09);
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    .doc-tabs-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        margin-bottom: 12px;
+    }
+
+    .doc-tab-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        min-height: 39px;
+        padding: 0 14px;
+        border-radius: 10px;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        background: #f8faf9;
+        color: #0f172a;
+        font-family: inherit;
+        font-size: 0.9rem;
+        font-weight: 700;
+        cursor: pointer;
+    }
+    .doc-tab-btn.active {
+        background: #14532d;
+        color: #ffffff;
+        border-color: #14532d;
+    }
+
+    .print-toolbar {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .tool-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        min-height: 40px;
+        padding: 0 16px;
+        border-radius: 10px;
+        border: none;
+        font-family: inherit;
+        font-size: 0.9rem;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+    }
+    .tool-green { background: #15803d; color: #ffffff; }
+    .tool-rose { background: #be123c; color: #ffffff; }
+    .tool-blue { background: #1d4ed8; color: #ffffff; }
+    .tool-slate { background: #f1f5f9; color: #0f172a; border: 1px solid rgba(15, 23, 42, 0.12); }
+
+    .cert-extra-bar {
+        display: none;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px dashed rgba(15, 23, 42, 0.12);
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 10px;
+    }
+    .cert-extra-bar.visible { display: grid; }
+    .cert-extra-bar input {
+        width: 100%;
+        height: 36px;
+        padding: 0 10px;
+        border: 1px solid rgba(15, 23, 42, 0.14);
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 0.88rem;
+    }
+    .cert-extra-bar label { display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 3px; }
+
+    .print-scroll { overflow-x: auto; padding-bottom: 8px; }
+
+    .a4-doc-sheet {
+        background: #ffffff;
+        width: 210mm;
+        min-height: 297mm;
+        margin: 0 auto;
+        padding: 14mm 15mm;
+        position: relative;
+        border: 1px solid rgba(15, 23, 42, 0.16);
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+        font-family: 'Nikosh', 'Kalpurush', sans-serif;
+        color: #0f172a;
+    }
+    .a4-doc-sheet * {
+        font-family: 'Nikosh', 'Kalpurush', sans-serif;
+    }
+
+    /* Profile Card Styles */
+    .profile-frame { border: 2px solid #166534; padding: 16px; min-height: 266mm; display: flex; flex-direction: column; justify-content: space-between; }
+    .header-wrapper { display: flex; align-items: center; border-bottom: 2px solid #166534; padding-bottom: 10px; margin-bottom: 14px; position: relative; min-height: 92px; }
+    .logo-top { width: 68px; margin-right: 15px; }
+    .header-text { padding-right: 105px; }
+    .header-text h2 { color: #166534; margin: 0; font-size: 19px; font-weight: 800; }
+    .header-text p { margin: 2px 0; font-size: 12px; color: #334155; font-weight: 600; }
+    .photo-box { width: 92px; height: 108px; border: 1px solid #0f172a; position: absolute; top: 0; right: 0; display: flex; align-items: center; justify-content: center; background: #fff; overflow: hidden; }
+    .photo-box img { width: 100%; height: 100%; object-fit: cover; }
+    .form-title { text-align: center; margin: 8px 0 12px 0; font-weight: 700; font-size: 15.5px; color: #166534; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; }
+    .section-title { background: #f0f7f2; padding: 4px 10px; font-weight: 700; margin-top: 10px; margin-bottom: 6px; font-size: 13px; color: #14532d; border: 1px solid #d1e7d9; }
+    .doc-field { display: flex; align-items: flex-end; margin-bottom: 7px; }
+    .doc-label { font-weight: 600; font-size: 13px; color: #1e293b; white-space: nowrap; }
+    .dotted-line { border-bottom: 1px dotted #555; flex-grow: 1; margin-left: 6px; min-height: 18px; color: #000; font-weight: 700; padding-left: 5px; font-size: 13.5px; }
+    .doc-row { display: flex; gap: 15px; }
+    .doc-col { flex: 1; }
+    .signature-area { margin-top: 44px; display: flex; justify-content: space-between; }
+    .sig-box { border-top: 1.5px solid #333; width: 155px; text-align: center; font-size: 12.5px; padding-top: 4px; font-weight: 700; }
+
+    /* Certificate / Attestation / Testimonial Frame */
+    .cert-frame { border: 3px double #14532d; padding: 20px 24px; min-height: 266mm; display: flex; flex-direction: column; justify-content: space-between; }
+    .cert-inst-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #166534; padding-bottom: 12px; margin-bottom: 16px; text-align: center; }
+    .cert-doc-badge { text-align: center; font-size: 19px; font-weight: 700; color: #14532d; text-decoration: underline; margin: 16px 0 22px 0; }
+    .cert-memo-row { display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; margin-bottom: 10px; }
+    .cert-body-text { font-size: 16px; line-height: 2; text-align: justify; }
+
+    /* Marksheet Table */
+    .ms-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13.5px; }
+    .ms-table th, .ms-table td { border: 1px solid #166534; padding: 7px 6px; text-align: center; }
+    .ms-table th { background: #166534; color: #ffffff; }
+    .ms-summary { margin-top: 16px; border: 1.5px solid #166534; display: grid; grid-template-columns: repeat(4, 1fr); font-weight: 700; }
+    .ms-summary div { padding: 8px 6px; border-right: 1px solid #166534; text-align: center; }
+    .ms-summary div:last-child { border-right: none; }
+
+    /* ID card pair inside A4 sheet */
+    .id-pair { display: flex; justify-content: center; gap: 22px; flex-wrap: wrap; margin-top: 18px; }
+    .id-card-box { width: 72mm; min-height: 112mm; border: 2px solid #14532d; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; background: #fff; }
+    .id-card-top { background: #14532d; color: #fff; padding: 10px 8px 12px 8px; text-align: center; border-bottom: 3px solid #f59e0b; }
+
+    @media print {
+        @page { size: A4; margin: 0; }
+        .no-print, .app-footer, .app-topbar, .mobile-bottom-nav { display: none !important; }
+        body { background: #ffffff !important; padding: 0 !important; margin: 0 !important; }
+        .stu-hub-shell { margin: 0 !important; max-width: 100% !important; padding: 0 !important; }
+        #print-preview-section { display: block !important; }
+        .a4-doc-sheet { border: none !important; box-shadow: none !important; }
+    }
+</style>
+
+<div class="stu-hub-shell">
+    <section class="search-card no-print" id="searchCardSection">
+        <div class="search-card-head">
+            <h1>শিক্ষার্থী তথ্য ও সকল ডকুমেন্ট পোর্টাল</h1>
+            <p>শ্রেণি বাছাই করলে অটো রোল তালিকা প্রদর্শিত হবে · সরাসরি রোল বা নাম/আইডি দিয়েও খুঁজতে পারবেন</p>
         </div>
-        <div id="loading">তথ্য খোঁজা হচ্ছে...</div>
-        <div id="searchMsg"></div>
+        <div class="search-card-body">
+            <div class="stu-field">
+                <label for="searchClass">শ্রেণি নির্বাচন করুন (Class)</label>
+                <select id="searchClass" class="search-select">
+                    <option value="">-- সকল শ্রেণি / শ্রেণি বাছাই করুন --</option>
+                    <% if (typeof classMap !== 'undefined') { %>
+                        <% Object.entries(classMap).forEach(function([k, v]) { %>
+                            <option value="<%= k %>"><%= v.name %> শ্রেণি</option>
+                        <% }); %>
+                    <% } %>
+                </select>
+            </div>
+
+            <div class="stu-field">
+                <label for="searchRoll">
+                    <span>রোল নম্বর</span>
+                    <span id="searchRollCountBadge" class="id-count-pill"></span>
+                </label>
+                <input type="text" id="searchRoll" list="searchRollDatalist" class="search-input" placeholder="রোল লিখুন বা শ্রেণি বাছাই করে অটো তালিকা থেকে বেছে নিন">
+                <datalist id="searchRollDatalist"></datalist>
+
+                <div id="searchRollAutoWrap" class="roll-auto-panel" style="display:none;">
+                    <div class="roll-auto-title">
+                        <span><i class="fas fa-list-ol"></i> এই শ্রেণির অটো রোল তালিকা</span>
+                        <span style="font-size:0.78rem; color:#475569;">ক্লিক করলে তথ্য ও ডকুমেন্টস খুলবে</span>
+                    </div>
+                    <select id="searchRollAutoSelect" class="search-select roll-auto-select"></select>
+                    <div id="searchRollChips" class="roll-chips-list"></div>
+                </div>
+            </div>
+
+            <div class="search-or-divider">অথবা নাম / আইডি / মোবাইল নম্বর দিয়ে খুঁজুন</div>
+
+            <div class="stu-field">
+                <input type="text" id="searchQuery" class="search-input" placeholder="আইডি / শিক্ষার্থীর নাম / মোবাইল / জন্ম নিবন্ধন">
+            </div>
+
+            <button type="button" onclick="searchStudent()" id="srchBtn" class="search-btn">
+                <i class="fas fa-search"></i> শিক্ষার্থী ও ডকুমেন্টস খুঁজুন
+            </button>
+            <div id="loading">তথ্য খোঁজা হচ্ছে...</div>
+            <div id="searchMsg"></div>
+        </div>
     </section>
 
     <section id="multiple-results" class="no-print">
-        <h3 style="font-size:1.05rem; color:#14532d;">একাধিক শিক্ষার্থী পাওয়া গেছে</h3>
+        <h3 style="font-size:1.05rem; color:#14532d;">একাধিক শিক্ষার্থী পাওয়া গেছে (<span id="multiCount"></span> জন)</h3>
         <div style="overflow-x:auto;">
             <table class="res-table">
                 <thead>
                     <tr>
-                        <th>নাম (English)</th>
-                        <th>আইডি</th>
+                        <th>রোল</th>
+                        <th>শিক্ষার্থীর নাম</th>
+                        <th>শ্রেণি</th>
                         <th>পিতার নাম</th>
+                        <th>আইডি</th>
                         <th>অ্যাকশন</th>
                     </tr>
                 </thead>
@@ -138,172 +389,613 @@
     </section>
 
     <section id="print-preview-section">
-        <div class="print-toolbar no-print">
-            <button type="button" onclick="window.print()" class="search-btn">তথ্য কার্ড প্রিন্ট করুন</button>
-            <button type="button" onclick="location.reload()" class="search-btn" style="background:#475569;">নতুন অনুসন্ধান</button>
+        <div class="hub-controls-card no-print">
+            <div class="doc-tabs-bar" role="tablist">
+                <button type="button" class="doc-tab-btn active" data-doc="profile" onclick="switchDocTab('profile')">
+                    <i class="fas fa-user-graduate"></i> <span>তথ্য কার্ড</span>
+                </button>
+                <button type="button" class="doc-tab-btn" data-doc="idcard" onclick="switchDocTab('idcard')">
+                    <i class="fas fa-id-badge"></i> <span>আইডি কার্ড</span>
+                </button>
+                <button type="button" class="doc-tab-btn" data-doc="admit" onclick="switchDocTab('admit')">
+                    <i class="fas fa-id-card"></i> <span>এডমিট কার্ড</span>
+                </button>
+                <button type="button" class="doc-tab-btn" data-doc="marksheet" onclick="switchDocTab('marksheet')">
+                    <i class="fas fa-poll"></i> <span>মার্কশিট</span>
+                </button>
+                <button type="button" class="doc-tab-btn" data-doc="attestation" onclick="switchDocTab('attestation')">
+                    <i class="fas fa-certificate"></i> <span>প্রত্যায়ন পত্র</span>
+                </button>
+                <button type="button" class="doc-tab-btn" data-doc="testimonial" onclick="switchDocTab('testimonial')">
+                    <i class="fas fa-award"></i> <span>প্রশংসা পত্র</span>
+                </button>
+            </div>
+
+            <div class="print-toolbar">
+                <button type="button" onclick="window.print()" class="tool-btn tool-green">
+                    <i class="fas fa-print"></i> <span>প্রিন্ট করুন (A4)</span>
+                </button>
+                <button type="button" onclick="downloadCurrentDocPdf()" class="tool-btn tool-rose">
+                    <i class="fas fa-file-pdf"></i> <span>PDF ডাউনলোড</span>
+                </button>
+                <button type="button" onclick="downloadCurrentDocWord()" class="tool-btn tool-blue">
+                    <i class="fas fa-file-word"></i> <span>Word (.doc)</span>
+                </button>
+                <button type="button" onclick="resetStudentSearch()" class="tool-btn tool-slate">
+                    <i class="fas fa-redo"></i> <span>নতুন অনুসন্ধান</span>
+                </button>
+            </div>
+
+            <div class="cert-extra-bar" id="certExtraBar">
+                <div>
+                    <label>স্মারক নং</label>
+                    <input type="text" id="certMemoInput" value="নালতা/ফা.মা./২০২৬/০১" oninput="renderActiveDoc()">
+                </div>
+                <div>
+                    <label>তারিখ</label>
+                    <input type="text" id="certDateInput" oninput="renderActiveDoc()">
+                </div>
+                <div>
+                    <label>শিক্ষাবর্ষ</label>
+                    <input type="text" id="certSessionInput" value="২০২৫-২০২৬" oninput="renderActiveDoc()">
+                </div>
+                <div>
+                    <label>জিপিএ / ফলাফল</label>
+                    <input type="text" id="certGpaInput" placeholder="যেমন: ৫.০০" oninput="renderActiveDoc()">
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <label>মন্তব্য / চরিত্র সনদ বাক্য</label>
+                    <input type="text" id="certRemarkInput" value="আমার জানামতে সে একজন উত্তম চরিত্রের অধিকারী এবং মাদ্রাসার নিয়ম-শৃঙ্খলা মেনে চলে।" oninput="renderActiveDoc()">
+                </div>
+            </div>
+
+            <div id="stuExportStatus" style="display:none; margin-top:10px; padding:9px 13px; border-radius:9px; font-size:0.86rem; font-weight:600; text-align:center;"></div>
         </div>
 
         <div class="print-scroll">
-            <div class="print-container">
-                <div class="header-wrapper">
-                    <img src="/logo.png" class="logo-top" alt="Logo">
-                    <div class="header-text">
-                        <h1>নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা</h1>
-                        <p>ডাকঘর: নলতা মোবারকনগর, উপজেলা: কালিগঞ্জ, জেলা: সাতক্ষীরা</p>
-                        <p>স্থাপিত: ১৯৮০ খ্রি. · EIIN: ১১৮৭৭৮</p>
-                    </div>
-                    <div class="photo-box" id="v-photo">ছবি</div>
-                </div>
-
-                <div class="form-title">শিক্ষার্থী ব্যক্তিগত তথ্য কার্ড</div>
-
-                <div class="section-title">১. শিক্ষার্থীর তথ্য</div>
-                <div class="row">
-                    <div class="col field"><span class="label">আইডি নম্বর:</span><span class="dotted-line" id="v-id"></span></div>
-                    <div class="col field"><span class="label">লিঙ্গ:</span><span class="dotted-line" id="v-gender"></span></div>
-                </div>
-                <div class="field"><span class="label">শিক্ষার্থীর নাম (বাংলা):</span><span class="dotted-line" id="v-name-bn"></span></div>
-                <div class="field"><span class="label">Student Name (EN):</span><span class="dotted-line" id="v-name-en"></span></div>
-                <div class="row">
-                    <div class="col field"><span class="label">রক্তের গ্রুপ:</span><span class="dotted-line" id="v-blood"></span></div>
-                    <div class="col field"><span class="label">জন্ম তারিখ:</span><span class="dotted-line" id="v-dob"></span></div>
-                </div>
-                <div class="field"><span class="label">জন্ম নিবন্ধন নং:</span><span class="dotted-line" id="v-reg"></span></div>
-
-                <div class="section-title">২. পিতা ও মাতার তথ্য</div>
-                <div class="field"><span class="label">পিতার নাম (বাংলা):</span><span class="dotted-line" id="v-f-bn"></span></div>
-                <div class="field"><span class="label">Father's Name (EN):</span><span class="dotted-line" id="v-f-en"></span></div>
-                <div class="row">
-                    <div class="col field"><span class="label">পিতার এনআইডি নং:</span><span class="dotted-line" id="v-f-nid"></span></div>
-                    <div class="col field"><span class="label">পিতার জন্ম তারিখ:</span><span class="dotted-line" id="v-f-dob"></span></div>
-                </div>
-                <div class="field"><span class="label">মাতার নাম (বাংলা):</span><span class="dotted-line" id="v-m-bn"></span></div>
-                <div class="field"><span class="label">Mother's Name (EN):</span><span class="dotted-line" id="v-m-en"></span></div>
-                <div class="row">
-                    <div class="col field"><span class="label">মাতার এনআইডি নং:</span><span class="dotted-line" id="v-m-nid"></span></div>
-                    <div class="col field"><span class="label">মাতার জন্ম তারিখ:</span><span class="dotted-line" id="v-m-dob"></span></div>
-                </div>
-
-                <div class="section-title">৩. যোগাযোগ ও ঠিকানা</div>
-                <div class="row">
-                    <div class="col field"><span class="label">মোবাইল নম্বর:</span><span class="dotted-line" id="v-mobile"></span></div>
-                    <div class="col field"><span class="label">নগদ নম্বর:</span><span class="dotted-line" id="v-nagad"></span></div>
-                </div>
-                <div class="field"><span class="label">গ্রাম ও ইউনিয়ন:</span><span class="dotted-line" id="v-addr"></span></div>
-                <div class="row">
-                    <div class="col field"><span class="label">উপজেলা:</span><span class="dotted-line" id="v-upz"></span></div>
-                    <div class="col field"><span class="label">জেলা:</span><span class="dotted-line" id="v-dist"></span></div>
-                </div>
-
-                <div class="section-title">৪. পূর্ববর্তী প্রতিষ্ঠানের তথ্য</div>
-                <div class="row">
-                    <div class="col field"><span class="label">প্রতিষ্ঠানের নাম:</span><span class="dotted-line" id="v-prev-sch"></span></div>
-                    <div class="col field"><span class="label">রেজিস্ট্রেশন/রোল:</span><span class="dotted-line" id="v-prev-reg"></span></div>
-                </div>
-
-                <div class="signature-area">
-                    <div class="sig-box">অভিভাবকের স্বাক্ষর</div>
-                    <div class="sig-box">আবেদনকারীর স্বাক্ষর</div>
-                    <div class="sig-box">অধ্যক্ষ/অফিস স্বাক্ষর</div>
-                </div>
-                <p style="text-align:center; font-size:10px; margin-top:15px;">সাবমিট টাইম: <span id="v-time"></span></p>
-            </div>
+            <div class="a4-doc-sheet" id="docCanvas"></div>
         </div>
     </section>
+</div>
 
-    <script>
-        let allData = [];
+<script src="/vendor/html2pdf.bundle.min.js" defer></script>
+<script src="/doc-export.js" defer></script>
+<script src="/student-picker.js"></script>
+<script>
+    const pickerLib = window.NadufmStudentPicker;
+    const esc = pickerLib.escapeHtml;
+    const bnNum = pickerLib.bnNum;
+    const classSelectEl = document.getElementById('searchClass');
+    const rollInputEl = document.getElementById('searchRoll');
+    const queryInputEl = document.getElementById('searchQuery');
+    document.getElementById('certDateInput').value = bnNum(new Date().toISOString().slice(0, 10));
 
-        function searchStudent() {
-            const query = document.getElementById('searchQuery').value.trim();
-            const searchMsg = document.getElementById('searchMsg');
-            searchMsg.style.display = 'none';
-            if (!query) {
-                searchMsg.innerText = "অনুগ্রহ করে অনুসন্ধানের জন্য কিছু লিখুন।";
-                searchMsg.style.display = 'block';
+    let allMatches = [];
+    let currentStudent = null;
+    let activeDocTab = 'profile';
+
+    function normalizeRecord(raw) {
+        return {
+            roll: raw.roll || '',
+            rollBn: raw.rollBn || (raw.roll ? bnNum(raw.roll) : ''),
+            id: raw.id || raw.reg_no || '',
+            reg_no: raw.reg_no || raw.id || raw.birth_reg || '',
+            name_bn: raw.name_bn || raw.name_en || '—',
+            name_en: raw.name_en || '',
+            class_name: raw.class_name || raw.student_class || '',
+            classKey: raw.classKey || '',
+            father_bn: raw.father_bn || raw.f_name_bn || raw.f_name_en || '',
+            father_en: raw.f_name_en || '',
+            mother_bn: raw.mother_bn || raw.m_name_bn || raw.m_name_en || '',
+            mother_en: raw.m_name_en || '',
+            dob: raw.dob || '',
+            gender: raw.gender || '',
+            blood: raw.blood || '',
+            mobile: raw.mobile || '',
+            address: raw.address || ((raw.village || '') + (raw.union ? ', ' + raw.union : '')),
+            upazila: raw.upazila || '',
+            district: raw.district || '',
+            session: raw.session || '২০২৫-২০২৬',
+            gpa: raw.gpa || (raw.resultSummary && raw.resultSummary.gpa ? Number(raw.resultSummary.gpa).toFixed(2) : ''),
+            meritRank: raw.meritRank || (raw.resultSummary ? raw.resultSummary.meritRank : null),
+            remark: raw.remark || '',
+            photo: pickerLib.safePhotoUrl(raw.photo),
+            resultSummary: raw.resultSummary || null,
+            p_school: raw.p_school || '',
+            p_reg: raw.p_reg || '',
+            timestamp: raw.timestamp || '',
+        };
+    }
+
+    async function searchStudent() {
+        const clsVal = classSelectEl.value.trim();
+        const rollVal = rollInputEl.value.trim();
+        const qVal = queryInputEl.value.trim();
+        const searchMsg = document.getElementById('searchMsg');
+        searchMsg.style.display = 'none';
+
+        if (!clsVal && !rollVal && !qVal) {
+            searchMsg.textContent = "অনুগ্রহ করে শ্রেণি/রোল বাছাই করুন অথবা নাম/আইডি লিখুন।";
+            searchMsg.style.display = 'block';
+            return;
+        }
+
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('multiple-results').style.display = 'none';
+        document.getElementById('print-preview-section').style.display = 'none';
+
+        try {
+            const url = '/api/portal/student-record?class=' + encodeURIComponent(clsVal) +
+                '&roll=' + encodeURIComponent(rollVal) +
+                '&q=' + encodeURIComponent(qVal);
+            const res = await fetch(url);
+            if (res.ok) {
+                const localData = await res.json();
+                if (localData.status === 'success' && Array.isArray(localData.matches) && localData.matches.length > 0) {
+                    allMatches = localData.matches.map(normalizeRecord);
+                    if (allMatches.length === 1 || rollVal) {
+                        displayProfile(0);
+                    } else {
+                        showMultipleMatches(allMatches);
+                    }
+                    return;
+                }
+            }
+
+            // Fallback to external Google Apps Script if searching by query text
+            const fallbackQ = qVal || rollVal;
+            if (fallbackQ) {
+                const scriptURL = 'https://script.google.com/macros/s/AKfycbze9QMzRJcCadXzDKcU0W12nigMYg0fOKk_4zY5JFWwo7R10L3PYx0YnjVNZXiWtA_npg/exec';
+                const extRes = await fetch(`${scriptURL}?query=${encodeURIComponent(fallbackQ)}`);
+                const extData = await extRes.json();
+                if (Array.isArray(extData) && extData.length > 0) {
+                    allMatches = extData.map(normalizeRecord);
+                    if (allMatches.length === 1) {
+                        displayProfile(0);
+                    } else {
+                        showMultipleMatches(allMatches);
+                    }
+                    return;
+                }
+            }
+
+            searchMsg.textContent = "দুঃখিত, কোনো শিক্ষার্থীর তথ্য পাওয়া যায়নি।";
+            searchMsg.style.display = 'block';
+        } catch (err) {
+            searchMsg.textContent = "সার্ভারের সাথে সংযোগ করতে সমস্যা হয়েছে।";
+            searchMsg.style.display = 'block';
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+        }
+    }
+
+    function showMultipleMatches(list) {
+        const tbody = document.getElementById('result-list');
+        document.getElementById('multiCount').textContent = bnNum(list.length);
+        tbody.innerHTML = list.map((item, idx) => `
+            <tr>
+                <td><strong>${esc(item.rollBn || '—')}</strong></td>
+                <td>${esc(item.name_bn)}</td>
+                <td>${esc(item.class_name || '—')}</td>
+                <td>${esc(item.father_bn || '—')}</td>
+                <td>${esc(item.id || '—')}</td>
+                <td><button type="button" onclick="displayProfile(${idx})" class="view-btn">দেখুন ও ডকুমেন্ট</button></td>
+            </tr>
+        `).join('');
+        document.getElementById('multiple-results').style.display = 'block';
+    }
+
+    function displayProfile(index) {
+        currentStudent = allMatches[index];
+        if (!currentStudent) return;
+        document.getElementById('certSessionInput').value = currentStudent.session || '২০২৫-২০২৬';
+        document.getElementById('certGpaInput').value = currentStudent.gpa ? bnNum(currentStudent.gpa) : '';
+        if (currentStudent.remark) {
+            document.getElementById('certRemarkInput').value = currentStudent.remark;
+        }
+        document.getElementById('multiple-results').style.display = 'none';
+        document.getElementById('searchCardSection').style.display = 'none';
+        document.getElementById('print-preview-section').style.display = 'block';
+        renderActiveDoc();
+    }
+
+    function resetStudentSearch() {
+        document.getElementById('print-preview-section').style.display = 'none';
+        document.getElementById('searchCardSection').style.display = 'block';
+    }
+
+    function switchDocTab(tab) {
+        activeDocTab = tab;
+        document.querySelectorAll('.doc-tab-btn').forEach((btn) => {
+            btn.classList.toggle('active', btn.dataset.doc === tab);
+        });
+        document.getElementById('certExtraBar').classList.toggle('visible', tab === 'attestation' || tab === 'testimonial');
+        renderActiveDoc();
+    }
+
+    function renderActiveDoc() {
+        if (!currentStudent) return;
+        const st = currentStudent;
+        const canvas = document.getElementById('docCanvas');
+        const memo = document.getElementById('certMemoInput').value || 'নালতা/ফা.মা./২০২৬/০১';
+        const dateStr = document.getElementById('certDateInput').value || bnNum(new Date().toISOString().slice(0, 10));
+        const sessionStr = document.getElementById('certSessionInput').value || st.session || '২০২৫-২০২৬';
+        const gpaStr = document.getElementById('certGpaInput').value || st.gpa || '—';
+        const remarkStr = document.getElementById('certRemarkInput').value || '';
+
+        if (activeDocTab === 'profile') {
+            canvas.innerHTML = `
+                <div class="profile-frame">
+                    <div>
+                        <div class="header-wrapper">
+                            <img src="/logo.png" class="logo-top" alt="Logo">
+                            <div class="header-text">
+                                <h2>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h2>
+                                <p>ডাকঘর: নলতা মোবারকনগর, উপজেলা: কালিগঞ্জ, জেলা: সাতক্ষীরা</p>
+                                <p>স্থাপিত: ১৯৮০ খ্রি. · EIIN: ১১৮৭৭৮</p>
+                            </div>
+                            <div class="photo-box"><img src="${esc(st.photo)}" alt="Photo" onerror="this.src='/logo.png'"></div>
+                        </div>
+
+                        <div class="form-title">শিক্ষার্থী ব্যক্তিগত তথ্য কার্ড</div>
+
+                        <div class="section-title">১. শিক্ষার্থীর মৌলিক তথ্য</div>
+                        <div class="doc-row">
+                            <div class="doc-col doc-field"><span class="doc-label">শ্রেণি:</span><span class="dotted-line">${esc(st.class_name || '---')}</span></div>
+                            <div class="doc-col doc-field"><span class="doc-label">রোল নম্বর:</span><span class="dotted-line">${esc(st.rollBn || '---')}</span></div>
+                            <div class="doc-col doc-field"><span class="doc-label">আইডি নম্বর:</span><span class="dotted-line">${esc(st.id || '---')}</span></div>
+                        </div>
+                        <div class="doc-field"><span class="doc-label">শিক্ষার্থীর নাম (বাংলা):</span><span class="dotted-line">${esc(st.name_bn || '---')}</span></div>
+                        <div class="doc-field"><span class="doc-label">Student Name (EN):</span><span class="dotted-line">${esc(st.name_en || '---')}</span></div>
+                        <div class="doc-row">
+                            <div class="doc-col doc-field"><span class="doc-label">জন্ম তারিখ:</span><span class="dotted-line">${esc(st.dob || '---')}</span></div>
+                            <div class="doc-col doc-field"><span class="doc-label">রক্তের গ্রুপ:</span><span class="dotted-line">${esc(st.blood || '---')}</span></div>
+                            <div class="doc-col doc-field"><span class="doc-label">শিক্ষাবর্ষ:</span><span class="dotted-line">${esc(sessionStr)}</span></div>
+                        </div>
+                        <div class="doc-field"><span class="doc-label">রেজিস্ট্রেশন / জন্ম নিবন্ধন নং:</span><span class="dotted-line">${esc(st.reg_no || '---')}</span></div>
+
+                        <div class="section-title">২. পিতা ও মাতার তথ্য</div>
+                        <div class="doc-field"><span class="doc-label">পিতার নাম (বাংলা):</span><span class="dotted-line">${esc(st.father_bn || '---')}</span></div>
+                        <div class="doc-field"><span class="doc-label">Father's Name (EN):</span><span class="dotted-line">${esc(st.father_en || '---')}</span></div>
+                        <div class="doc-field"><span class="doc-label">মাতার নাম (বাংলা):</span><span class="dotted-line">${esc(st.mother_bn || '---')}</span></div>
+                        <div class="doc-field"><span class="doc-label">Mother's Name (EN):</span><span class="dotted-line">${esc(st.mother_en || '---')}</span></div>
+
+                        <div class="section-title">৩. যোগাযোগ ও ঠিকানা</div>
+                        <div class="doc-row">
+                            <div class="doc-col doc-field"><span class="doc-label">মোবাইল নম্বর:</span><span class="dotted-line">${esc(st.mobile || '---')}</span></div>
+                            <div class="doc-col doc-field"><span class="doc-label">GPA / মেধাক্রম:</span><span class="dotted-line">${esc(gpaStr)}${st.meritRank ? ' (মেধাক্রম: ' + bnNum(st.meritRank) + ')' : ''}</span></div>
+                        </div>
+                        <div class="doc-field"><span class="doc-label">ঠিকানা:</span><span class="dotted-line">${esc(st.address || 'নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা')}</span></div>
+                    </div>
+
+                    <div class="signature-area">
+                        <div class="sig-box">অভিভাবকের স্বাক্ষর</div>
+                        <div class="sig-box">শ্রেণি শিক্ষকের স্বাক্ষর</div>
+                        <div class="sig-box">অধ্যক্ষের স্বাক্ষর</div>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        if (activeDocTab === 'idcard') {
+            canvas.innerHTML = `
+                <div style="border:2px solid #166534; padding:18px; min-height:266mm;">
+                    <div class="cert-inst-header">
+                        <img src="/logo.png" style="width:60px;" alt="Logo">
+                        <div style="flex:1;">
+                            <h2 style="margin:0; color:#14532d; font-size:19px;">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h2>
+                            <p style="margin:2px 0; font-size:12.5px;">শিক্ষার্থী পরিচয়পত্র (STUDENT ID CARD · প্রিন্ট শিট)</p>
+                        </div>
+                        <div style="width:60px;"></div>
+                    </div>
+                    <div class="id-pair">
+                        <div class="id-card-box">
+                            <div>
+                                <div class="id-card-top">
+                                    <div style="display:flex; align-items:center; justify-content:center; gap:6px;">
+                                        <img src="/logo.png" style="width:30px; height:30px; border-radius:50%; background:#fff; padding:2px;" alt="Logo">
+                                        <strong style="font-size:12px; line-height:1.2;">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</strong>
+                                    </div>
+                                    <div style="font-size:10px; color:#fef3c7; margin-top:3px;">নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা · EIIN: ১১৮৭৭৮</div>
+                                </div>
+                                <div style="text-align:center; margin:-10px 0 6px 0;">
+                                    <span style="display:inline-block; background:#fef3c7; color:#92400e; border:1px solid #f59e0b; border-radius:999px; font-size:11px; font-weight:700; padding:2px 12px;">শিক্ষার্থী পরিচয়পত্র</span>
+                                </div>
+                                <div style="width:74px; height:84px; margin:2px auto 6px auto; border:2px solid #166534; border-radius:8px; overflow:hidden;">
+                                    <img src="${esc(st.photo)}" style="width:100%; height:100%; object-fit:cover;" alt="Photo" onerror="this.src='/logo.png'">
+                                </div>
+                                <div style="text-align:center; font-size:15px; font-weight:700; color:#14532d; padding:0 8px;">${esc(st.name_bn)}</div>
+                                <table style="width:100%; padding:4px 10px; font-size:11.8px; border-collapse:collapse;">
+                                    <tr><td style="font-weight:700; padding:2px 0;">শ্রেণি:</td><td>${esc(st.class_name || '—')}</td></tr>
+                                    <tr><td style="font-weight:700; padding:2px 0;">রোল নম্বর:</td><td>${esc(st.rollBn || '—')}</td></tr>
+                                    <tr><td style="font-weight:700; padding:2px 0;">আইডি / রেজিঃ:</td><td>${esc(st.id || '—')}</td></tr>
+                                    <tr><td style="font-weight:700; padding:2px 0;">পিতার নাম:</td><td>${esc(st.father_bn || '—')}</td></tr>
+                                    <tr><td style="font-weight:700; padding:2px 0;">মাতার নাম:</td><td>${esc(st.mother_bn || '—')}</td></tr>
+                                    <tr><td style="font-weight:700; padding:2px 0;">জন্ম তারিখ:</td><td>${esc(st.dob || '—')}</td></tr>
+                                    <tr><td style="font-weight:700; padding:2px 0;">রক্তের গ্রুপ:</td><td>${esc(st.blood || '—')}</td></tr>
+                                </table>
+                            </div>
+                            <div style="background:#f0fdf4; border-top:1px solid #bbf7d0; padding:6px 10px; display:flex; justify-content:space-between; font-size:10.5px;">
+                                <span>শিক্ষাবর্ষ: <strong>${esc(sessionStr)}</strong></span>
+                                <span style="border-top:1px solid #14532d; padding-top:2px; font-weight:700;">অধ্যক্ষের স্বাক্ষর</span>
+                            </div>
+                        </div>
+                        <div class="id-card-box">
+                            <div>
+                                <div class="id-card-top">
+                                    <strong style="font-size:12px;">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</strong>
+                                    <div style="font-size:10px; color:#fef3c7;">স্থাপিত: ১৯৮০ খ্রি. · EIIN: ১১৮৭৭৮</div>
+                                </div>
+                                <div style="padding:12px; font-size:11.8px; line-height:1.55;">
+                                    <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:8px; margin-bottom:10px;">
+                                        <div><strong>মোবাইল:</strong> ${esc(st.mobile || '০১৩০৯-১১৮৭৭৮')}</div>
+                                        <div><strong>ঠিকানা:</strong> ${esc(st.address || 'নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা')}</div>
+                                        <div><strong>অফিস ফোন:</strong> ০১৩০৯-১১৮৭৭৮</div>
+                                    </div>
+                                    <div style="border:1px dashed #166534; background:#f0fdf4; border-radius:6px; padding:8px; font-size:11px; text-align:center;">
+                                        <strong>নির্দেশনা:</strong><br>
+                                        মাদ্রাসা চলাকালীন পরিচয়পত্রটি সাথে রাখা বাধ্যতামূলক। কার্ডটি পাওয়া গেলে মাদ্রাসা অফিসে জমা দেওয়ার অনুরোধ করা হলো।
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="background:#14532d; color:#fff; text-align:center; padding:6px; font-size:11px; font-weight:700;">
+                                ID: ${esc(st.id || ('NADUFM-' + st.roll))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        if (activeDocTab === 'admit') {
+            canvas.innerHTML = `
+                <div style="border:2px solid #166534; padding:22px;">
+                    <div class="cert-inst-header">
+                        <img src="/logo.png" style="width:64px;" alt="Logo">
+                        <div style="flex:1;">
+                            <h2 style="margin:0; color:#14532d; font-size:20px;">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h2>
+                            <p style="margin:2px 0; font-size:12.5px;">ডাকঘর: নলতা মোবারকনগর, উপজেলা: কালিগঞ্জ, জেলা: সাতক্ষীরা · EIIN: ১১৮৭৭৮</p>
+                            <div style="font-size:15px; font-weight:700; color:#166534; margin-top:4px; text-decoration:underline;">প্রবেশপত্র (ADMIT CARD)</div>
+                        </div>
+                        <div style="width:64px;"></div>
+                    </div>
+                    <div style="display:flex; gap:20px; margin-top:16px;">
+                        <div style="flex:1; font-size:15px;">
+                            <div class="doc-field"><span class="doc-label" style="width:140px;">শিক্ষার্থীর নাম:</span><span class="dotted-line">${esc(st.name_bn)}</span></div>
+                            <div class="doc-field"><span class="doc-label" style="width:140px;">পিতার নাম:</span><span class="dotted-line">${esc(st.father_bn || '—')}</span></div>
+                            <div class="doc-field"><span class="doc-label" style="width:140px;">মাতার নাম:</span><span class="dotted-line">${esc(st.mother_bn || '—')}</span></div>
+                            <div class="doc-field"><span class="doc-label" style="width:140px;">শ্রেণি:</span><span class="dotted-line">${esc(st.class_name || '—')}</span></div>
+                            <div class="doc-field"><span class="doc-label" style="width:140px;">রোল নম্বর:</span><span class="dotted-line">${esc(st.rollBn || '—')}</span></div>
+                            <div class="doc-field"><span class="doc-label" style="width:140px;">আইডি / রেজিঃ নং:</span><span class="dotted-line">${esc(st.id || '—')}</span></div>
+                            <div class="doc-field"><span class="doc-label" style="width:140px;">শিক্ষাবর্ষ:</span><span class="dotted-line">${esc(sessionStr)}</span></div>
+                        </div>
+                        <div style="width:108px; height:124px; border:1.5px solid #166534; overflow:hidden; flex-shrink:0;">
+                            <img src="${esc(st.photo)}" style="width:100%; height:100%; object-fit:cover;" alt="Photo" onerror="this.src='/logo.png'">
+                        </div>
+                    </div>
+                    <div style="margin-top:18px; padding:10px 12px; background:#f8faf9; border:1px solid #cbd5e1; border-radius:6px; font-size:12.5px;">
+                        <strong>পরীক্ষার্থীর জন্য নির্দেশাবলি:</strong> পরীক্ষা শুরুর কমপক্ষে ১৫ মিনিট পূর্বে পরীক্ষা কেন্দ্রে উপস্থিত থাকতে হবে এবং প্রবেশপত্র অবশ্যই সাথে আনতে হবে।
+                    </div>
+                    <div class="signature-area" style="margin-top:58px;">
+                        <div class="sig-box">শিক্ষার্থীর স্বাক্ষর</div>
+                        <div class="sig-box">পরীক্ষা নিয়ন্ত্রক</div>
+                        <div class="sig-box">অধ্যক্ষের স্বাক্ষর</div>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        if (activeDocTab === 'marksheet') {
+            const rs = st.resultSummary;
+            if (!rs || !Array.isArray(rs.subjects) || rs.subjects.length === 0) {
+                const qCls = encodeURIComponent(st.classKey || st.class_name || '');
+                const qRoll = encodeURIComponent(st.roll || '');
+                canvas.innerHTML = `
+                    <div class="profile-frame" style="justify-content:center; align-items:center; text-align:center;">
+                        <div>
+                            <img src="/logo.png" style="width:74px; margin-bottom:12px;" alt="Logo">
+                            <h2 style="color:#14532d; margin-bottom:8px;">${esc(st.name_bn)} (রোল: ${esc(st.rollBn || '—')})</h2>
+                            <p style="font-size:15px; color:#475569; max-width:460px; margin:0 auto 18px auto;">
+                                স্থানীয় এক্সেল রেজাল্ট শিটে এই শিক্ষার্থীর বিষয়ভিত্তিক নম্বর এখনো যুক্ত করা হয়নি। অনলাইন বোর্ড/গুগল শিট থেকে সরাসরি মার্কশিট দেখতে নিচের বাটনে ক্লিক করুন:
+                            </p>
+                            <a href="/result.php?class=${qCls}&roll=${qRoll}" class="tool-btn tool-green" style="display:inline-flex;">
+                                <i class="fas fa-poll"></i> <span>অনলাইন ফলাফল পোর্টালে মার্কশিট দেখুন</span>
+                            </a>
+                        </div>
+                    </div>
+                `;
                 return;
             }
 
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('multiple-results').style.display = 'none';
-            document.getElementById('print-preview-section').style.display = 'none';
-
-            const scriptURL = 'https://script.google.com/macros/s/AKfycbze9QMzRJcCadXzDKcU0W12nigMYg0fOKk_4zY5JFWwo7R10L3PYx0YnjVNZXiWtA_npg/exec';
-
-            fetch(`${scriptURL}?query=${encodeURIComponent(query)}`)
-                .then(res => res.json())
-                .then(data => {
-                    allData = data;
-                    if (data.length === 0) {
-                        searchMsg.innerText = "দুঃখিত, কোনো তথ্য পাওয়া যায়নি।";
-                        searchMsg.style.display = 'block';
-                    } else if (data.length === 1) {
-                        displayProfile(0);
-                    } else {
-                        const list = document.getElementById('result-list');
-                        list.innerHTML = "";
-                        data.forEach((item, index) => {
-                            list.innerHTML += `
+            canvas.innerHTML = `
+                <div class="profile-frame">
+                    <div>
+                        <div class="cert-inst-header">
+                            <img src="/logo.png" style="width:62px;" alt="Logo">
+                            <div style="flex:1;">
+                                <h2 style="margin:0; color:#14532d; font-size:20px;">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h2>
+                                <p style="margin:2px 0; font-size:12.5px;">নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা · EIIN: ১১৮৭৭৮</p>
+                                <p style="margin:2px 0; font-size:13.5px; color:#166534; font-weight:700;">${esc(rs.examName)} - ${esc(rs.year)} | একাডেমিক ট্রান্সক্রিপ্ট</p>
+                            </div>
+                            <table style="border-collapse:collapse; font-size:10px; border:1px solid #166534;">
+                                <tr><th style="border:1px solid #166534; padding:1px 4px;">LG</th><th style="border:1px solid #166534; padding:1px 4px;">GP</th></tr>
+                                <tr><td style="border:1px solid #166534; padding:1px 4px;">A+</td><td style="border:1px solid #166534; padding:1px 4px;">5.0</td></tr>
+                                <tr><td style="border:1px solid #166534; padding:1px 4px;">A</td><td style="border:1px solid #166534; padding:1px 4px;">4.0</td></tr>
+                                <tr><td style="border:1px solid #166534; padding:1px 4px;">A-</td><td style="border:1px solid #166534; padding:1px 4px;">3.5</td></tr>
+                                <tr><td style="border:1px solid #166534; padding:1px 4px;">B</td><td style="border:1px solid #166534; padding:1px 4px;">3.0</td></tr>
+                                <tr><td style="border:1px solid #166534; padding:1px 4px;">C</td><td style="border:1px solid #166534; padding:1px 4px;">2.0</td></tr>
+                                <tr><td style="border:1px solid #166534; padding:1px 4px;">D</td><td style="border:1px solid #166534; padding:1px 4px;">1.0</td></tr>
+                                <tr><td style="border:1px solid #166534; padding:1px 4px;">F</td><td style="border:1px solid #166534; padding:1px 4px;">0.0</td></tr>
+                            </table>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; font-weight:700; border-bottom:1.5px solid #166534; padding:6px 4px; margin-bottom:10px;">
+                            <span>নাম: ${esc(st.name_bn)}</span>
+                            ${st.father_bn ? `<span>পিতা: ${esc(st.father_bn)}</span>` : ''}
+                            <span>শ্রেণি: ${esc(st.class_name || rs.className || '—')}</span>
+                            <span>রোল: ${esc(st.rollBn || '—')}</span>
+                        </div>
+                        <table class="ms-table">
+                            <thead>
                                 <tr>
-                                    <td>${item.name_en}</td>
-                                    <td>${item.id}</td>
-                                    <td>${item.f_name_en}</td>
-                                    <td><button onclick="displayProfile(${index})" class="view-btn">দেখুন</button></td>
-                                </tr>`;
-                        });
-                        document.getElementById('multiple-results').style.display = 'block';
-                    }
-                })
-                .catch(() => {
-                    searchMsg.innerText = "সার্ভারের সাথে সংযোগ করতে সমস্যা হয়েছে।";
-                    searchMsg.style.display = 'block';
-                })
-                .finally(() => {
-                    document.getElementById('loading').style.display = 'none';
-                });
+                                    <th style="width:7%;">নং</th>
+                                    <th style="width:41%; text-align:left; padding-left:10px;">বিষয়ের নাম</th>
+                                    <th style="width:12%;">পূর্ণমান</th>
+                                    <th style="width:14%;">প্রাপ্ত নম্বর</th>
+                                    <th style="width:13%;">লেটার গ্রেড</th>
+                                    <th style="width:13%;">গ্রেড পয়েন্ট</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rs.subjects.map((sub, i) => `
+                                    <tr>
+                                        <td>${bnNum(i + 1)}</td>
+                                        <td style="text-align:left; padding-left:10px; font-weight:600;">${esc(sub.name)}</td>
+                                        <td>${bnNum(sub.fullMarks)}</td>
+                                        <td style="font-weight:700;">${esc(sub.obtained)}</td>
+                                        <td style="font-weight:700; color:${sub.isFail ? '#b91c1c' : '#166534'};">${esc(sub.grade)}</td>
+                                        <td>${bnNum(sub.gp)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        <div class="ms-summary">
+                            <div>ফলাফল: <span style="color:${rs.isPromoted ? '#b45309' : (rs.failCount > 0 ? '#b91c1c' : '#15803d')};">${esc(rs.statusBn)}</span></div>
+                            <div>মোট নম্বর: ${bnNum(rs.totalObtained)} / ${bnNum(rs.totalFullMarks)}</div>
+                            <div>GPA: ${bnNum(Number(rs.gpa || 0).toFixed(2))}</div>
+                            <div>মেধাক্রম: ${rs.meritRank ? bnNum(rs.meritRank) : '—'}</div>
+                        </div>
+                    </div>
+                    <div class="signature-area">
+                        <div class="sig-box">শ্রেণি শিক্ষকের স্বাক্ষর</div>
+                        <div class="sig-box">অভিভাবকের স্বাক্ষর</div>
+                        <div class="sig-box">অধ্যক্ষের স্বাক্ষর</div>
+                    </div>
+                </div>
+            `;
+            return;
         }
 
-        function displayProfile(index) {
-            const d = allData[index];
-            setText('v-id', d.id);
-            setText('v-name-bn', d.name_bn);
-            setText('v-name-en', d.name_en);
-            setText('v-gender', d.gender);
-            setText('v-blood', d.blood);
-            setText('v-dob', d.dob);
-            setText('v-reg', d.birth_reg);
-            setText('v-f-bn', d.f_name_bn);
-            setText('v-f-en', d.f_name_en);
-            setText('v-f-nid', d.f_nid);
-            setText('v-f-dob', d.f_dob);
-            setText('v-m-bn', d.m_name_bn);
-            setText('v-m-en', d.m_name_en);
-            setText('v-m-nid', d.m_nid);
-            setText('v-m-dob', d.m_dob);
-            setText('v-mobile', d.mobile);
-            setText('v-nagad', d.nagad);
-            document.getElementById('v-addr').innerText = (d.village || '') + (d.union ? ", " + d.union : '');
-            setText('v-upz', d.upazila);
-            setText('v-dist', d.district);
-            setText('v-prev-sch', d.p_school);
-            setText('v-prev-reg', d.p_reg);
-            setText('v-time', d.timestamp);
+        // Attestation or Testimonial
+        const isTestimonial = activeDocTab === 'testimonial';
+        const certTitle = isTestimonial
+            ? 'প্রশংসা পত্র (TESTIMONIAL)'
+            : 'প্রত্যায়ন পত্র (ATTESTATION CERTIFICATE)';
+        const bodyParagraph = isTestimonial
+            ? `এই মর্মে প্রত্যয়ন ও প্রশংসা করা যাচ্ছে যে, <strong>${esc(st.name_bn)}</strong>, পিতা: <strong>${esc(st.father_bn || '---')}</strong>, মাতা: <strong>${esc(st.mother_bn || '---')}</strong>, ঠিকানা: ${esc(st.address || 'নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা')} — অত্র <strong>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</strong>-এর একজন নিয়মিত শিক্ষার্থী ছিল। সে অত্র প্রতিষ্ঠান থেকে <strong>${esc(st.class_name || '---')}</strong> শ্রেণির পরীক্ষায় (শিক্ষাবর্ষ: ${esc(sessionStr)}, রোল নং: <strong>${esc(st.rollBn || '---')}</strong>, রেজিস্ট্রেশন/আইডি নং: ${esc(st.reg_no || st.id || '---')}) অংশগ্রহণ করে <strong>GPA ${esc(gpaStr)}</strong> অর্জনপূর্বক উত্তীর্ণ হয়েছে। নথিপত্র অনুযায়ী তার জন্ম তারিখ <strong>${esc(st.dob || '---')}</strong>।<br><br>${esc(remarkStr)}<br><br>আমি তার জীবনের সার্বিক মঙ্গল ও উজ্জ্বল ভবিষ্যৎ কামনা করি।`
+            : `এই মর্মে প্রত্যয়ন করা যাচ্ছে যে, <strong>${esc(st.name_bn)}</strong>, পিতা: <strong>${esc(st.father_bn || '---')}</strong>, মাতা: <strong>${esc(st.mother_bn || '---')}</strong>, গ্রাম/ঠিকানা: ${esc(st.address || 'নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা')} — অত্র <strong>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</strong>-এর <strong>${esc(st.class_name || '---')}</strong> শ্রেণির (শিক্ষাবর্ষ: ${esc(sessionStr)}) একজন নিয়মিত শিক্ষার্থী। তার শ্রেণি রোল নম্বর <strong>${esc(st.rollBn || '---')}</strong> এবং রেজিস্ট্রেশন/আইডি নং <strong>${esc(st.reg_no || st.id || '---')}</strong>। প্রতিষ্ঠানের ভর্তি রেজিস্টার অনুযায়ী তার জন্ম তারিখ <strong>${esc(st.dob || '---')}</strong>।<br><br>${esc(remarkStr)}<br><br>উক্ত শিক্ষার্থীর চরিত্র ও নৈতিকতা সম্পর্কে আমাদের জানা মতে কোনো বিরূপ তথ্য নেই। আমি তার সর্বাঙ্গীণ উন্নতি কামনা করি।`;
 
-            const photoBox = document.getElementById('v-photo');
-            if (d.photo && d.photo !== "") {
-                photoBox.innerHTML = `<img src="${d.photo}" alt="ছবি" onerror="this.parentElement.innerHTML='ছবি লোড হয়নি'">`;
-            } else {
-                photoBox.innerHTML = "ছবি নেই";
-            }
+        canvas.innerHTML = `
+            <div class="cert-frame">
+                <div>
+                    <div class="cert-inst-header">
+                        <img src="/logo.png" style="width:68px;" alt="Logo">
+                        <div style="flex:1;">
+                            <h2 style="margin:0; color:#14532d; font-size:21px;">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h2>
+                            <p style="margin:2px 0; font-size:13px;">ডাকঘর: নলতা শরীফ, উপজেলা: কালিগঞ্জ, জেলা: সাতক্ষীরা</p>
+                            <p style="margin:2px 0; font-size:12.5px;">স্থাপিত: ১৯৮০ খ্রি. · EIIN: ১১৮৭৭৮ · ওয়েবসাইট: nadufm.edu.bd</p>
+                        </div>
+                        <div style="width:68px;"></div>
+                    </div>
 
-            document.getElementById('multiple-results').style.display = 'none';
-            document.getElementById('print-preview-section').style.display = 'block';
+                    <div class="cert-memo-row">
+                        <span>স্মারক নং: ${esc(memo)}</span>
+                        <span>তারিখ: ${esc(dateStr)}</span>
+                    </div>
+
+                    <div class="cert-doc-badge">${certTitle}</div>
+
+                    <div class="cert-body-text">${bodyParagraph}</div>
+                </div>
+
+                <div class="signature-area" style="margin-top:64px;">
+                    <div class="sig-box">প্রস্তুতকারীর স্বাক্ষর</div>
+                    <div class="sig-box" style="width:210px;">অধ্যক্ষ<br>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</div>
+                </div>
+            </div>
+        `;
+    }
+
+    function setExportStatus(msg, isErr) {
+        const el = document.getElementById('stuExportStatus');
+        el.style.display = 'block';
+        el.textContent = msg;
+        el.style.background = isErr ? '#fef2f2' : '#f0fdf4';
+        el.style.color = isErr ? '#b91c1c' : '#15803d';
+        el.style.border = isErr ? '1px solid #fecaca' : '1px solid #bbf7d0';
+    }
+
+    async function downloadCurrentDocPdf() {
+        const el = document.getElementById('docCanvas');
+        try {
+            if (!window.NadufmExport) throw new Error('এক্সপোর্ট স্ক্রিপ্ট লোড হয়নি।');
+            await window.NadufmExport.exportElementToA4Pdf({
+                element: el,
+                filename: `${activeDocTab}-${Date.now()}.pdf`,
+                marginMm: 0,
+                onStatus: setExportStatus
+            });
+        } catch (err) {
+            setExportStatus(err?.message || 'PDF ডাউনলোড ব্যর্থ হয়েছে।', true);
         }
+    }
 
-        function setText(id, value) {
-            const el = document.getElementById(id);
-            if (el) el.innerText = value || '---';
+    async function downloadCurrentDocWord() {
+        const el = document.getElementById('docCanvas');
+        const cssText = '@page Section1 { size: 210mm 297mm; margin: 14mm 15mm; }' +
+            'div.Section1 { page: Section1; font-family: "Nikosh", "Kalpurush", Arial, sans-serif; font-size: 14px; color: #0f172a; }' +
+            '.cert-frame, .profile-frame { border: 2px solid #166534; padding: 18px; }' +
+            'table { width: 100%; border-collapse: collapse; }' +
+            'table.ms-table th, table.ms-table td { border: 1px solid #166534; padding: 6px; text-align: center; }' +
+            'table.ms-table th { background-color: #166534; color: #ffffff; }';
+        try {
+            if (!window.NadufmExport) throw new Error('এক্সপোর্ট স্ক্রিপ্ট লোড হয়নি।');
+            await window.NadufmExport.exportElementToWord({
+                element: el,
+                filename: `${activeDocTab}-${Date.now()}.doc`,
+                title: activeDocTab,
+                cssText: cssText,
+                onStatus: setExportStatus
+            });
+        } catch (err) {
+            setExportStatus(err?.message || 'Word ডাউনলোড ব্যর্থ হয়েছে।', true);
         }
-    </script>
-</body>
-</html>
+    }
+
+    pickerLib.attachClassRollPicker({
+        classSelect: classSelectEl,
+        rollInput: rollInputEl,
+        rollAutoSelect: document.getElementById('searchRollAutoSelect'),
+        rollListWrap: document.getElementById('searchRollAutoWrap'),
+        rollChipsContainer: document.getElementById('searchRollChips'),
+        rollDatalist: document.getElementById('searchRollDatalist'),
+        rollCountBadge: document.getElementById('searchRollCountBadge'),
+        onRollPicked: function () {
+            searchStudent();
+        }
+    }).then(function (ctrl) {
+        const params = new URLSearchParams(window.location.search);
+        const initCls = params.get('class');
+        const initRoll = params.get('roll');
+        const initDoc = params.get('doc');
+        if (initDoc && ['profile', 'idcard', 'admit', 'marksheet', 'attestation', 'testimonial'].includes(initDoc)) {
+            activeDocTab = initDoc;
+            document.querySelectorAll('.doc-tab-btn').forEach((btn) => {
+                btn.classList.toggle('active', btn.dataset.doc === initDoc);
+            });
+            document.getElementById('certExtraBar').classList.toggle('visible', initDoc === 'attestation' || initDoc === 'testimonial');
+        }
+        if (initCls) {
+            classSelectEl.value = initCls;
+            if (ctrl) ctrl.loadRollsForClass(initCls);
+        }
+        if (initRoll) {
+            rollInputEl.value = initRoll;
+            searchStudent();
+        }
+    });
+</script>
+
+<%- include('partials/footer') %>

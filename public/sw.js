@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'nadufm-pwa-v7';
+const CACHE_VERSION = 'nadufm-pwa-v8';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PAGE_CACHE = `${CACHE_VERSION}-pages`;
 
@@ -7,6 +7,7 @@ const PRECACHE_URLS = [
   '/fonts.css',
   '/style.css',
   '/script.js',
+  '/student-picker.js',
   '/pwa.js',
   '/manifest.webmanifest',
   '/logo.png',
@@ -50,6 +51,8 @@ const NO_CACHE_PATHS = [
   '/admission.php',
   '/admit',
   '/admit.php',
+  '/id-card',
+  '/id-card.php',
   '/excel-studio',
   '/excel-studio.php',
 ];

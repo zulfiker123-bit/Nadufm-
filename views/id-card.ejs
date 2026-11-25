@@ -1,0 +1,663 @@
+<%- include('partials/header') %>
+
+<style>
+    .id-shell {
+        max-width: 920px;
+        margin: 24px auto 36px auto;
+        padding: 0 16px;
+    }
+
+    .id-search-card {
+        max-width: 560px;
+        margin: 0 auto;
+        background: #ffffff;
+        border: 1px solid rgba(15, 23, 42, 0.09);
+        border-radius: 18px;
+        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.07);
+        overflow: hidden;
+    }
+
+    .id-search-head {
+        background: linear-gradient(135deg, #14532d 0%, #15803d 100%);
+        color: #ffffff;
+        padding: 24px 20px;
+        text-align: center;
+    }
+
+    .id-search-head h1 { font-size: 1.3rem; font-weight: 700; margin: 0; }
+    .id-search-head p { font-size: 0.9rem; opacity: 0.92; margin-top: 4px; }
+
+    .id-search-body { padding: 22px 24px 24px 24px; }
+
+    .id-field { margin-bottom: 16px; }
+    .id-field label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-weight: 700;
+        font-size: 0.94rem;
+        margin-bottom: 6px;
+        color: #0f172a;
+    }
+
+    .id-field select,
+    .id-field input {
+        width: 100%;
+        height: 44px;
+        padding: 0 14px;
+        border: 1px solid rgba(15, 23, 42, 0.14);
+        border-radius: 10px;
+        background: #f8faf9;
+        color: #0f172a;
+        font-family: inherit;
+        font-size: 0.95rem;
+        outline: none;
+    }
+
+    .id-field select:focus,
+    .id-field input:focus {
+        border-color: #15803d;
+        background: #ffffff;
+    }
+
+    .roll-auto-panel {
+        margin-top: 10px;
+        background: #f8faf9;
+        border: 1px solid rgba(21, 128, 61, 0.22);
+        border-radius: 12px;
+        padding: 10px 12px;
+    }
+
+    .roll-auto-title {
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: #14532d;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .roll-auto-select {
+        height: 40px !important;
+        background: #ffffff !important;
+        margin-bottom: 8px;
+        font-size: 0.9rem !important;
+    }
+
+    .roll-chips-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        max-height: 150px;
+        overflow-y: auto;
+    }
+
+    .roll-chip-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(21, 128, 61, 0.28);
+        background: #ffffff;
+        color: #0f172a;
+        font-family: inherit;
+        font-size: 0.84rem;
+        cursor: pointer;
+        transition: all 0.14s ease;
+    }
+
+    .roll-chip-btn:hover,
+    .roll-chip-btn.active {
+        background: #15803d;
+        color: #ffffff;
+        border-color: #15803d;
+    }
+
+    .roll-empty-note {
+        font-size: 0.83rem;
+        color: #64748b;
+    }
+
+    .btn-id-submit {
+        width: 100%;
+        min-height: 46px;
+        background: #15803d;
+        color: #ffffff;
+        border: none;
+        border-radius: 10px;
+        font-family: inherit;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+    }
+    .btn-id-submit:hover { background: #14532d; }
+
+    .id-count-pill {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #15803d;
+        background: #dcfce7;
+        padding: 2px 8px;
+        border-radius: 999px;
+    }
+
+    #idResultSection { display: none; }
+
+    .id-toolbar {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+    }
+
+    .id-action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        min-height: 42px;
+        padding: 0 16px;
+        border-radius: 10px;
+        border: none;
+        text-decoration: none;
+        font-family: inherit;
+        font-size: 0.9rem;
+        font-weight: 700;
+        cursor: pointer;
+    }
+    .btn-green { background: #15803d; color: #ffffff; }
+    .btn-rose { background: #be123c; color: #ffffff; }
+    .btn-blue { background: #1d4ed8; color: #ffffff; }
+    .btn-slate { background: #f1f5f9; color: #0f172a; border: 1px solid rgba(15, 23, 42, 0.12); }
+
+    .idcard-preview-scroll { overflow-x: auto; padding-bottom: 10px; }
+
+    .idcard-sheet {
+        background: #ffffff;
+        width: 210mm;
+        min-height: 155mm;
+        margin: 0 auto;
+        padding: 14mm 12mm;
+        border: 1px solid rgba(15, 23, 42, 0.14);
+        border-radius: 10px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+        font-family: 'Nikosh', 'Kalpurush', sans-serif;
+    }
+
+    .idcard-sheet * {
+        font-family: 'Nikosh', 'Kalpurush', sans-serif;
+    }
+
+    .idcard-pair {
+        display: flex;
+        justify-content: center;
+        align-items: stretch;
+        gap: 24px;
+        flex-wrap: wrap;
+    }
+
+    .id-card-face {
+        width: 72mm;
+        min-height: 112mm;
+        border: 2px solid #14532d;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #ffffff;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    }
+
+    .id-front-top {
+        background: linear-gradient(135deg, #14532d 0%, #15803d 100%);
+        color: #ffffff;
+        padding: 10px 8px 14px 8px;
+        text-align: center;
+        border-bottom: 3px solid #f59e0b;
+    }
+
+    .id-front-top-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+    }
+
+    .id-front-top img {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #ffffff;
+        padding: 2px;
+        flex-shrink: 0;
+    }
+
+    .id-front-top h2 {
+        font-size: 12.5px;
+        line-height: 1.25;
+        margin: 0;
+        color: #ffffff;
+        font-weight: 700;
+    }
+
+    .id-front-top p {
+        font-size: 10px;
+        margin: 3px 0 0 0;
+        color: #fef3c7;
+        font-weight: 600;
+    }
+
+    .id-badge-ribbon {
+        display: inline-block;
+        background: #fef3c7;
+        color: #92400e;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 12px;
+        border-radius: 999px;
+        border: 1px solid #f59e0b;
+        margin: -11px auto 6px auto;
+        position: relative;
+        z-index: 2;
+    }
+
+    .id-photo-wrap {
+        width: 74px;
+        height: 84px;
+        margin: 2px auto 6px auto;
+        border: 2px solid #166534;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #f8fafc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .id-photo-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .id-stu-name {
+        text-align: center;
+        font-size: 15px;
+        font-weight: 700;
+        color: #14532d;
+        padding: 0 8px;
+        line-height: 1.25;
+    }
+
+    .id-stu-sub {
+        text-align: center;
+        font-size: 11px;
+        color: #475569;
+        margin-bottom: 6px;
+    }
+
+    .id-info-table {
+        width: 100%;
+        padding: 0 10px;
+        border-collapse: collapse;
+        font-size: 11.8px;
+    }
+
+    .id-info-table td {
+        padding: 2.5px 2px;
+        vertical-align: top;
+        border-bottom: 1px dotted #e2e8f0;
+    }
+
+    .id-info-label {
+        font-weight: 700;
+        color: #334155;
+        width: 40%;
+    }
+
+    .id-info-val {
+        color: #0f172a;
+        font-weight: 600;
+    }
+
+    .id-front-footer {
+        background: #f0fdf4;
+        border-top: 1px solid #bbf7d0;
+        padding: 6px 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        font-size: 10.5px;
+    }
+
+    .id-sign-line {
+        border-top: 1px solid #14532d;
+        padding-top: 2px;
+        min-width: 78px;
+        text-align: center;
+        font-weight: 700;
+        color: #14532d;
+    }
+
+    .id-back-body {
+        padding: 12px 12px 8px 12px;
+        font-size: 11.8px;
+        line-height: 1.5;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .id-back-box {
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 7px 9px;
+        margin-bottom: 8px;
+    }
+
+    .id-back-notice {
+        border: 1px dashed #166534;
+        background: #f0fdf4;
+        border-radius: 6px;
+        padding: 7px 9px;
+        font-size: 11px;
+        text-align: center;
+        color: #14532d;
+    }
+
+    .id-code-strip {
+        text-align: center;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.8px;
+        padding: 6px;
+        background: #14532d;
+        color: #ffffff;
+    }
+
+    @media print {
+        .no-print, .app-footer, .app-topbar, .mobile-bottom-nav { display: none !important; }
+        body { background: #ffffff !important; margin: 0 !important; padding: 0 !important; }
+        .id-shell { margin: 0 !important; max-width: 100% !important; padding: 0 !important; }
+        #idResultSection { display: block !important; }
+        .idcard-sheet { border: none !important; box-shadow: none !important; padding: 8mm !important; }
+    }
+</style>
+
+<div class="id-shell">
+    <div class="id-search-card no-print" id="idSearchCard">
+        <div class="id-search-head">
+            <h1>শিক্ষার্থী আইডি কার্ড</h1>
+            <p>শ্রেণি বাছাই করে তালিকা থেকে রোল বেছে নিন অথবা রোল নম্বর লিখুন</p>
+        </div>
+        <div class="id-search-body">
+            <form id="idCardSearchForm">
+                <div class="id-field">
+                    <label for="id_class">শ্রেণি নির্বাচন করুন</label>
+                    <select id="id_class" required>
+                        <option value="">-- শ্রেণি নির্বাচন করুন --</option>
+                        <% Object.entries(classMap).forEach(function([k, v]) { %>
+                            <option value="<%= k %>"><%= v.name %> শ্রেণি</option>
+                        <% }); %>
+                    </select>
+                </div>
+
+                <div class="id-field">
+                    <label for="id_roll">
+                        <span>রোল নম্বর</span>
+                        <span id="idRollCountBadge" class="id-count-pill"></span>
+                    </label>
+                    <input type="text" id="id_roll" list="idRollDatalist" placeholder="রোল নম্বর লিখুন (যেমন: 1 বা ১) অথবা নিচ থেকে বাছাই করুন" required>
+                    <datalist id="idRollDatalist"></datalist>
+
+                    <div id="idRollAutoWrap" class="roll-auto-panel" style="display:none;">
+                        <div class="roll-auto-title">
+                            <span><i class="fas fa-list-ol"></i> শ্রেণিভিত্তিক অটো রোল তালিকা</span>
+                            <span style="font-size:0.78rem; color:#475569;">ক্লিক করলে স্বয়ংক্রিয়ভাবে লোড হবে</span>
+                        </div>
+                        <select id="idRollAutoSelect" class="roll-auto-select"></select>
+                        <div id="idRollChips" class="roll-chips-list"></div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-id-submit" id="idSearchBtn">আইডি কার্ড তৈরি করুন</button>
+            </form>
+            <p id="idErrorMsg" style="display:none; color:#b91c1c; font-weight:700; text-align:center; margin-top:14px;"></p>
+        </div>
+    </div>
+
+    <div id="idResultSection">
+        <div class="id-toolbar no-print">
+            <button type="button" class="id-action-btn btn-green" onclick="window.print()">
+                <i class="fas fa-print"></i> <span>আইডি কার্ড প্রিন্ট</span>
+            </button>
+            <button type="button" class="id-action-btn btn-rose" onclick="downloadIdCardPdf()">
+                <i class="fas fa-file-pdf"></i> <span>PDF ডাউনলোড</span>
+            </button>
+            <a id="linkIdToAdmit" href="/admit.php" class="id-action-btn btn-blue">
+                <i class="fas fa-id-card"></i> <span>এডমিট কার্ড</span>
+            </a>
+            <a id="linkIdToMarksheet" href="/result.php" class="id-action-btn btn-blue">
+                <i class="fas fa-poll"></i> <span>মার্কশিট</span>
+            </a>
+            <a id="linkIdToProfile" href="/student-search.php" class="id-action-btn btn-slate">
+                <i class="fas fa-certificate"></i> <span>প্রত্যায়ন / প্রশংসা পত্র</span>
+            </a>
+            <button type="button" class="id-action-btn btn-slate" onclick="resetIdSearch()">
+                <i class="fas fa-redo"></i> <span>আবার খুঁজুন</span>
+            </button>
+        </div>
+
+        <div id="idExportStatus" class="no-print" style="display:none; max-width:560px; margin:0 auto 14px auto; padding:9px 13px; border-radius:9px; font-size:0.88rem; font-weight:600; text-align:center;"></div>
+
+        <div class="idcard-preview-scroll">
+            <div class="idcard-sheet" id="idCardPrintableSheet">
+                <div style="text-align:center; font-size:12px; color:#475569; margin-bottom:10px; font-weight:700;">
+                    শিক্ষার্থী পরিচয়পত্র (সামনের অংশ ও পেছনের অংশ) · Nikosh অফিসিয়াল ফরম্যাট
+                </div>
+                <div class="idcard-pair">
+                    <!-- FRONT FACE -->
+                    <div class="id-card-face">
+                        <div>
+                            <div class="id-front-top">
+                                <div class="id-front-top-row">
+                                    <img src="/logo.png" alt="Logo">
+                                    <h2>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h2>
+                                </div>
+                                <p>নলতা মোবারকনগর, কালিগঞ্জ, সাতক্ষীরা · EIIN: ১১৮৭৭৮</p>
+                            </div>
+                            <div style="text-align:center;">
+                                <span class="id-badge-ribbon">শিক্ষার্থী পরিচয়পত্র · ID CARD</span>
+                            </div>
+                            <div class="id-photo-wrap" id="cardPhotoWrap">
+                                <img src="/logo.png" alt="Student Photo">
+                            </div>
+                            <div class="id-stu-name" id="cardName">—</div>
+                            <div class="id-stu-sub" id="cardNameEn"></div>
+
+                            <table class="id-info-table">
+                                <tr><td class="id-info-label">শ্রেণি</td><td class="id-info-val" id="cardClass">—</td></tr>
+                                <tr><td class="id-info-label">রোল নম্বর</td><td class="id-info-val" id="cardRoll">—</td></tr>
+                                <tr><td class="id-info-label">আইডি / রেজিঃ</td><td class="id-info-val" id="cardId">—</td></tr>
+                                <tr><td class="id-info-label">পিতার নাম</td><td class="id-info-val" id="cardFather">—</td></tr>
+                                <tr><td class="id-info-label">মাতার নাম</td><td class="id-info-val" id="cardMother">—</td></tr>
+                                <tr><td class="id-info-label">জন্ম তারিখ</td><td class="id-info-val" id="cardDob">—</td></tr>
+                                <tr><td class="id-info-label">রক্তের গ্রুপ</td><td class="id-info-val" id="cardBlood">—</td></tr>
+                            </table>
+                        </div>
+                        <div class="id-front-footer">
+                            <span>শিক্ষাবর্ষ: <strong id="cardSession">২০২৬</strong></span>
+                            <div class="id-sign-line">অধ্যক্ষের স্বাক্ষর</div>
+                        </div>
+                    </div>
+
+                    <!-- BACK FACE -->
+                    <div class="id-card-face">
+                        <div>
+                            <div class="id-front-top" style="padding:9px 8px;">
+                                <h2 style="font-size:12px;">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h2>
+                                <p>স্থাপিত: ১৯৮০ খ্রি. · ইসলামী আরবি বিশ্ববিদ্যালয় অধিভুক্ত</p>
+                            </div>
+                            <div class="id-back-body">
+                                <div>
+                                    <div class="id-back-box">
+                                        <div style="font-weight:700; color:#14532d; margin-bottom:4px;">জরুরি যোগাযোগ ও ঠিকানা</div>
+                                        <div><strong>মোবাইল:</strong> <span id="cardMobile">—</span></div>
+                                        <div><strong>ঠিকানা:</strong> <span id="cardAddress">নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা</span></div>
+                                        <div><strong>অফিস হেল্পলাইন:</strong> ০১৩০৯-১১৮৭৭৮</div>
+                                        <div><strong>ওয়েবসাইট:</strong> nadufm.edu.bd</div>
+                                    </div>
+                                    <div class="id-back-notice">
+                                        <strong>বিশেষ নির্দেশনা:</strong><br>
+                                        ১. মাদ্রাসা চলাকালীন এই পরিচয়পত্রটি সাথে রাখা বাধ্যতামূলক।<br>
+                                        ২. কার্ডটি হারিয়ে গেলে দ্রুত মাদ্রাসা অফিসে অবহিত করুন অথবা নিকটস্থ অফিসে পৌঁছে দিন।
+                                    </div>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:16px; font-size:10.5px;">
+                                    <span>মেয়াদ: ডিসেম্বর ২০২৬</span>
+                                    <span class="id-sign-line">প্রস্তুতকারী / অফিস</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="id-code-strip" id="cardBarcodeText">NADUFM-118778</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/vendor/html2pdf.bundle.min.js" defer></script>
+<script src="/doc-export.js" defer></script>
+<script src="/student-picker.js"></script>
+<script>
+    (function () {
+        const pickerLib = window.NadufmStudentPicker;
+        const classEl = document.getElementById('id_class');
+        const rollEl = document.getElementById('id_roll');
+        const errEl = document.getElementById('idErrorMsg');
+        const btnEl = document.getElementById('idSearchBtn');
+
+        async function fetchAndShowIdCard(clsVal, rollVal) {
+            errEl.style.display = 'none';
+            btnEl.disabled = true;
+            btnEl.textContent = 'তথ্য লোড হচ্ছে...';
+
+            try {
+                const res = await fetch('/api/portal/student-record?class=' + encodeURIComponent(clsVal || '') + '&roll=' + encodeURIComponent(rollVal || ''));
+                const data = await res.json();
+                if (data.status === 'success' && data.student) {
+                    renderIdCard(data.student, clsVal);
+                } else {
+                    errEl.textContent = 'দুঃখিত! এই শ্রেণি ও রোলের কোনো শিক্ষার্থীর তথ্য পাওয়া যায়নি।';
+                    errEl.style.display = 'block';
+                }
+            } catch (e) {
+                errEl.textContent = 'সার্ভারের সাথে সংযোগ ব্যর্থ হয়েছে।';
+                errEl.style.display = 'block';
+            } finally {
+                btnEl.disabled = false;
+                btnEl.textContent = 'আইডি কার্ড তৈরি করুন';
+            }
+        }
+
+        function renderIdCard(st, clsVal) {
+            document.getElementById('cardName').textContent = st.name_bn || st.name_en || '—';
+            document.getElementById('cardNameEn').textContent = st.name_en && st.name_bn !== st.name_en ? st.name_en : '';
+            document.getElementById('cardClass').textContent = st.class_name || '—';
+            document.getElementById('cardRoll').textContent = st.rollBn || pickerLib.bnNum(st.roll || '—');
+            document.getElementById('cardId').textContent = st.id || st.reg_no || ('STD-' + pickerLib.enNum(st.roll || '00'));
+            document.getElementById('cardFather').textContent = st.father_bn || '—';
+            document.getElementById('cardMother').textContent = st.mother_bn || '—';
+            document.getElementById('cardDob').textContent = st.dob || '—';
+            document.getElementById('cardBlood').textContent = st.blood || '—';
+            document.getElementById('cardSession').textContent = st.session || '২০২৬';
+            document.getElementById('cardMobile').textContent = st.mobile || '০১৩০৯-১১৮৭৭৮';
+            document.getElementById('cardAddress').textContent = st.address || 'নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা';
+            document.getElementById('cardBarcodeText').textContent = 'ID: ' + (st.id || st.reg_no || ('NADUFM-' + pickerLib.enNum(st.roll || '01')));
+
+            const photoWrap = document.getElementById('cardPhotoWrap');
+            photoWrap.innerHTML = '';
+            const img = document.createElement('img');
+            img.src = pickerLib.safePhotoUrl(st.photo);
+            img.alt = st.name_bn || 'Student Photo';
+            img.onerror = function () { this.src = '/logo.png'; };
+            photoWrap.appendChild(img);
+
+            const qCls = encodeURIComponent(st.classKey || clsVal || st.class_name || '');
+            const qRoll = encodeURIComponent(st.roll || '');
+            document.getElementById('linkIdToAdmit').href = '/admit.php?class=' + qCls + '&roll=' + qRoll;
+            document.getElementById('linkIdToMarksheet').href = '/result.php?class=' + qCls + '&roll=' + qRoll;
+            document.getElementById('linkIdToProfile').href = '/student-search.php?class=' + qCls + '&roll=' + qRoll + '&doc=attestation';
+
+            document.getElementById('idSearchCard').style.display = 'none';
+            document.getElementById('idResultSection').style.display = 'block';
+        }
+
+        window.resetIdSearch = function () {
+            document.getElementById('idResultSection').style.display = 'none';
+            document.getElementById('idSearchCard').style.display = 'block';
+        };
+
+        window.downloadIdCardPdf = async function () {
+            const sheet = document.getElementById('idCardPrintableSheet');
+            const stEl = document.getElementById('idExportStatus');
+            const setStatus = function (msg, isErr) {
+                stEl.style.display = 'block';
+                stEl.textContent = msg;
+                stEl.style.background = isErr ? '#fef2f2' : '#f0fdf4';
+                stEl.style.color = isErr ? '#b91c1c' : '#15803d';
+                stEl.style.border = isErr ? '1px solid #fecaca' : '1px solid #bbf7d0';
+            };
+            try {
+                if (!window.NadufmExport) throw new Error('এক্সপোর্ট স্ক্রিপ্ট লোড হয়নি।');
+                await window.NadufmExport.exportElementToA4Pdf({
+                    element: sheet,
+                    filename: 'student-id-card-' + Date.now() + '.pdf',
+                    marginMm: 6,
+                    onStatus: setStatus,
+                });
+            } catch (err) {
+                setStatus(err?.message || 'PDF ডাউনলোড ব্যর্থ হয়েছে।', true);
+            }
+        };
+
+        document.getElementById('idCardSearchForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            fetchAndShowIdCard(classEl.value, rollEl.value.trim());
+        });
+
+        pickerLib.attachClassRollPicker({
+            classSelect: classEl,
+            rollInput: rollEl,
+            rollAutoSelect: document.getElementById('idRollAutoSelect'),
+            rollListWrap: document.getElementById('idRollAutoWrap'),
+            rollChipsContainer: document.getElementById('idRollChips'),
+            rollDatalist: document.getElementById('idRollDatalist'),
+            rollCountBadge: document.getElementById('idRollCountBadge'),
+            onRollPicked: function (picked) {
+                fetchAndShowIdCard(classEl.value, picked.roll);
+            },
+        }).then(function (ctrl) {
+            const params = new URLSearchParams(window.location.search);
+            const initCls = params.get('class');
+            const initRoll = params.get('roll');
+            if (initCls) {
+                classEl.value = initCls;
+                if (ctrl) ctrl.loadRollsForClass(initCls);
+            }
+            if (initRoll) {
+                rollEl.value = initRoll;
+                fetchAndShowIdCard(initCls || classEl.value, initRoll);
+            }
+        });
+    })();
+</script>
+
+<%- include('partials/footer') %>
