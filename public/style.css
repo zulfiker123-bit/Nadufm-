@@ -1340,7 +1340,10 @@ main > #notice-section {
 }
 
 .is-in-workspace .merit-shell,
-.is-in-workspace .result-shell {
+.is-in-workspace .result-shell,
+.is-in-workspace .stu-hub-shell,
+.is-in-workspace .admit-shell,
+.is-in-workspace .id-shell {
     margin-top: 10px !important;
 }
 

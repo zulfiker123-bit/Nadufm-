@@ -28,6 +28,7 @@
             --text-muted: #475569;
             --radius: 14px;
             --topbar-h: 56px;
+            --sidebar-w: 262px;
         }
 
         * {
@@ -59,18 +60,18 @@
             outline-offset: 2px;
         }
 
-        /* 1. Single-row Top Header */
+        /* Single Top Header */
         .adm-topbar {
             height: var(--topbar-h);
             background: var(--surface);
             border-bottom: 1px solid var(--border);
-            padding: 0 20px;
+            padding: 0 18px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 16px;
+            gap: 12px;
             flex-shrink: 0;
-            z-index: 30;
+            z-index: 40;
         }
 
         .adm-brand {
@@ -78,6 +79,26 @@
             align-items: center;
             gap: 10px;
             min-width: 0;
+            flex: 1;
+        }
+
+        .adm-menu-btn {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            flex-shrink: 0;
+            font-size: 1rem;
+        }
+
+        .adm-menu-btn:hover {
+            background: #f1f5f9;
         }
 
         .adm-logo {
@@ -92,31 +113,44 @@
         .adm-title-wrap {
             min-width: 0;
             display: flex;
-            align-items: baseline;
-            gap: 10px;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
         }
 
-        .adm-title {
-            font-size: 1.08rem;
+        .adm-brand-btn {
+            border: none;
+            background: transparent;
+            padding: 0;
+            font-size: 1.04rem;
             font-weight: 700;
             color: var(--brand-dark);
+            cursor: pointer;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            text-align: left;
+            flex-shrink: 1;
         }
 
-        .adm-inst-sep {
-            color: #cbd5e1;
-            font-size: 0.9rem;
+        .adm-brand-btn:hover {
+            color: var(--brand);
+        }
+
+        .adm-crumb-sep {
+            color: #94a3b8;
+            font-size: 0.92rem;
             flex-shrink: 0;
         }
 
-        .adm-inst-sub {
-            font-size: 0.84rem;
-            color: var(--text-muted);
+        .adm-crumb-active {
+            font-size: 0.94rem;
+            font-weight: 600;
+            color: var(--text);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            min-width: 0;
         }
 
         .adm-actions {
@@ -126,18 +160,25 @@
             flex-shrink: 0;
         }
 
-        .adm-top-btn {
+        .adm-workspace-tools {
             display: inline-flex;
             align-items: center;
             gap: 6px;
+        }
+
+        .adm-top-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
             min-height: 38px;
-            padding: 0 14px;
-            border-radius: 10px;
+            padding: 0 12px;
+            border-radius: 9px;
             border: 1px solid var(--border);
             background: var(--surface);
             color: var(--text);
             text-decoration: none;
-            font-size: 0.88rem;
+            font-size: 0.86rem;
             font-weight: 600;
             cursor: pointer;
             white-space: nowrap;
@@ -161,161 +202,180 @@
             border-color: #fca5a5;
         }
 
-        /* 2. Unified Category Tabs Bar */
-        .adm-tabs-bar {
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
-            padding: 0 20px;
+        /* Shell: Sidebar + Main Viewport */
+        .adm-shell {
+            flex: 1;
+            min-height: 0;
             display: flex;
-            align-items: center;
-            gap: 6px;
-            overflow-x: auto;
-            scrollbar-width: none;
-            flex-shrink: 0;
-            z-index: 25;
-        }
-
-        .adm-tabs-bar::-webkit-scrollbar {
-            display: none;
-        }
-
-        .adm-cat-tab {
             position: relative;
-            display: inline-flex;
+        }
+
+        .adm-sidebar {
+            width: var(--sidebar-w);
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            overflow-y: auto;
+            padding: 14px 12px 24px 12px;
+            z-index: 35;
+        }
+
+        .adm-sidebar-head {
+            display: none;
             align-items: center;
-            gap: 7px;
-            min-height: 44px;
-            padding: 0 14px;
-            border: none;
+            justify-content: space-between;
+            padding: 2px 4px 12px 4px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .adm-sidebar-head span {
+            font-size: 0.96rem;
+            font-weight: 700;
+            color: var(--brand-dark);
+        }
+
+        .adm-sidebar-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface-subtle);
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        .side-home-btn {
+            width: 100%;
+            min-height: 42px;
+            padding: 0 12px;
+            border-radius: 10px;
+            border: 1px solid transparent;
             background: transparent;
-            color: var(--text-muted);
+            color: var(--text);
             font-size: 0.92rem;
             font-weight: 600;
             cursor: pointer;
-            white-space: nowrap;
-            flex-shrink: 0;
-            border-bottom: 2px solid transparent;
-            transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
-        }
-
-        .adm-cat-tab:hover {
-            color: var(--text);
-            background: var(--surface-subtle);
-        }
-
-        .adm-cat-tab.active {
-            color: var(--brand-dark);
-            border-bottom-color: var(--brand);
-            font-weight: 700;
-        }
-
-        .adm-cat-tab i {
-            font-size: 0.88rem;
-            opacity: 0.85;
-        }
-
-        /* 3. Persistent Feature Buttons Bar (shown when a category/feature is active) */
-        .adm-subbar {
-            background: var(--surface-subtle);
-            border-bottom: 1px solid var(--border);
-            padding: 8px 20px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            flex-shrink: 0;
-            z-index: 20;
-        }
-
-        .adm-feat-btns {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            overflow-x: auto;
-            scrollbar-width: none;
-            min-width: 0;
-            flex: 1;
-        }
-
-        .adm-feat-btns::-webkit-scrollbar {
-            display: none;
-        }
-
-        .feat-tab-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            min-height: 38px;
-            padding: 0 13px;
-            border-radius: 9px;
-            border: 1px solid var(--border);
-            background: var(--surface);
-            color: var(--text);
-            font-size: 0.88rem;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-            flex-shrink: 0;
-            transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-        }
-
-        .feat-tab-btn:hover {
-            border-color: rgba(21, 128, 61, 0.35);
-            background: var(--brand-tint);
-            color: var(--brand-dark);
-        }
-
-        .feat-tab-btn.active {
-            background: var(--brand);
-            border-color: var(--brand);
-            color: #ffffff;
-        }
-
-        .adm-subbar-tools {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex-shrink: 0;
-        }
-
-        .tool-icon-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            min-height: 38px;
-            padding: 0 11px;
-            border-radius: 9px;
-            border: 1px solid var(--border);
-            background: var(--surface);
-            color: var(--text-muted);
-            font-size: 0.84rem;
-            font-weight: 600;
-            text-decoration: none;
-            cursor: pointer;
-            white-space: nowrap;
-            flex-shrink: 0;
+            gap: 9px;
+            text-align: left;
+            margin-bottom: 12px;
             transition: background-color 0.15s ease, color 0.15s ease;
         }
 
-        .tool-icon-btn:hover {
-            background: #eef2f6;
-            color: var(--text);
+        .side-home-btn:hover {
+            background: var(--surface-subtle);
         }
 
-        /* 4. Overview Dashboard Shell (when 'all' tab is active) */
+        .side-home-btn.active {
+            background: var(--brand-tint);
+            color: var(--brand-dark);
+            border-color: rgba(21, 128, 61, 0.2);
+            font-weight: 700;
+        }
+
+        .side-group {
+            margin-bottom: 14px;
+        }
+
+        .side-group-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            padding: 4px 10px 6px 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .side-group-title i {
+            font-size: 0.76rem;
+            color: var(--brand);
+            opacity: 0.85;
+        }
+
+        .side-nav-btn {
+            width: 100%;
+            min-height: 38px;
+            padding: 6px 10px;
+            border-radius: 9px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--text);
+            font-size: 0.88rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+
+        .side-nav-btn i {
+            width: 16px;
+            text-align: center;
+            font-size: 0.84rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .side-nav-btn span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .side-nav-btn:hover {
+            background: var(--surface-subtle);
+            color: var(--brand-dark);
+        }
+
+        .side-nav-btn.active {
+            background: var(--brand-tint);
+            color: var(--brand-dark);
+            border-color: rgba(21, 128, 61, 0.22);
+            font-weight: 700;
+        }
+
+        .side-nav-btn.active i {
+            color: var(--brand);
+        }
+
+        .adm-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            z-index: 45;
+        }
+
+        .adm-main {
+            flex: 1;
+            min-width: 0;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Overview Grid */
         .dash-shell {
             flex: 1;
             min-height: 0;
             overflow-y: auto;
-            padding: 22px 20px 44px 20px;
+            padding: 22px 22px 44px 22px;
         }
 
         .dash-inner {
-            max-width: 1220px;
+            max-width: 1120px;
             margin: 0 auto;
         }
 
-        /* Flat 6-KPI Summary Strip */
         .stats-strip {
             display: grid;
             grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -358,7 +418,6 @@
             text-overflow: ellipsis;
         }
 
-        /* Overview Header + Search */
         .dash-toolbar {
             display: flex;
             align-items: center;
@@ -412,7 +471,6 @@
             border-color: var(--brand);
         }
 
-        /* Categorized Feature Button Sections */
         .cat-section {
             margin-bottom: 24px;
         }
@@ -439,22 +497,6 @@
         .cat-section-title i {
             color: var(--brand);
             font-size: 0.94rem;
-        }
-
-        .cat-open-btn {
-            border: none;
-            background: transparent;
-            color: var(--brand);
-            font-size: 0.84rem;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-            padding: 4px 6px;
-            border-radius: 6px;
-        }
-
-        .cat-open-btn:hover {
-            background: var(--brand-tint);
         }
 
         .dash-grid {
@@ -548,7 +590,7 @@
             cursor: pointer;
         }
 
-        /* 5. Integrated Workspace Viewport */
+        /* Integrated Workspace Viewport */
         .adm-workspace {
             flex: 1;
             min-height: 0;
@@ -577,44 +619,59 @@
         }
 
         @media (max-width: 1024px) {
+            .adm-menu-btn {
+                display: inline-flex;
+            }
+            .adm-sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                width: 280px;
+                max-width: 84vw;
+                z-index: 50;
+                transform: translateX(-105%);
+                transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+                box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16);
+            }
+            .adm-sidebar.open {
+                transform: translateX(0);
+            }
+            .adm-sidebar-head {
+                display: flex;
+            }
+            .adm-backdrop.open {
+                display: block;
+            }
             .stats-strip {
                 grid-template-columns: repeat(3, minmax(0, 1fr));
-            }
-            .adm-inst-sep, .adm-inst-sub {
-                display: none;
             }
         }
 
         @media (max-width: 640px) {
             .adm-topbar {
-                padding: 0 12px;
+                padding: 0 10px;
                 gap: 8px;
             }
-            .adm-title {
-                font-size: 0.98rem;
+            .adm-brand {
+                gap: 8px;
+            }
+            .adm-logo {
+                width: 30px;
+                height: 30px;
+            }
+            .adm-brand-btn {
+                font-size: 0.94rem;
+            }
+            .adm-crumb-sep, .adm-crumb-active {
+                display: none !important;
             }
             .adm-top-btn {
-                min-height: 36px;
+                min-height: 38px;
                 padding: 0 10px;
                 font-size: 0.82rem;
             }
-            .adm-tabs-bar {
-                padding: 0 10px;
-            }
-            .adm-cat-tab {
-                min-height: 44px;
-                padding: 0 11px;
-                font-size: 0.86rem;
-            }
-            .adm-subbar {
-                padding: 8px 10px;
-            }
-            .feat-tab-btn {
-                min-height: 40px;
-                padding: 0 11px;
-                font-size: 0.84rem;
-            }
-            .tool-icon-btn span {
+            .hide-sm {
                 display: none;
             }
             .dash-shell {
@@ -637,237 +694,248 @@
                 min-height: 70px;
             }
         }
+
+        @media (max-width: 420px) {
+            .hide-xs {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
 
     <%
         const currentMod = modules.find(function(m) { return m.id === activeFeature; }) || null;
-        const currentTab = currentMod ? currentMod.category : (activeTab || 'all');
         const categoryGroups = categories.filter(function(c) { return c.id !== 'all'; });
-        const subFeatures = currentTab !== 'all'
-            ? modules.filter(function(m) { return m.category === currentTab; })
-            : [];
     %>
 
     <header class="adm-topbar">
         <div class="adm-brand">
+            <button type="button" id="sidebarToggleBtn" class="adm-menu-btn" aria-label="অ্যাডমিন মেনু খুলুন" aria-expanded="false">
+                <i class="fas fa-bars" aria-hidden="true"></i>
+            </button>
             <img src="/logo.png" alt="মাদ্রাসার লোগো" class="adm-logo" referrerpolicy="no-referrer">
             <div class="adm-title-wrap">
-                <span class="adm-title">অ্যাডমিন প্যানেল ও ড্যাশবোর্ড</span>
-                <span class="adm-inst-sep" aria-hidden="true">·</span>
-                <span class="adm-inst-sub"><%= institutionName %></span>
+                <button type="button" id="brandHomeBtn" class="adm-brand-btn" title="ড্যাশবোর্ডের মূল পাতায় ফিরে যান">অ্যাডমিন ড্যাশবোর্ড</button>
+                <span id="topbarSep" class="adm-crumb-sep <%= currentMod ? '' : 'is-hidden' %>" aria-hidden="true">/</span>
+                <span id="topbarActiveLabel" class="adm-crumb-active <%= currentMod ? '' : 'is-hidden' %>"><%= currentMod ? currentMod.label : '' %></span>
             </div>
         </div>
         <div class="adm-actions">
-            <a href="/index.php" class="adm-top-btn">
+            <span id="workspaceTools" class="adm-workspace-tools <%= currentMod ? '' : 'is-hidden' %>">
+                <button type="button" id="refreshFrameBtn" class="adm-top-btn" title="বর্তমান ট্যাব রিফ্রেশ করুন">
+                    <i class="fas fa-sync-alt" aria-hidden="true"></i>
+                    <span class="hide-sm">রিফ্রেশ</span>
+                </button>
+                <button type="button" id="homeGridBtn" class="adm-top-btn" title="সব ফিচার বাটনে ফিরে যান">
+                    <i class="fas fa-th-large" aria-hidden="true"></i>
+                    <span class="hide-sm">সব ফিচার</span>
+                </button>
+            </span>
+            <a href="/index.php" class="adm-top-btn" title="মূল ওয়েবসাইট দেখুন">
                 <i class="fas fa-external-link-alt" aria-hidden="true"></i>
-                <span>ওয়েবসাইট</span>
+                <span class="hide-xs">ওয়েবসাইট</span>
             </a>
             <form method="POST" action="/admin-logout" style="margin:0;">
-                <button type="submit" class="adm-top-btn adm-logout-btn" title="অ্যাডমিন প্যানেল ও ড্যাশবোর্ড থেকে লগআউট করুন">
+                <button type="submit" class="adm-top-btn adm-logout-btn" title="অ্যাডমিন প্যানেল থেকে লগআউট করুন">
                     <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
-                    <span>লগআউট</span>
+                    <span class="hide-xs">লগআউট</span>
                 </button>
             </form>
         </div>
     </header>
 
-    <nav class="adm-tabs-bar" role="tablist" aria-label="অ্যাডমিন প্যানেল বিভাগ ট্যাব">
-        <% categories.forEach(function(cat) { %>
-            <button
-                type="button"
-                role="tab"
-                class="adm-cat-tab <%= currentTab === cat.id ? 'active' : '' %>"
-                data-tab-id="<%= cat.id %>"
-                aria-selected="<%= currentTab === cat.id ? 'true' : 'false' %>"
-            >
-                <i class="<%= cat.icon %>" aria-hidden="true"></i>
-                <span><%= cat.label %></span>
-            </button>
-        <% }); %>
-    </nav>
+    <div class="adm-shell">
+        <div id="sidebarBackdrop" class="adm-backdrop" aria-hidden="true"></div>
 
-    <div id="featureSubbar" class="adm-subbar <%= currentMod ? '' : 'is-hidden' %>">
-        <div id="featureButtonsStrip" class="adm-feat-btns" role="tablist" aria-label="বিভাগীয় ফিচার বাটন">
-            <% subFeatures.forEach(function(mod) { %>
-                <button
-                    type="button"
-                    role="tab"
-                    class="feat-tab-btn <%= currentMod && currentMod.id === mod.id ? 'active' : '' %>"
-                    data-feature-btn="<%= mod.id %>"
-                    aria-selected="<%= currentMod && currentMod.id === mod.id ? 'true' : 'false' %>"
-                >
-                    <i class="<%= mod.icon %>" aria-hidden="true"></i>
-                    <span><%= mod.label %></span>
+        <aside id="admSidebar" class="adm-sidebar" aria-label="অ্যাডমিন নেভিগেশন">
+            <div class="adm-sidebar-head">
+                <span>অ্যাডমিন মেনু</span>
+                <button type="button" id="sidebarCloseBtn" class="adm-sidebar-close" aria-label="মেনু বন্ধ করুন">
+                    <i class="fas fa-times" aria-hidden="true"></i>
                 </button>
-            <% }); %>
-        </div>
-        <div class="adm-subbar-tools">
-            <button type="button" id="refreshFrameBtn" class="tool-icon-btn" title="বর্তমান ট্যাব রিফ্রেশ করুন">
-                <i class="fas fa-sync-alt" aria-hidden="true"></i>
-                <span>রিফ্রেশ</span>
-            </button>
-            <button type="button" id="homeGridBtn" class="tool-icon-btn" title="সব ফিচার বাটনে ফিরে যান">
+            </div>
+
+            <button type="button" id="sideHomeBtn" class="side-home-btn <%= currentMod ? '' : 'active' %>">
                 <i class="fas fa-th-large" aria-hidden="true"></i>
-                <span>সব ফিচার</span>
+                <span>ড্যাশবোর্ড (সব ফিচার)</span>
             </button>
+
+            <% categoryGroups.forEach(function(cat) {
+                const catModules = modules.filter(function(m) { return m.category === cat.id; });
+            %>
+                <div class="side-group">
+                    <div class="side-group-title">
+                        <i class="<%= cat.icon %>" aria-hidden="true"></i>
+                        <span><%= cat.label %></span>
+                    </div>
+                    <% catModules.forEach(function(mod) { %>
+                        <button
+                            type="button"
+                            class="side-nav-btn <%= currentMod && currentMod.id === mod.id ? 'active' : '' %>"
+                            data-open-feature="<%= mod.id %>"
+                            title="<%= mod.label %>"
+                        >
+                            <i class="<%= mod.icon %>" aria-hidden="true"></i>
+                            <span><%= mod.label %></span>
+                        </button>
+                    <% }); %>
+                </div>
+            <% }); %>
+        </aside>
+
+        <div class="adm-main">
+            <main id="view-grid" class="dash-shell <%= currentMod ? 'is-hidden' : '' %>">
+                <div class="dash-inner">
+                    <section class="stats-strip" aria-label="মাদ্রাসার সারসংক্ষেপ">
+                        <% summaryStats.forEach(function(stat) { %>
+                            <button type="button" class="stat-btn" data-open-feature="<%= stat.feature %>">
+                                <span class="stat-val"><%= stat.value %></span>
+                                <span class="stat-lbl"><%= stat.label %></span>
+                            </button>
+                        <% }); %>
+                    </section>
+
+                    <div class="dash-toolbar">
+                        <div class="dash-heading-group">
+                            <h1>একীভূত অ্যাডমিন ও পরিচালনা কেন্দ্র</h1>
+                            <p>বাম পাশের মেনু বা নিচের যেকোনো ফিচার বাটনে ক্লিক করে সরাসরি কাজ শুরু করুন</p>
+                        </div>
+                        <div class="dash-search-box">
+                            <i class="fas fa-search" aria-hidden="true"></i>
+                            <input
+                                type="search"
+                                id="featureSearchInput"
+                                class="dash-search-input"
+                                placeholder="ফিচার খুঁজুন (রুটিন, ফলাফল, নোটিশ)..."
+                                aria-label="ফিচার খুঁজুন"
+                            >
+                        </div>
+                    </div>
+
+                    <div id="categorySectionsWrap">
+                        <% categoryGroups.forEach(function(cat) {
+                            const catModules = modules.filter(function(m) { return m.category === cat.id; });
+                        %>
+                            <section class="cat-section" data-cat-section="<%= cat.id %>">
+                                <div class="cat-section-head">
+                                    <h2 class="cat-section-title">
+                                        <i class="<%= cat.icon %>" aria-hidden="true"></i>
+                                        <span><%= cat.label %></span>
+                                    </h2>
+                                </div>
+                                <div class="dash-grid" role="list" aria-label="<%= cat.label %> ফিচার বাটন">
+                                    <% catModules.forEach(function(mod) { %>
+                                        <button
+                                            type="button"
+                                            class="dash-btn"
+                                            data-open-feature="<%= mod.id %>"
+                                            data-keywords="<%= (mod.label + ' ' + mod.meta + ' ' + cat.label).toLowerCase() %>"
+                                            role="listitem"
+                                        >
+                                            <span class="dash-btn-icon <%= mod.tone %>">
+                                                <i class="<%= mod.icon %>" aria-hidden="true"></i>
+                                            </span>
+                                            <span class="dash-btn-text">
+                                                <span class="dash-btn-title"><%= mod.label %></span>
+                                                <span class="dash-btn-meta"><%= mod.meta %></span>
+                                            </span>
+                                        </button>
+                                    <% }); %>
+                                </div>
+                            </section>
+                        <% }); %>
+                    </div>
+
+                    <div id="dashEmptyState" class="dash-empty is-hidden">
+                        <p>আপনার অনুসন্ধানের সাথে মিলে এমন কোনো ফিচার পাওয়া যায়নি।</p>
+                        <button type="button" id="resetSearchBtn" class="dash-empty-reset">সব ফিচার দেখান</button>
+                    </div>
+                </div>
+            </main>
+
+            <section id="view-workspace" class="adm-workspace <%= currentMod ? '' : 'is-hidden' %>">
+                <iframe
+                    id="workspaceFrame"
+                    name="nadufm_workspace_frame"
+                    class="adm-frame"
+                    src="<%= currentMod ? currentMod.src : 'about:blank' %>"
+                    title="অ্যাডমিন ওয়ার্কস্পেস"
+                ></iframe>
+            </section>
         </div>
     </div>
-
-    <main id="view-grid" class="dash-shell <%= currentMod ? 'is-hidden' : '' %>">
-        <div class="dash-inner">
-            <section class="stats-strip" aria-label="মাদ্রাসার সারসংক্ষেপ">
-                <% summaryStats.forEach(function(stat) { %>
-                    <button type="button" class="stat-btn" data-open-feature="<%= stat.feature %>">
-                        <span class="stat-val"><%= stat.value %></span>
-                        <span class="stat-lbl"><%= stat.label %></span>
-                    </button>
-                <% }); %>
-            </section>
-
-            <div class="dash-toolbar">
-                <div class="dash-heading-group">
-                    <h1>একীভূত অ্যাডমিন ও পরিচালনা কেন্দ্র</h1>
-                    <p>উপরের ট্যাব বা নিচের যেকোনো ফিচার বাটনে ক্লিক করে সরাসরি কাজ শুরু করুন</p>
-                </div>
-                <div class="dash-search-box">
-                    <i class="fas fa-search" aria-hidden="true"></i>
-                    <input
-                        type="search"
-                        id="featureSearchInput"
-                        class="dash-search-input"
-                        placeholder="ফিচার খুঁজুন (রুটিন, ফলাফল, নোটিশ)..."
-                        aria-label="ফিচার খুঁজুন"
-                    >
-                </div>
-            </div>
-
-            <div id="categorySectionsWrap">
-                <% categoryGroups.forEach(function(cat) {
-                    const catModules = modules.filter(function(m) { return m.category === cat.id; });
-                %>
-                    <section class="cat-section" data-cat-section="<%= cat.id %>">
-                        <div class="cat-section-head">
-                            <h2 class="cat-section-title">
-                                <i class="<%= cat.icon %>" aria-hidden="true"></i>
-                                <span><%= cat.label %></span>
-                            </h2>
-                            <button type="button" class="cat-open-btn" data-open-tab="<%= cat.id %>">
-                                ট্যাব খুলুন <i class="fas fa-arrow-right" aria-hidden="true"></i>
-                            </button>
-                        </div>
-                        <div class="dash-grid" role="list" aria-label="<%= cat.label %> ফিচার বাটন">
-                            <% catModules.forEach(function(mod) { %>
-                                <button
-                                    type="button"
-                                    class="dash-btn"
-                                    data-open-feature="<%= mod.id %>"
-                                    data-keywords="<%= (mod.label + ' ' + mod.meta + ' ' + cat.label).toLowerCase() %>"
-                                    role="listitem"
-                                >
-                                    <span class="dash-btn-icon <%= mod.tone %>">
-                                        <i class="<%= mod.icon %>" aria-hidden="true"></i>
-                                    </span>
-                                    <span class="dash-btn-text">
-                                        <span class="dash-btn-title"><%= mod.label %></span>
-                                        <span class="dash-btn-meta"><%= mod.meta %></span>
-                                    </span>
-                                </button>
-                            <% }); %>
-                        </div>
-                    </section>
-                <% }); %>
-            </div>
-
-            <div id="dashEmptyState" class="dash-empty is-hidden">
-                <p>আপনার অনুসন্ধানের সাথে মিলে এমন কোনো ফিচার পাওয়া যায়নি।</p>
-                <button type="button" id="resetSearchBtn" class="dash-empty-reset">সব ফিচার দেখান</button>
-            </div>
-        </div>
-    </main>
-
-    <section id="view-workspace" class="adm-workspace <%= currentMod ? '' : 'is-hidden' %>">
-        <iframe
-            id="workspaceFrame"
-            name="nadufm_workspace_frame"
-            class="adm-frame"
-            src="<%= currentMod ? currentMod.src : 'about:blank' %>"
-            title="অ্যাডমিন ওয়ার্কস্পেস"
-        ></iframe>
-    </section>
 
     <script>
         (function () {
             var modulesList = <%- JSON.stringify(modules) %>;
             var modulesMap = {};
-            var lastFeatureByTab = {};
+            var firstFeatureByTab = {};
             modulesList.forEach(function (m) {
                 modulesMap[m.id] = m;
-                if (!lastFeatureByTab[m.category]) {
-                    lastFeatureByTab[m.category] = m.id;
+                if (!firstFeatureByTab[m.category]) {
+                    firstFeatureByTab[m.category] = m.id;
                 }
             });
 
             var gridEl = document.getElementById('view-grid');
             var workspaceEl = document.getElementById('view-workspace');
             var frameEl = document.getElementById('workspaceFrame');
-            var subbarEl = document.getElementById('featureSubbar');
-            var stripEl = document.getElementById('featureButtonsStrip');
+            var workspaceToolsEl = document.getElementById('workspaceTools');
+            var topbarSepEl = document.getElementById('topbarSep');
+            var topbarLabelEl = document.getElementById('topbarActiveLabel');
             var refreshBtn = document.getElementById('refreshFrameBtn');
             var homeGridBtn = document.getElementById('homeGridBtn');
+            var brandHomeBtn = document.getElementById('brandHomeBtn');
+            var sideHomeBtn = document.getElementById('sideHomeBtn');
+            var sidebarEl = document.getElementById('admSidebar');
+            var backdropEl = document.getElementById('sidebarBackdrop');
+            var sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+            var sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
             var searchInput = document.getElementById('featureSearchInput');
             var emptyStateEl = document.getElementById('dashEmptyState');
             var resetSearchBtn = document.getElementById('resetSearchBtn');
-            var catTabs = document.querySelectorAll('.adm-cat-tab[data-tab-id]');
+            var sideNavBtns = document.querySelectorAll('.side-nav-btn[data-open-feature]');
 
             var currentFeatureId = <%- JSON.stringify(activeFeature || '') %>;
-            var currentTabId = <%- JSON.stringify(currentTab || 'all') %>;
+            var initTabId = <%- JSON.stringify(activeTab || 'all') %>;
 
-            function esc(str) {
-                return String(str || '').replace(/[&<>"']/g, function (ch) {
-                    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
-                });
-            }
-
-            function renderCategoryTabs(activeTab) {
-                catTabs.forEach(function (tab) {
-                    var isAct = tab.getAttribute('data-tab-id') === activeTab;
-                    tab.classList.toggle('active', isAct);
-                    tab.setAttribute('aria-selected', isAct ? 'true' : 'false');
-                });
-            }
-
-            function renderFeatureButtonsStrip(tabId, activeFeatId) {
-                var feats = modulesList.filter(function (m) { return m.category === tabId; });
-                if (!feats.length) {
-                    subbarEl.classList.add('is-hidden');
-                    stripEl.innerHTML = '';
-                    return;
+            function setSidebarOpen(open) {
+                sidebarEl.classList.toggle('open', open);
+                backdropEl.classList.toggle('open', open);
+                if (sidebarToggleBtn) {
+                    sidebarToggleBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
                 }
-                stripEl.innerHTML = feats.map(function (mod) {
-                    var isAct = mod.id === activeFeatId;
-                    return (
-                        '<button type="button" role="tab" class="feat-tab-btn' + (isAct ? ' active' : '') +
-                        '" data-feature-btn="' + esc(mod.id) + '" aria-selected="' + (isAct ? 'true' : 'false') + '">' +
-                        '<i class="' + esc(mod.icon) + '" aria-hidden="true"></i>' +
-                        '<span>' + esc(mod.label) + '</span>' +
-                        '</button>'
-                    );
-                }).join('');
-                subbarEl.classList.remove('is-hidden');
+            }
+
+            function syncSidebarActive(activeFeatId) {
+                if (sideHomeBtn) {
+                    sideHomeBtn.classList.toggle('active', !activeFeatId);
+                }
+                sideNavBtns.forEach(function (btn) {
+                    var isAct = btn.getAttribute('data-open-feature') === activeFeatId;
+                    btn.classList.toggle('active', isAct);
+                });
+            }
+
+            function syncTopbar(mod) {
+                var active = Boolean(mod);
+                workspaceToolsEl.classList.toggle('is-hidden', !active);
+                topbarSepEl.classList.toggle('is-hidden', !active);
+                topbarLabelEl.classList.toggle('is-hidden', !active);
+                topbarLabelEl.textContent = mod ? mod.label : '';
             }
 
             function showHomeGrid(pushHistory) {
-                currentTabId = 'all';
                 currentFeatureId = '';
-                renderCategoryTabs('all');
-                subbarEl.classList.add('is-hidden');
+                syncSidebarActive('');
+                syncTopbar(null);
                 workspaceEl.classList.add('is-hidden');
                 gridEl.classList.remove('is-hidden');
                 frameEl.setAttribute('src', 'about:blank');
+                setSidebarOpen(false);
                 if (pushHistory) {
-                    history.pushState({ tab: 'all', feature: '' }, '', '/dashboard.php');
+                    history.pushState({ feature: '' }, '', '/dashboard.php');
                 }
             }
 
@@ -878,11 +946,8 @@
                     return;
                 }
                 currentFeatureId = mod.id;
-                currentTabId = mod.category;
-                lastFeatureByTab[mod.category] = mod.id;
-
-                renderCategoryTabs(mod.category);
-                renderFeatureButtonsStrip(mod.category, mod.id);
+                syncSidebarActive(mod.id);
+                syncTopbar(mod);
 
                 gridEl.classList.add('is-hidden');
                 workspaceEl.classList.remove('is-hidden');
@@ -891,30 +956,14 @@
                     frameEl.setAttribute('src', mod.src);
                 }
 
-                var activeBtn = stripEl.querySelector('.feat-tab-btn.active');
-                if (activeBtn && typeof activeBtn.scrollIntoView === 'function') {
-                    activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
-                }
+                setSidebarOpen(false);
 
                 if (pushHistory) {
                     history.pushState(
-                        { tab: mod.category, feature: mod.id },
+                        { feature: mod.id },
                         '',
                         '/dashboard.php?feature=' + encodeURIComponent(mod.id)
                     );
-                }
-            }
-
-            function openTab(tabId, pushHistory) {
-                if (!tabId || tabId === 'all') {
-                    showHomeGrid(pushHistory);
-                    return;
-                }
-                var targetFeat = lastFeatureByTab[tabId];
-                if (targetFeat && modulesMap[targetFeat]) {
-                    openFeature(targetFeat, pushHistory);
-                } else {
-                    showHomeGrid(pushHistory);
                 }
             }
 
@@ -941,39 +990,40 @@
                 emptyStateEl.classList.toggle('is-hidden', anyVisible);
             }
 
-            catTabs.forEach(function (tab) {
-                tab.addEventListener('click', function () {
-                    openTab(tab.getAttribute('data-tab-id'), true);
-                });
-            });
-
-            stripEl.addEventListener('click', function (e) {
-                var btn = e.target.closest('.feat-tab-btn[data-feature-btn]');
-                if (btn) {
-                    openFeature(btn.getAttribute('data-feature-btn'), true);
-                }
-            });
-
             document.querySelectorAll('[data-open-feature]').forEach(function (btn) {
                 btn.addEventListener('click', function () {
                     openFeature(btn.getAttribute('data-open-feature'), true);
                 });
             });
 
-            document.querySelectorAll('[data-open-tab]').forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    openTab(btn.getAttribute('data-open-tab'), true);
+            [homeGridBtn, brandHomeBtn, sideHomeBtn].forEach(function (el) {
+                if (el) {
+                    el.addEventListener('click', function () {
+                        showHomeGrid(true);
+                    });
+                }
+            });
+
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', function () {
+                    var mod = currentFeatureId ? modulesMap[currentFeatureId] : null;
+                    if (mod) {
+                        frameEl.setAttribute('src', mod.src);
+                    }
                 });
-            });
+            }
 
-            homeGridBtn.addEventListener('click', function () {
-                showHomeGrid(true);
-            });
+            if (sidebarToggleBtn) {
+                sidebarToggleBtn.addEventListener('click', function () {
+                    setSidebarOpen(!sidebarEl.classList.contains('open'));
+                });
+            }
 
-            refreshBtn.addEventListener('click', function () {
-                var mod = currentFeatureId ? modulesMap[currentFeatureId] : null;
-                if (mod) {
-                    frameEl.setAttribute('src', mod.src);
+            [sidebarCloseBtn, backdropEl].forEach(function (el) {
+                if (el) {
+                    el.addEventListener('click', function () {
+                        setSidebarOpen(false);
+                    });
                 }
             });
 
@@ -992,19 +1042,18 @@
             window.addEventListener('popstate', function () {
                 var params = new URLSearchParams(window.location.search);
                 var f = params.get('feature') || '';
-                var t = params.get('tab') || 'all';
+                var t = params.get('tab') || '';
                 if (f && modulesMap[f]) {
                     openFeature(f, false);
-                } else if (t && t !== 'all') {
-                    openTab(t, false);
+                } else if (t && firstFeatureByTab[t]) {
+                    openFeature(firstFeatureByTab[t], false);
                 } else {
                     showHomeGrid(false);
                 }
             });
 
-            // Initialize if opened with ?tab=category without ?feature=
-            if (!currentFeatureId && currentTabId && currentTabId !== 'all') {
-                openTab(currentTabId, false);
+            if (!currentFeatureId && initTabId && initTabId !== 'all' && firstFeatureByTab[initTabId]) {
+                openFeature(firstFeatureByTab[initTabId], false);
             }
         })();
     </script>

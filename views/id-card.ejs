@@ -592,9 +592,10 @@
 
             const qCls = encodeURIComponent(st.classKey || clsVal || st.class_name || '');
             const qRoll = encodeURIComponent(st.roll || '');
-            document.getElementById('linkIdToAdmit').href = '/admit.php?class=' + qCls + '&roll=' + qRoll;
-            document.getElementById('linkIdToMarksheet').href = '/result.php?class=' + qCls + '&roll=' + qRoll;
-            document.getElementById('linkIdToProfile').href = '/student-search.php?class=' + qCls + '&roll=' + qRoll + '&doc=attestation';
+            const embedSuffix = <%- isEmbedded ? "'&embed=1'" : "''" %>;
+            document.getElementById('linkIdToAdmit').href = '/admit.php?class=' + qCls + '&roll=' + qRoll + embedSuffix;
+            document.getElementById('linkIdToMarksheet').href = '/result.php?class=' + qCls + '&roll=' + qRoll + embedSuffix;
+            document.getElementById('linkIdToProfile').href = '/student-search.php?class=' + qCls + '&roll=' + qRoll + '&doc=attestation' + embedSuffix;
 
             document.getElementById('idSearchCard').style.display = 'none';
             document.getElementById('idResultSection').style.display = 'block';
