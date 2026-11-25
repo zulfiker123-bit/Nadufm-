@@ -153,19 +153,6 @@
             <p class="merit-subtitle"><%= selectedExamTitle || ('বার্ষিক পরীক্ষার মেধাতালিকা' + (selectedClass !== '' ? ' · শ্রেণি: ' + selectedName : '')) %></p>
         </div>
 
-        <% if (typeof uploadedExams !== 'undefined' && uploadedExams.length > 0) { %>
-        <div class="no-print" style="display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-bottom:14px;">
-            <% uploadedExams.forEach(function(ex) { const isCur = (selectedClass === 'excel:' + ex.id || selectedExamId === ex.id); %>
-                <a href="/merit-list.php?class_id=excel:<%= encodeURIComponent(ex.id) %>"
-                   class="merit-btn <%= isCur ? '' : 'merit-btn-secondary' %>"
-                   style="min-height:36px; padding:6px 14px; font-size:0.85rem;">
-                    <i class="fas fa-layer-group" aria-hidden="true"></i>
-                    <span><%= ex.className || ex.title %> (<%= convertToBengali(ex.rowCount) %>)</span>
-                </a>
-            <% }); %>
-        </div>
-        <% } %>
-
         <form method="GET" action="/merit-list.php" class="merit-form no-print">
             <select name="class_id" required aria-label="শ্রেণি বা পরীক্ষা নির্বাচন করুন">
                 <option value="">শ্রেণি / পরীক্ষা নির্বাচন করুন</option>
@@ -204,7 +191,6 @@
                         <th>GPA</th>
                         <th>গড় (%)</th>
                         <th>ফলাফল</th>
-                        <th class="no-print">মার্কশিট</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -227,16 +213,6 @@
                                 <span class="status-pass">উত্তীর্ণ</span>
                             <% } %>
                         </td>
-                        <td class="no-print">
-                            <% if (row.roll) { %>
-                            <a href="/result.php?class=<%= encodeURIComponent(selectedClassValue || selectedClass) %>&roll=<%= encodeURIComponent(row.roll) %>"
-                               class="merit-btn merit-btn-secondary"
-                               style="min-height:32px; padding:4px 10px; font-size:0.82rem;">
-                                <i class="fas fa-file-alt" aria-hidden="true"></i>
-                                <span>মার্কশিট</span>
-                            </a>
-                            <% } else { %>—<% } %>
-                        </td>
                     </tr>
                     <% }); %>
                 </tbody>
@@ -253,7 +229,7 @@
             </button>
             <button type="button" onclick="downloadMeritWord()" class="merit-btn merit-btn-blue">
                 <i class="fas fa-file-word" aria-hidden="true"></i>
-                <span>Word (.docx)</span>
+                <span>Word (.doc)</span>
             </button>
         </div>
         <div id="meritExportStatus" class="no-print" style="display:none; margin-top:12px; padding:9px 13px; border-radius:9px; font-size:0.88rem; font-weight:600; text-align:center;"></div>
@@ -296,10 +272,9 @@
                     if (!window.NadufmExport) throw new Error('এক্সপোর্ট স্ক্রিপ্ট লোড হয়নি।');
                     await window.NadufmExport.exportElementToWord({
                         element: el,
-                        filename: 'merit-list.docx',
+                        filename: 'merit-list.doc',
                         title: 'Merit List',
                         cssText: cssText,
-                        marginMm: [14, 14, 14, 14],
                         onStatus: setMeritStatus
                     });
                 } catch (err) {

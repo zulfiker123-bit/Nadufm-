@@ -1,152 +1,190 @@
-<%- include('partials/header', { pageTitle: 'অ্যাডমিন প্রবেশ - নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা' }) %>
-<style>
-    .login-shell {
-        min-height: calc(100vh - 180px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 24px 16px;
-    }
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>অ্যাডমিন প্রবেশ - নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</title>
+    <link rel="shortcut icon" href="/logo.png" type="image/x-icon">
+    <link rel="icon" href="/pwa-192x192.png" type="image/png" sizes="192x192">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#14532d">
+    <link rel="stylesheet" href="/fonts.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    .login-card {
-        width: 100%;
-        max-width: 420px;
-        background: #ffffff;
-        border: 1px solid rgba(15, 23, 42, 0.09);
-        border-radius: 18px;
-        box-shadow: 0 12px 30px -6px rgba(15, 23, 42, 0.1);
-        overflow: hidden;
-    }
+        body {
+            min-height: 100vh;
+            font-family: 'Kalpurush', sans-serif;
+            background: #f4f7f5;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            -webkit-font-smoothing: antialiased;
+        }
 
-    .login-head {
-        background: linear-gradient(135deg, #14532d 0%, #15803d 100%);
-        color: #ffffff;
-        padding: 26px 22px 22px 22px;
-        text-align: center;
-    }
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            background: #ffffff;
+            border: 1px solid rgba(15, 23, 42, 0.09);
+            border-radius: 18px;
+            box-shadow: 0 12px 30px -6px rgba(15, 23, 42, 0.1);
+            overflow: hidden;
+        }
 
-    .login-logo {
-        width: 66px;
-        height: 66px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid rgba(255, 255, 255, 0.75);
-        background: #ffffff;
-        margin: 0 auto 10px auto;
-        display: block;
-    }
+        .login-head {
+            background: linear-gradient(135deg, #14532d 0%, #15803d 100%);
+            color: #ffffff;
+            padding: 26px 22px 22px 22px;
+            text-align: center;
+        }
 
-    .login-head h1 {
-        font-size: 1.24rem;
-        font-weight: 700;
-        margin-bottom: 4px;
-    }
+        .login-logo {
+            width: 66px;
+            height: 66px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.75);
+            background: #ffffff;
+            margin-bottom: 10px;
+        }
 
-    .login-head p {
-        font-size: 0.88rem;
-        opacity: 0.92;
-        line-height: 1.35;
-    }
+        .login-head h1 {
+            font-size: 1.24rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
 
-    .login-body {
-        padding: 24px 22px 26px 22px;
-    }
+        .login-head p {
+            font-size: 0.88rem;
+            opacity: 0.92;
+            line-height: 1.35;
+        }
 
-    .login-alert {
-        padding: 10px 13px;
-        border-radius: 10px;
-        background: #fef2f2;
-        border: 1px solid #fecaca;
-        color: #b91c1c;
-        font-size: 0.9rem;
-        font-weight: 600;
-        margin-bottom: 16px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
+        .login-body {
+            padding: 24px 22px 22px 22px;
+        }
 
-    .login-field {
-        margin-bottom: 16px;
-    }
+        .login-alert {
+            padding: 10px 13px;
+            border-radius: 10px;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-    .login-field label {
-        display: block;
-        font-size: 0.94rem;
-        font-weight: 600;
-        color: #334155;
-        margin-bottom: 6px;
-    }
+        .login-field {
+            margin-bottom: 16px;
+        }
 
-    .pw-wrap {
-        position: relative;
-    }
+        .login-field label {
+            display: block;
+            font-size: 0.94rem;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 6px;
+        }
 
-    .pw-input {
-        width: 100%;
-        height: 46px;
-        padding: 0 44px 0 14px;
-        border: 1px solid rgba(15, 23, 42, 0.16);
-        border-radius: 11px;
-        background: #f8faf9;
-        color: #0f172a;
-        font-family: inherit;
-        font-size: 1rem;
-        outline: none;
-        transition: border-color 0.15s ease, background-color 0.15s ease;
-    }
+        .pw-wrap {
+            position: relative;
+        }
 
-    .pw-input:focus {
-        border-color: #15803d;
-        background: #ffffff;
-    }
+        .pw-input {
+            width: 100%;
+            height: 46px;
+            padding: 0 44px 0 14px;
+            border: 1px solid rgba(15, 23, 42, 0.16);
+            border-radius: 11px;
+            background: #f8faf9;
+            color: #0f172a;
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.15s ease, background-color 0.15s ease;
+        }
 
-    .pw-toggle {
-        position: absolute;
-        top: 50%;
-        right: 8px;
-        transform: translateY(-50%);
-        width: 34px;
-        height: 34px;
-        border: none;
-        border-radius: 8px;
-        background: transparent;
-        color: #475569;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.95rem;
-    }
+        .pw-input:focus {
+            border-color: #15803d;
+            background: #ffffff;
+        }
 
-    .pw-toggle:hover {
-        background: rgba(15, 23, 42, 0.06);
-    }
+        .pw-toggle {
+            position: absolute;
+            top: 50%;
+            right: 8px;
+            transform: translateY(-50%);
+            width: 34px;
+            height: 34px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: #475569;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+        }
 
-    .btn-login {
-        width: 100%;
-        min-height: 46px;
-        border: none;
-        border-radius: 11px;
-        background: #15803d;
-        color: #ffffff;
-        font-family: inherit;
-        font-size: 1rem;
-        font-weight: 700;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        transition: background-color 0.15s ease;
-    }
+        .pw-toggle:hover {
+            background: rgba(15, 23, 42, 0.06);
+        }
 
-    .btn-login:hover {
-        background: #14532d;
-    }
-</style>
+        .btn-login {
+            width: 100%;
+            min-height: 46px;
+            border: none;
+            border-radius: 11px;
+            background: #15803d;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.15s ease;
+        }
 
-<div class="login-shell">
+        .btn-login:hover {
+            background: #14532d;
+        }
+
+        .login-footer {
+            margin-top: 16px;
+            text-align: center;
+        }
+
+        .back-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #475569;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
+
+        .back-home:hover {
+            background: #f1f5f9;
+            color: #14532d;
+        }
+    </style>
+</head>
+<body>
     <div class="login-card">
         <div class="login-head">
             <img src="/logo.png" alt="মাদ্রাসার লোগো" class="login-logo" referrerpolicy="no-referrer">
@@ -187,22 +225,31 @@
                     <span>প্রবেশ করুন</span>
                 </button>
             </form>
+
+            <% if (!isEmbedded) { %>
+            <div class="login-footer">
+                <a href="/index.php" class="back-home">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                    <span>মূল ওয়েবসাইটে ফিরে যান</span>
+                </a>
+            </div>
+            <% } %>
         </div>
     </div>
-</div>
 
-<script>
-    function togglePw() {
-        var inp = document.getElementById('adminPassword');
-        var eye = document.getElementById('pwEye');
-        if (!inp || !eye) return;
-        if (inp.type === 'password') {
-            inp.type = 'text';
-            eye.className = 'fas fa-eye-slash';
-        } else {
-            inp.type = 'password';
-            eye.className = 'fas fa-eye';
+    <script>
+        function togglePw() {
+            var inp = document.getElementById('adminPassword');
+            var eye = document.getElementById('pwEye');
+            if (!inp || !eye) return;
+            if (inp.type === 'password') {
+                inp.type = 'text';
+                eye.className = 'fas fa-eye-slash';
+            } else {
+                inp.type = 'password';
+                eye.className = 'fas fa-eye';
+            }
         }
-    }
-</script>
-<%- include('partials/footer') %>
+    </script>
+</body>
+</html>

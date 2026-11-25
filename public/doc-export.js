@@ -211,28 +211,38 @@
     }
   }
 
-  async function exportElementToWord({ element, filename = 'document.docx', title = 'Document', cssText = '', marginMm, onStatus }) {
+  async function exportElementToWord({ element, filename = 'document.doc', title = 'Document', cssText = '', onStatus }) {
     if (!element) {
       throw new Error('ডকুমেন্ট কন্টেন্ট পাওয়া যায়নি।');
     }
-    if (typeof onStatus === 'function') {
-      onStatus('Word (.docx) ফাইল তৈরি হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...', false);
-    }
     const clone = element.cloneNode(true);
     clone.querySelectorAll('.no-print').forEach((n) => n.remove());
+    await replaceLocalImagesWithDataUri(clone);
 
-    const safeName = String(filename || 'document.docx').replace(/\.docx?$/i, '') + '.docx';
-    const marginJson = Array.isArray(marginMm) ? JSON.stringify(marginMm) : '';
+    clone.querySelectorAll('.a4-page').forEach((pg, idx) => {
+      pg.style.padding = '0';
+      pg.style.width = 'auto';
+      pg.style.minHeight = 'auto';
+      pg.style.boxShadow = 'none';
+      if (idx > 0) {
+        pg.insertAdjacentHTML('beforebegin', '<br clear="all" style="page-break-before:always;" />');
+      }
+    });
+
+    const fullHtml = [
+      '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">',
+      '<head><meta charset="utf-8"><title>' + String(title || 'Document') + '</title>',
+      '<style>' + cssText + '</style></head>',
+      '<body><div class="Section1">' + clone.innerHTML + '</div></body></html>',
+    ].join('');
 
     postDownloadForm('/api/export/word', {
-      html: clone.innerHTML,
-      title: String(title || 'Document'),
-      filename: safeName,
-      marginMm: marginJson,
+      html: fullHtml,
+      filename,
     });
 
     if (typeof onStatus === 'function') {
-      onStatus('Word (.docx) ফাইল ডাউনলোড শুরু হয়েছে।', false);
+      onStatus('Word (.doc) ফাইল ডাউনলোড শুরু হয়েছে।', false);
     }
   }
 

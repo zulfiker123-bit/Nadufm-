@@ -11,12 +11,10 @@
     "lint": "node --check server.js && node --check data/seed.js && node --check data/excelStore.js"
   },
   "dependencies": {
-    "cheerio": "^1.2.0",
     "ejs": "^3.1.10",
     "express": "^4.21.2",
     "express-session": "^1.18.1",
     "html2pdf.js": "^0.14.0",
-    "jszip": "^3.10.2",
     "multer": "^2.5.0",
     "xlsx": "^0.18.5"
   }

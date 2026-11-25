@@ -11,23 +11,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="/vendor/html2pdf.bundle.min.js" defer></script>
     <script src="/doc-export.js" defer></script>
-    <script>
-        (function () {
-            var isDashFrame = false;
-            try {
-                if (window.name === 'nadufm-dashboard-frame') {
-                    isDashFrame = true;
-                } else if (window.frameElement && (window.frameElement.id === 'workspaceFrame' || window.frameElement.name === 'nadufm-dashboard-frame')) {
-                    isDashFrame = true;
-                } else if (new URLSearchParams(window.location.search).get('embed') === '1') {
-                    isDashFrame = true;
-                }
-            } catch (e) {}
-            if (isDashFrame) {
-                document.documentElement.classList.add('is-iframe-embed');
-            }
-        })();
-    </script>
     <style>
         :root {
             --brand: #14532d;
@@ -51,58 +34,7 @@
             background: var(--bg);
             color: var(--text);
             -webkit-font-smoothing: antialiased;
-            padding-bottom: 66px;
         }
-
-        html.is-iframe-embed body {
-            padding-bottom: 12px;
-        }
-
-        html.is-iframe-embed .studio-topbar,
-        html.is-iframe-embed .studio-bottom-nav {
-            display: none !important;
-        }
-
-        .studio-class-pills {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 14px;
-            padding: 10px 12px;
-            background: #f8faf9;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            align-items: center;
-        }
-
-        .studio-bottom-nav {
-            position: fixed;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            height: 58px;
-            background: #ffffff;
-            border-top: 1px solid rgba(15, 23, 42, 0.12);
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            z-index: 60;
-            box-shadow: 0 -4px 14px rgba(15, 23, 42, 0.06);
-        }
-
-        .studio-bottom-nav a {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 2px;
-            text-decoration: none;
-            color: #475569;
-            font-size: 0.72rem;
-            font-weight: 600;
-        }
-
-        .studio-bottom-nav a i { font-size: 1rem; }
-        .studio-bottom-nav a:hover { color: var(--brand-strong); background: #f8faf9; }
 
         button, input, select, textarea {
             font-family: inherit;
@@ -698,7 +630,7 @@
         }
 
         @media print {
-            .no-print, .studio-topbar, .studio-bottom-nav { display: none !important; }
+            .no-print { display: none !important; }
             body { background: #ffffff !important; margin: 0 !important; padding: 0 !important; }
             .studio-container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
             .tab-panel { display: none !important; }
@@ -722,9 +654,9 @@
         </div>
     </div>
     <div class="studio-top-actions">
-        <a href="/result.php" class="btn btn-outline btn-sm"><i class="fas fa-poll"></i> ফলাফল ও মার্কশিট</a>
-        <a href="/merit-list.php" class="btn btn-outline btn-sm"><i class="fas fa-trophy"></i> মেধা তালিকা</a>
-        <button type="button" onclick="studioGoBack()" class="btn btn-dark btn-sm"><i class="fas fa-arrow-left"></i> পিছনে যান</button>
+        <a href="/result.php" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-poll"></i> পাবলিক ফলাফল</a>
+        <a href="/merit-list.php" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-trophy"></i> মেধা তালিকা</a>
+        <a href="/dashboard.php" class="btn btn-dark btn-sm"><i class="fas fa-arrow-left"></i> ড্যাশবোর্ড</a>
     </div>
 </header>
 <% } %>
@@ -827,18 +759,15 @@
             <div class="card-head">
                 <div>
                     <h2 class="card-title"><i class="fas fa-award"></i> রেজাল্ট শিট আপলোড, অটো GPA, মেধা তালিকা ও প্রমোশন</h2>
-                    <p class="card-sub">একটি এক্সেল ফাইলে একাধিক শ্রেণির শিট (Multi-Sheet) অথবা একক শ্রেণির শিট আপলোড করুন; কলাম হেডার ও পূর্ণমান স্বয়ংক্রিয়ভাবে শনাক্ত হয়ে শ্রেণিভিত্তিক মেধা তালিকা ও মার্কশিট তৈরি হবে।</p>
+                    <p class="card-sub">বিষয়ের কলাম কম-বেশি করুন, পূর্ণমান নির্ধারণ করুন, অটো GPA/মেধা তালিকা ও ফেলকৃত শিক্ষার্থীদের প্রমোশন নিয়ন্ত্রণ করুন।</p>
                 </div>
                 <div class="btn-group">
-                    <a href="/api/excel/template/results-multi" class="btn btn-outline btn-sm"><i class="fas fa-layer-group"></i> মাল্টি-শিট নমুনা Excel</a>
-                    <a href="/api/excel/template/results" class="btn btn-outline btn-sm"><i class="fas fa-download"></i> একক নমুনা Excel</a>
+                    <a href="/api/excel/template/results" class="btn btn-outline btn-sm"><i class="fas fa-download"></i> নমুনা রেজাল্ট Excel</a>
                     <button type="button" class="btn btn-outline btn-sm" onclick="exportComputedResultsExcel()"><i class="fas fa-file-export"></i> GPA ও মেধাসহ Excel</button>
                     <button type="button" class="btn btn-blue btn-sm" onclick="openBatchMarksheets()"><i class="fas fa-copy"></i> সকল শিক্ষার্থীর মার্কশিট (A4)</button>
                     <button type="button" class="btn btn-primary btn-sm" onclick="saveResultsSheet()"><i class="fas fa-save"></i> ফলাফল সংরক্ষণ</button>
                 </div>
             </div>
-
-            <div id="resultsClassPills" class="studio-class-pills"></div>
 
             <div class="grid-4" style="margin-bottom: 14px;">
                 <div class="field">
@@ -861,7 +790,6 @@
 
             <div class="btn-group" style="margin-bottom: 14px;">
                 <button type="button" class="btn btn-dark btn-sm" onclick="createNewExam()"><i class="fas fa-plus-circle"></i> নতুন পরীক্ষা / শ্রেণি তৈরি</button>
-                <a id="activeClassMeritLink" href="/merit-list.php" class="btn btn-outline btn-sm"><i class="fas fa-trophy"></i> শ্রেণির মেধা তালিকা পাতা</a>
                 <button type="button" class="btn btn-danger-outline btn-sm" onclick="deleteCurrentExam()"><i class="fas fa-trash"></i> এই শিট মুছুন</button>
             </div>
 
@@ -869,8 +797,8 @@
                 <div class="upload-zone-info">
                     <div class="upload-zone-icon"><i class="fas fa-file-upload"></i></div>
                     <div>
-                        <div style="font-weight: 700;">সকল শ্রেণির রেজাল্ট (মাল্টি-শিট বা একক) Excel আপলোড করুন</div>
-                        <div style="font-size: 0.82rem; color: var(--muted);">প্রতি শিটের নামে শ্রেণি লিখুন (যেমন: <code>ষষ্ঠ</code>, <code>সপ্তম</code>, <code>দাখিল</code>) ও হেডারে বা <code>পূর্ণমান</code> সারিতে পূর্ণমান উল্লেখ করুন (যেমন: <code>কুরআন মাজিদ (100)</code>)।</div>
+                        <div style="font-weight: 700;">রেজাল্ট শিট Excel আপলোড করুন</div>
+                        <div style="font-size: 0.82rem; color: var(--muted);">উদাহরণ হেডার: <code>রোল</code>, <code>শিক্ষার্থীর নাম</code>, <code>কুরআন মাজিদ (100)</code>, <code>আরবি (100)</code> — ফাইল নির্বাচন করলেই আপলোড ও GPA হিসাব হবে।</div>
                     </div>
                 </div>
                 <div class="btn-group">
@@ -1141,7 +1069,7 @@
                     <div class="card-head" style="margin-bottom: 0; padding-bottom: 0; border-bottom: none;">
                         <div>
                             <h3 class="card-title"><i class="fas fa-file-invoice"></i> A4 প্রিভিউ (২১০ মি.মি. × ২৯৭ মি.মি.)</h3>
-                            <p class="card-sub">ফন্ট ও মার্জিন পরিবর্তন করে সরাসরি প্রিন্ট, PDF অথবা Word (.docx) ডাউনলোড করুন।</p>
+                            <p class="card-sub">ফন্ট ও মার্জিন পরিবর্তন করে সরাসরি প্রিন্ট, PDF অথবা Word (.doc) ডাউনলোড করুন।</p>
                         </div>
                         <div class="btn-group">
                             <% if (hideTabs && initialTab !== 'docstudio') { %>
@@ -1149,7 +1077,7 @@
                             <% } %>
                             <button type="button" class="btn btn-primary" onclick="printA4()"><i class="fas fa-print"></i> সরাসরি প্রিন্ট (A4)</button>
                             <button type="button" id="btnDownloadA4Pdf" class="btn btn-rose" onclick="downloadA4Pdf()"><i class="fas fa-file-pdf"></i> PDF ডাউনলোড</button>
-                            <button type="button" id="btnDownloadA4Word" class="btn btn-blue" onclick="downloadA4Word()"><i class="fas fa-file-word"></i> Word (.docx)</button>
+                            <button type="button" id="btnDownloadA4Word" class="btn btn-blue" onclick="downloadA4Word()"><i class="fas fa-file-word"></i> Word (.doc)</button>
                         </div>
                     </div>
                     <div id="docExportStatus" style="display:none; margin-top:10px; padding:9px 13px; border-radius:9px; font-size:0.86rem; font-weight:600;"></div>
@@ -1224,13 +1152,7 @@
     }
 
     function cleanSubTitle(label) {
-        return String(label || '')
-            .replace(/\s*\([^)]*\)/g, '')
-            .replace(/\s*\[[^\]]*\]/g, '')
-            .replace(/\s*(?:পূর্ণমান|FM|Full\s*Marks?)\s*[:=-]?\s*[0-9০-৯]+/gi, '')
-            .replace(/\s*[-–/:]\s*[0-9০-৯]{2,3}\s*$/g, '')
-            .replace(/\s+/g, ' ')
-            .trim();
+        return String(label || '').replace(/\s*\([^)]*\)/g, '').trim();
     }
 
     function esc(s) {
@@ -1702,22 +1624,6 @@
         document.getElementById('activeExamSelect').innerHTML = exams.map((ex) => `
             <option value="${esc(ex.id)}" ${ex.id === active.id ? 'selected' : ''}>${esc(ex.title || ex.examName)} (${bnNum((ex.rows || []).length)} জন)</option>
         `).join('');
-
-        const pillsEl = document.getElementById('resultsClassPills');
-        if (pillsEl) {
-            const labelHtml = `<span style="font-size:0.82rem; font-weight:700; color:var(--brand); margin-right:4px;"><i class="fas fa-layer-group"></i> শ্রেণিভিত্তিক শিটসমূহ:</span>`;
-            pillsEl.innerHTML = labelHtml + exams.map((ex) => {
-                const count = (ex.rows || []).length;
-                const isAct = ex.id === active.id;
-                const clsLabel = ex.className || ex.title || ex.id;
-                return `<button type="button" class="btn btn-sm ${isAct ? 'btn-primary' : 'btn-outline'}" onclick="switchActiveExam('${esc(ex.id)}')">${esc(clsLabel)} (${bnNum(count)})</button>`;
-            }).join('');
-        }
-
-        const meritLink = document.getElementById('activeClassMeritLink');
-        if (meritLink && active) {
-            meritLink.href = '/merit-list.php?class_id=excel:' + encodeURIComponent(active.id);
-        }
 
         const cmEntries = Object.entries(state.classMap || {});
         document.getElementById('examClassId').innerHTML = cmEntries.map(([k, v]) => `
@@ -2752,7 +2658,7 @@
         if (!container) return;
         const style = getDocStyle();
         const docType = document.getElementById('docTypeSelect').value;
-        const filename = `${docType}-a4-${Date.now()}.docx`;
+        const filename = `${docType}-a4-${Date.now()}.doc`;
         const cssText = `
             @page Section1 {
                 size: 210mm 297mm;
@@ -2786,7 +2692,6 @@
                 filename,
                 title: docType,
                 cssText,
-                marginMm: [style.mTop, style.mRight, style.mBottom, style.mLeft],
                 onStatus: (msg, isErr) => {
                     setDocExportStatus(msg, isErr);
                     showToast(msg, isErr);
@@ -2799,16 +2704,6 @@
         } finally {
             if (btn) btn.disabled = false;
         }
-    }
-
-    function studioGoBack() {
-        try {
-            if (window.history.length > 1) {
-                window.history.back();
-                return;
-            }
-        } catch (e) {}
-        window.location.href = '/dashboard.php';
     }
 
     function renderAll() {
@@ -2826,15 +2721,5 @@
         switchTab(initialTab);
     }
 </script>
-
-<% if (!isEmbedded) { %>
-<nav class="studio-bottom-nav no-print" aria-label="নিচের নেভিগেশন">
-    <a href="/"><i class="fas fa-home" aria-hidden="true"></i><span>হোম</span></a>
-    <a href="/notices.php"><i class="fas fa-bullhorn" aria-hidden="true"></i><span>নোটিশ</span></a>
-    <a href="/result.php"><i class="fas fa-poll" aria-hidden="true"></i><span>ফলাফল</span></a>
-    <a href="/student-search.php"><i class="fas fa-user-graduate" aria-hidden="true"></i><span>শিক্ষার্থী</span></a>
-    <a href="/dashboard.php"><i class="fas fa-shield-alt" aria-hidden="true"></i><span>ড্যাশবোর্ড</span></a>
-</nav>
-<% } %>
 </body>
 </html>
