@@ -19,9 +19,35 @@
     <link rel="stylesheet" href="/fonts.css">
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script>
+        (function () {
+            var isDashFrame = false;
+            try {
+                if (window.name === 'nadufm-dashboard-frame') {
+                    isDashFrame = true;
+                } else if (window.frameElement && (window.frameElement.id === 'workspaceFrame' || window.frameElement.name === 'nadufm-dashboard-frame')) {
+                    isDashFrame = true;
+                } else if (new URLSearchParams(window.location.search).get('embed') === '1') {
+                    isDashFrame = true;
+                }
+            } catch (e) {}
+            if (isDashFrame) {
+                document.documentElement.classList.add('is-iframe-embed');
+            }
+        })();
+        function nadufmGoBack() {
+            if (window.history.length > 1 && document.referrer && document.referrer.indexOf(window.location.host) !== -1) {
+                window.history.back();
+            } else {
+                window.location.href = '/index.php';
+            }
+        }
+    </script>
 </head>
 
 <body>
+<% const _cp = typeof currentPath !== 'undefined' ? String(currentPath) : '/'; %>
+<% const _isHomePage = (_cp === '/' || _cp === '/index.php'); %>
 <% if (!isEmbedded) { %>
     <header class="app-topbar">
         <div class="app-topbar-inner">
@@ -40,6 +66,12 @@
 
             <div class="app-topbar-actions">
                 <div id="pwa-install-slot" class="pwa-install-slot"></div>
+                <% if (!_isHomePage) { %>
+                <button type="button" class="app-back-pill" onclick="nadufmGoBack()" title="পিছনে যান">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                    <span>পিছনে যান</span>
+                </button>
+                <% } %>
                 <button type="button" class="app-menu-trigger" onclick="openAppDrawer()" aria-label="সব সেবা ও মেনু খুলুন">
                     <i class="fas fa-th-large" aria-hidden="true"></i>
                 </button>

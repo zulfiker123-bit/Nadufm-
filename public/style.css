@@ -139,8 +139,31 @@ button, input, select, textarea {
 .app-topbar-actions {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     flex-shrink: 0;
+}
+
+.app-back-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 0 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(21, 128, 61, 0.25);
+    background: #f0fdf4;
+    color: var(--brand-dark);
+    font-family: inherit;
+    font-size: 0.86rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color 0.15s ease;
+}
+
+.app-back-pill:hover {
+    background: #dcfce7;
 }
 
 .pwa-install-slot {
@@ -1179,8 +1202,60 @@ main > #notice-section {
     margin-top: 4px;
 }
 
+.app-footer {
+    padding-bottom: 78px;
+}
+
 .mobile-bottom-nav {
-    display: none;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    align-items: center;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 58px;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border-hairline);
+    box-shadow: 0 -2px 12px rgba(15, 23, 42, 0.05);
+    z-index: 70;
+}
+
+.mobile-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-height: 44px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.mobile-tab:hover,
+.mobile-tab.active {
+    color: var(--brand);
+}
+
+.mobile-tab i {
+    font-size: 1.12rem;
+}
+
+html.is-iframe-embed .app-topbar,
+html.is-iframe-embed .app-footer,
+html.is-iframe-embed .mobile-bottom-nav,
+html.is-iframe-embed .app-drawer-backdrop,
+html.is-iframe-embed .app-drawer-sheet {
+    display: none !important;
 }
 
 .app-drawer-backdrop {
@@ -1455,45 +1530,8 @@ main > #notice-section {
         padding-bottom: 78px;
     }
 
-    .mobile-bottom-nav {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        align-items: center;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 58px;
-        padding-bottom: env(safe-area-inset-bottom, 0px);
-        background: rgba(255, 255, 255, 0.96);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border-top: 1px solid var(--border-hairline);
-        z-index: 70;
-    }
-
     .mobile-tab {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 3px;
-        min-height: 44px;
-        border: none;
-        background: transparent;
-        color: var(--text-muted);
-        text-decoration: none;
         font-size: 0.72rem;
-        font-weight: 600;
-        cursor: pointer;
-    }
-
-    .mobile-tab i {
-        font-size: 1.12rem;
-    }
-
-    .mobile-tab.active {
-        color: var(--brand);
     }
 }
 
