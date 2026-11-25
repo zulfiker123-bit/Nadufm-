@@ -175,10 +175,10 @@ export function getUnifiedStudents(excelStore, portalStore) {
       mobile: getRowField(row, sMap, ['mobile'], ['mobile', 'phone', 'মোবাইল']),
       address: getRowField(row, sMap, ['address'], ['address', 'ঠিকানা']),
       session: getRowField(row, sMap, ['session'], ['session', 'শিক্ষাবর্ষ']) || '২০২৫-২০২৬',
-      blood: row.blood || row['রক্তের গ্রুপ'] || '',
+      blood: getRowField(row, sMap, ['blood'], ['blood', 'রক্তের গ্রুপ']),
       gpa: getRowField(row, sMap, ['gpa'], ['gpa']),
       remark: getRowField(row, sMap, ['remark'], ['remark']),
-      photo: row.photo || row['ছবি'] || '',
+      photo: getRowField(row, sMap, ['photo'], ['photo', 'ছবি', 'image']),
       source: 'students',
     });
   }
@@ -229,8 +229,13 @@ export function getUnifiedStudents(excelStore, portalStore) {
     });
   }
 
-  // 4) Uploaded Excel Result Sheets (attach marksheets + GPA + meritRank to students)
-  const exams = Object.values(excelStore?.results?.exams || {});
+  // 4) Uploaded Excel Result Sheets (attach marksheets + GPA + meritRank to students; prioritize active/latest exam)
+  const activeExamId = excelStore?.results?.activeExamId || '';
+  const exams = Object.values(excelStore?.results?.exams || {}).slice().sort((a, b) => {
+    if (a.id === activeExamId) return -1;
+    if (b.id === activeExamId) return 1;
+    return String(b.updatedAt || '').localeCompare(String(a.updatedAt || ''));
+  });
   for (const exam of exams) {
     if (!Array.isArray(exam.rows) || exam.rows.length === 0) continue;
     const computed = computeResultSheet(exam);
@@ -367,7 +372,15 @@ export function getClassesAndRolls(excelStore, portalStore, classParam = '') {
 
 export function findUnifiedStudents(excelStore, portalStore, { classParam = '', rollParam = '', query = '' } = {}) {
   const students = getUnifiedStudents(excelStore, portalStore);
-  const targetCls = normalizeClassInput(classParam);
+  let resolvedClassParam = String(classParam || '').trim();
+  if (resolvedClassParam.startsWith('excel:')) {
+    const eid = resolvedClassParam.slice(6);
+    const ex = excelStore?.results?.exams?.[eid];
+    if (ex) {
+      resolvedClassParam = ex.classId || ex.className || '';
+    }
+  }
+  const targetCls = normalizeClassInput(resolvedClassParam);
   const targetRoll = normalizeRollKey(rollParam);
   const q = String(query || '').trim().toLowerCase();
   const qEn = bnToEnNumber(q);

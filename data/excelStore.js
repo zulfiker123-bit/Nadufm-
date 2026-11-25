@@ -310,6 +310,8 @@ export function autoDetectStudentMapping(columns) {
     session: findKey(['শিক্ষাবর্ষ', 'সেশন', 'session', 'year']),
     mobile: findKey(['মোবাইল', 'ফোন', 'mobile', 'phone']),
     address: findKey(['ঠিকানা', 'গ্রাম', 'address', 'village']),
+    blood: findKey(['রক্ত', 'blood']),
+    photo: findKey(['ছবি', 'photo', 'image', 'pic']),
     gpa: findKey(['gpa', 'জিপিএ']),
     remark: findKey(['মন্তব্য', 'remark', 'character']),
   };

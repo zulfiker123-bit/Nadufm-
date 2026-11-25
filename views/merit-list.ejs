@@ -177,6 +177,24 @@
     .status-fail { color: #b91c1c; font-weight: 700; }
     .status-abs { color: #64748b; }
     .absent-row { opacity: 0.78; }
+    .merit-doc-links { display: inline-flex; align-items: center; justify-content: center; gap: 5px; flex-wrap: wrap; }
+    .merit-doc-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid rgba(21, 128, 61, 0.25);
+        background: #f0fdf4;
+        color: #14532d;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+    .merit-doc-link:hover { background: #15803d; color: #ffffff; border-color: #15803d; }
+    .merit-doc-link.alt { background: #f8fafc; color: #0f172a; border-color: rgba(15, 23, 42, 0.16); }
+    .merit-doc-link.alt:hover { background: #1e293b; color: #ffffff; border-color: #1e293b; }
 
     @page {
         size: A4 portrait;
@@ -267,10 +285,15 @@
                         <th>GPA</th>
                         <th>গড় (%)</th>
                         <th>ফলাফল</th>
+                        <th class="no-print">ডকুমেন্ট</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <% let rank = 1; meritData.forEach(function(row) { %>
+                    <% const _mEmbed = isEmbedded ? '&embed=1' : ''; %>
+                    <% const _mClsQuery = encodeURIComponent(selectedClass || (selectedExamId ? 'excel:' + selectedExamId : '') || selectedName || ''); %>
+                    <% let rank = 1; meritData.forEach(function(row) {
+                        const _mRoll = encodeURIComponent(row.roll || '');
+                    %>
                     <tr class="<%= row.absent ? 'absent-row' : '' %>">
                         <td class="rank-num"><%= row.absent ? '—' : convertToBengali(row.meritRank || rank++) %></td>
                         <td><%= convertToBengali(row.roll) %></td>
@@ -288,6 +311,12 @@
                             <% } else { %>
                                 <span class="status-pass">উত্তীর্ণ</span>
                             <% } %>
+                        </td>
+                        <td class="no-print">
+                            <div class="merit-doc-links">
+                                <a href="/result.php?class=<%= _mClsQuery %>&roll=<%= _mRoll %><%= _mEmbed %>" class="merit-doc-link" title="মার্কশিট দেখুন">মার্কশিট</a>
+                                <a href="/student-search.php?class=<%= _mClsQuery %>&roll=<%= _mRoll %>&doc=attestation<%= _mEmbed %>" class="merit-doc-link alt" title="তথ্য, আইডি কার্ড, প্রত্যায়ন ও প্রশংসা পত্র">সনদ ও তথ্য</a>
+                            </div>
                         </td>
                     </tr>
                     <% }); %>

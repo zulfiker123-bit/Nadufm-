@@ -475,6 +475,10 @@
                 <span>Word (.doc)</span>
             </button>
             <% const _embedSuffix = isEmbedded ? '&embed=1' : ''; %>
+            <a href="/student-search.php?class=<%= _qCls %>&roll=<%= _qRoll %>&doc=profile<%= _embedSuffix %>" class="r-btn r-btn-secondary">
+                <i class="fas fa-user-graduate" aria-hidden="true"></i>
+                <span>শিক্ষার্থী তথ্য</span>
+            </a>
             <a href="/id-card.php?class=<%= _qCls %>&roll=<%= _qRoll %><%= _embedSuffix %>" class="r-btn r-btn-secondary">
                 <i class="fas fa-id-badge" aria-hidden="true"></i>
                 <span>আইডি কার্ড</span>
@@ -485,7 +489,11 @@
             </a>
             <a href="/student-search.php?class=<%= _qCls %>&roll=<%= _qRoll %>&doc=attestation<%= _embedSuffix %>" class="r-btn r-btn-secondary">
                 <i class="fas fa-certificate" aria-hidden="true"></i>
-                <span>প্রত্যায়ন / প্রশংসা</span>
+                <span>প্রত্যায়ন পত্র</span>
+            </a>
+            <a href="/student-search.php?class=<%= _qCls %>&roll=<%= _qRoll %>&doc=testimonial<%= _embedSuffix %>" class="r-btn r-btn-secondary">
+                <i class="fas fa-award" aria-hidden="true"></i>
+                <span>প্রশংসা পত্র</span>
             </a>
             <a href="/result.php<%= isEmbedded ? '?embed=1' : '' %>" class="r-btn r-btn-secondary">
                 <i class="fas fa-redo" aria-hidden="true"></i>
@@ -543,8 +551,14 @@
                         <% if (studentResult.father) { %>
                             <span>পিতা: <%= studentResult.father %></span>
                         <% } %>
+                        <% if (studentResult.mother) { %>
+                            <span>মাতা: <%= studentResult.mother %></span>
+                        <% } %>
                         <span>শ্রেণি: <%= selectedClassName %></span>
                         <span>রোল: <%= convertToBengali(studentResult.roll) %></span>
+                        <% if (studentResult.id) { %>
+                            <span>আইডি: <%= studentResult.id %></span>
+                        <% } %>
                     </div>
 
                     <table class="main-table">

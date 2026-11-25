@@ -813,12 +813,13 @@
     <div class="studio-brand">
         <img src="/logo.png" alt="মাদ্রাসার লোগো" referrerpolicy="no-referrer">
         <div>
-            <h1>এক্সেল ও A4 ডকুমেন্ট স্টুডিও</h1>
+            <h1>শিক্ষার্থী ও ফলাফল স্টুডিও</h1>
             <p>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</p>
         </div>
     </div>
     <div class="studio-top-actions">
-        <a href="/result.php" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-poll" aria-hidden="true"></i> পাবলিক ফলাফল</a>
+        <a href="/student-search.php" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-id-card-alt" aria-hidden="true"></i> শিক্ষার্থী ও সনদ হাব</a>
+        <a href="/result.php" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-poll" aria-hidden="true"></i> ফলাফল</a>
         <a href="/merit-list.php" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-trophy" aria-hidden="true"></i> মেধা তালিকা</a>
         <a href="/dashboard.php" class="btn btn-dark btn-sm"><i class="fas fa-arrow-left" aria-hidden="true"></i> ড্যাশবোর্ড</a>
     </div>
@@ -830,19 +831,15 @@
     <nav class="studio-tabs no-print" role="tablist">
         <button type="button" class="studio-tab active" data-tab="students" onclick="switchTab('students')">
             <i class="fas fa-user-graduate" aria-hidden="true"></i>
-            <span>১. শিক্ষার্থী তথ্য Excel</span>
+            <span>১. শিক্ষার্থী তথ্য আপলোড</span>
         </button>
         <button type="button" class="studio-tab" data-tab="results" onclick="switchTab('results')">
             <i class="fas fa-calculator" aria-hidden="true"></i>
-            <span>২. রেজাল্ট, GPA ও মেধা তালিকা</span>
-        </button>
-        <button type="button" class="studio-tab" data-tab="documents" onclick="switchTab('documents')">
-            <i class="fas fa-folder-open" aria-hidden="true"></i>
-            <span>৩. সকল ডকুমেন্টস Excel</span>
+            <span>২. রেজাল্ট শিট আপলোড ও GPA</span>
         </button>
         <button type="button" class="studio-tab" data-tab="docstudio" onclick="switchTab('docstudio')">
             <i class="fas fa-print" aria-hidden="true"></i>
-            <span>৪. A4 ডকুমেন্ট (Word / PDF / Print)</span>
+            <span>৩. সমন্বিত ডকুমেন্ট ও প্রিন্ট (A4)</span>
         </button>
     </nav>
 <% } %>
@@ -1094,16 +1091,16 @@
             <!-- Left Controls -->
             <aside class="no-print">
                 <div class="card">
-                    <h3 class="card-title" style="margin-bottom: 12px;"><i class="fas fa-file-signature" aria-hidden="true"></i> ডকুমেন্ট ও শ্রেণি নির্বাচন</h3>
+                    <h3 class="card-title" style="margin-bottom: 12px;"><i class="fas fa-link" aria-hidden="true"></i> সমন্বিত শিক্ষার্থী ও ডকুমেন্ট নির্বাচন</h3>
 
                     <div class="field" style="margin-bottom: 10px;">
                         <label>ডকুমেন্টের ধরন</label>
                         <select id="docTypeSelect" onchange="onDocConfigChange()">
                             <option value="marksheet">মার্কশিট (একাডেমিক ট্রান্সক্রিপ্ট)</option>
-                            <option value="admit">এডমিট কার্ড / প্রবেশপত্র (Admit Card)</option>
                             <option value="idcard">শিক্ষার্থী আইডি কার্ড (ID Card)</option>
-                            <option value="testimonial">প্রশংসা পত্র (Testimonial)</option>
                             <option value="attestation">প্রত্যায়ন পত্র (Attestation / Certificate)</option>
+                            <option value="testimonial">প্রশংসা পত্র (Testimonial)</option>
+                            <option value="admit">এডমিট কার্ড / প্রবেশপত্র (Admit Card)</option>
                         </select>
                     </div>
 
@@ -1116,15 +1113,6 @@
                     </div>
 
                     <div class="field" style="margin-bottom: 10px;">
-                        <label>তথ্যের উৎস শিট</label>
-                        <select id="docSourceSelect" onchange="populateDocRecordPicker()">
-                            <option value="results">রেজাল্ট শিট (সক্রিয় পরীক্ষা)</option>
-                            <option value="students">শিক্ষার্থী তথ্য Excel</option>
-                            <option value="documents">সকল ডকুমেন্টস Excel</option>
-                        </select>
-                    </div>
-
-                    <div class="field" style="margin-bottom: 10px;">
                         <label>শ্রেণি অনুযায়ী ফিল্টার</label>
                         <select id="docClassFilter" onchange="onDocClassFilterChange()">
                             <option value="">-- সকল শ্রেণি --</option>
@@ -1132,9 +1120,10 @@
                     </div>
 
                     <div class="field" style="margin-bottom: 4px;" id="singleRecordWrap">
-                        <label>রোল / শিক্ষার্থী নির্বাচন</label>
+                        <label>শিক্ষার্থী নির্বাচন (তথ্য + রেজাল্ট যুক্ত)</label>
                         <select id="docRecordSelect" onchange="loadSelectedRecordIntoForm()"></select>
-                        <input type="text" id="docRollQuickInput" placeholder="অথবা সরাসরি রোল লিখে খুঁজুন..." oninput="jumpToDocRoll(this.value)" style="margin-top:6px;">
+                        <input type="text" id="docRollQuickInput" placeholder="নাম বা রোল লিখে দ্রুত খুঁজুন..." oninput="jumpToDocRoll(this.value)" style="margin-top:6px;">
+                        <div id="docMergeStatusNote" style="font-size:0.78rem; color:var(--brand); font-weight:600; margin-top:6px;"></div>
                     </div>
                 </div>
 
@@ -1205,10 +1194,10 @@
             <!-- Right A4 Preview + Actions -->
             <div>
                 <div class="card no-print">
-                    <div class="card-head" style="margin-bottom: 0; padding-bottom: 0; border-bottom: none;">
+                    <div class="card-head" style="margin-bottom: 10px; padding-bottom: 10px;">
                         <div>
-                            <h3 class="card-title"><i class="fas fa-file-invoice" aria-hidden="true"></i> A4 প্রিভিউ (২১০ মি.মি. × ২৯৭ মি.মি.)</h3>
-                            <p class="card-sub">ফন্ট ও মার্জিন পরিবর্তন করে সরাসরি প্রিন্ট, PDF অথবা Word (.doc) ডাউনলোড করুন।</p>
+                            <h3 class="card-title"><i class="fas fa-file-invoice" aria-hidden="true"></i> A4 প্রিভিউ ও প্রিন্ট (একই সুতোয় গাঁথা ডকুমেন্ট)</h3>
+                            <p class="card-sub">একজন শিক্ষার্থী নির্বাচন করে নিচের যেকোনো ডকুমেন্টে ক্লিক করলে সাথে সাথেই প্রিভিউ ও প্রিন্ট প্রস্তুত হবে।</p>
                         </div>
                         <div class="btn-group">
                             <% if (hideTabs && initialTab !== 'docstudio') { %>
@@ -1218,6 +1207,13 @@
                             <button type="button" id="btnDownloadA4Pdf" class="btn btn-rose" onclick="downloadA4Pdf()"><i class="fas fa-file-pdf" aria-hidden="true"></i> PDF ডাউনলোড</button>
                             <button type="button" id="btnDownloadA4Word" class="btn btn-blue" onclick="downloadA4Word()"><i class="fas fa-file-word" aria-hidden="true"></i> Word (.doc)</button>
                         </div>
+                    </div>
+                    <div class="seg-group" id="docQuickSwitcher" role="tablist" aria-label="তাৎক্ষণিক ডকুমেন্ট পরিবর্তন">
+                        <button type="button" class="seg-btn active" data-doc-switch="marksheet" onclick="quickSwitchDocType('marksheet')">মার্কশিট</button>
+                        <button type="button" class="seg-btn" data-doc-switch="idcard" onclick="quickSwitchDocType('idcard')">আইডি কার্ড</button>
+                        <button type="button" class="seg-btn" data-doc-switch="attestation" onclick="quickSwitchDocType('attestation')">প্রত্যায়ন পত্র</button>
+                        <button type="button" class="seg-btn" data-doc-switch="testimonial" onclick="quickSwitchDocType('testimonial')">প্রশংসা পত্র</button>
+                        <button type="button" class="seg-btn" data-doc-switch="admit" onclick="quickSwitchDocType('admit')">এডমিট কার্ড</button>
                     </div>
                     <div id="docExportStatus" style="display:none; margin-top:10px; padding:9px 13px; border-radius:9px; font-size:0.86rem; font-weight:600;"></div>
                 </div>
@@ -1252,8 +1248,11 @@
         { key: 'father_bn', label: 'পিতার নাম' },
         { key: 'mother_bn', label: 'মাতার নাম' },
         { key: 'dob', label: 'জন্ম তারিখ' },
+        { key: 'mobile', label: 'মোবাইল' },
         { key: 'reg_no', label: 'রেজিস্ট্রেশন নং' },
         { key: 'session', label: 'শিক্ষাবর্ষ' },
+        { key: 'blood', label: 'রক্তের গ্রুপ' },
+        { key: 'photo', label: 'ছবি (URL)' },
         { key: 'gpa', label: 'জিপিএ' },
         { key: 'address', label: 'ঠিকানা' },
         { key: 'remark', label: 'মন্তব্য' },
@@ -2126,12 +2125,13 @@
                                 <th>GPA</th>
                                 <th>ফেল বিষয়</th>
                                 <th>ফলাফল</th>
-                                <th>মার্কশিট</th>
+                                <th>ডকুমেন্ট ও প্রিন্ট</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${list.map((m) => {
                                 const origIdx = exam.rows.findIndex((r) => (r._id || '') === m._id);
+                                const safeIdx = origIdx >= 0 ? origIdx : 0;
                                 const statusClass = m.status === 'Passed' ? 'status-pass' : m.status === 'Promoted' ? 'status-promoted' : m.status === 'Failed' ? 'status-fail' : 'status-abs';
                                 return `
                                     <tr>
@@ -2144,7 +2144,12 @@
                                         <td style="font-weight:700;">${bnNum(m.gpa.toFixed(2))}</td>
                                         <td>${bnNum(m.failCount)}</td>
                                         <td class="${statusClass}">${esc(m.statusBn)}</td>
-                                        <td><button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('results', ${origIdx >= 0 ? origIdx : 0}, 'marksheet')">মার্কশিট</button></td>
+                                        <td style="white-space:nowrap;">
+                                            <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('results', ${safeIdx}, 'marksheet')">মার্কশিট</button>
+                                            <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('results', ${safeIdx}, 'idcard')">আইডি</button>
+                                            <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('results', ${safeIdx}, 'attestation')">প্রত্যায়ন</button>
+                                            <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('results', ${safeIdx}, 'testimonial')">প্রশংসা</button>
+                                        </td>
                                     </tr>
                                 `;
                             }).join('')}
@@ -2200,7 +2205,10 @@
                                             </button>
                                         ` : ''}
                                         <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('results', ${idx}, 'marksheet')">মার্কশিট</button>
-                                        <button type="button" class="btn btn-danger-outline btn-sm" onclick="deleteResultRow(${idx})"><i class="fas fa-trash" aria-hidden="true"></i></button>
+                                        <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('results', ${idx}, 'idcard')">আইডি</button>
+                                        <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('results', ${idx}, 'attestation')">প্রত্যায়ন</button>
+                                        <button type="button" class="btn btn-outline btn-sm" onclick="openInDocStudio('results', ${idx}, 'testimonial')">প্রশংসা</button>
+                                        <button type="button" class="btn btn-danger-outline btn-sm" onclick="deleteResultRow(${idx})" title="মুছুন"><i class="fas fa-trash" aria-hidden="true"></i></button>
                                     </td>
                                 </tr>
                             `;
@@ -2308,7 +2316,7 @@
         }
     }
 
-    // ============ TAB 4: A4 DOCUMENT STUDIO ============
+    // ============ TAB 3: UNIFIED A4 DOCUMENT STUDIO ============
     function getMappedField(row, mapping, candidateKeys) {
         for (const mk of candidateKeys) {
             const colKey = mapping?.[mk];
@@ -2323,50 +2331,226 @@
         return enNum(String(v ?? '').trim()).replace(/^0+(?=\d)/, '').toLowerCase();
     }
 
+    const CLIENT_CLASS_ALIASES = [
+        { key: '0', label: 'শিশু', aliases: ['0', 'শিশু', 'nursery', 'play', 'kg'] },
+        { key: '1', label: 'প্রথম', aliases: ['1', '১', '১ম', 'প্রথম', '1st'] },
+        { key: '2', label: 'দ্বিতীয়', aliases: ['2', '২', '২য়', '২য়', 'দ্বিতীয়', 'দ্বিতীয়', '2nd'] },
+        { key: '3', label: 'তৃতীয়', aliases: ['3', '৩', '৩য়', '৩য়', 'তৃতীয়', 'তৃতীয়', '3rd'] },
+        { key: '4', label: 'চতুর্থ', aliases: ['4', '৪', '৪র্থ', 'চতুর্থ', '4th'] },
+        { key: '5', label: 'পঞ্চম', aliases: ['5', '৫', '৫ম', 'পঞ্চম', '5th'] },
+        { key: '6', label: 'ষষ্ঠ', aliases: ['6', '৬', '৬ষ্ঠ', 'ষষ্ঠ', '6th'] },
+        { key: '7', label: 'সপ্তম', aliases: ['7', '৭', '৭ম', 'সপ্তম', '7th'] },
+        { key: '8', label: 'অষ্টম', aliases: ['8', '৮', '৮ম', 'অষ্টম', '8th'] },
+        { key: '9', label: 'নবম', aliases: ['9', '৯', '৯ম', 'নবম', '9th'] },
+        { key: '10', label: 'দশম', aliases: ['10', '১০', '১০ম', 'দশম', 'দাখিল', '10th', 'dakhil'] },
+        { key: '11', label: 'আলিম ১ম বর্ষ', aliases: ['11', '১১', 'আলিম ১ম', 'আলিম ১ম বর্ষ'] },
+        { key: '12', label: 'আলিম ২য় বর্ষ', aliases: ['12', '১২', 'আলিম ২য়', 'আলিম ২য় বর্ষ', 'আলিম ২য় বর্ষ'] },
+        { key: 'fazil_1', label: 'ফাজিল ১ম বর্ষ', aliases: ['ফাজিল ১ম', 'ফাজিল ১ম বর্ষ'] },
+        { key: 'fazil_2', label: 'ফাজিল ২য় বর্ষ', aliases: ['ফাজিল ২য়', 'ফাজিল ২য় বর্ষ', 'ফাজিল ২য় বর্ষ'] },
+        { key: 'fazil_3', label: 'ফাজিল ৩য় বর্ষ', aliases: ['ফাজিল ৩য়', 'ফাজিল ৩য় বর্ষ', 'ফাজিল ৩য় বর্ষ'] },
+    ];
+
     function normalizeClassClient(v) {
-        return enNum(String(v ?? '').replace(/শ্রেণি|শ্রেণী|class/gi, '').replace(/\s+/g, ' ').trim()).toLowerCase();
-    }
-
-    function findMatchedStudentRow(clsName, rollVal) {
-        const sheet = state.students || { rows: [], mapping: {} };
-        const m = sheet.mapping || {};
-        const rNorm = normalizeRollClient(rollVal);
-        const cNorm = normalizeClassClient(clsName);
-        if (!rNorm) return null;
-        return (sheet.rows || []).find((row) => {
-            const rl = normalizeRollClient(getMappedField(row, m, ['roll', 'id']));
-            if (rl !== rNorm) return false;
-            if (!cNorm) return true;
-            const cl = normalizeClassClient(getMappedField(row, m, ['class_name']));
-            return !cl || cl === cNorm || cl.includes(cNorm) || cNorm.includes(cl);
-        }) || null;
-    }
-
-    function findMatchedExamResult(clsName, rollVal) {
-        const rNorm = normalizeRollClient(rollVal);
-        const cNorm = normalizeClassClient(clsName);
-        if (!rNorm) return null;
-        const exams = Object.values(state.results?.exams || {});
-        for (const exam of exams) {
-            if (!Array.isArray(exam.rows) || exam.rows.length === 0) continue;
-            const exCls = normalizeClassClient(exam.className || (state.classMap?.[exam.classId]?.name || ''));
-            if (cNorm && exCls && exCls !== cNorm && !exCls.includes(cNorm) && !cNorm.includes(exCls)) continue;
-            const computed = recomputeExamClient(exam);
-            const ev = computed.evaluatedRows.find((r) => normalizeRollClient(r.roll) === rNorm);
-            if (ev) return { exam, ev };
+        const cleaned = String(v ?? '').replace(/শ্রেণি|শ্রেণী|class/gi, '').replace(/[()]/g, ' ').replace(/\s+/g, ' ').trim();
+        if (!cleaned) return '';
+        const low = enNum(cleaned).toLowerCase();
+        for (const entry of CLIENT_CLASS_ALIASES) {
+            if (entry.aliases.some((a) => enNum(a).toLowerCase() === low || cleaned.toLowerCase() === a.toLowerCase())) {
+                return entry.key;
+            }
         }
-        return null;
+        return low;
+    }
+
+    function sanitizePhotoClient(url) {
+        const val = String(url || '').trim();
+        if (!val) return '/logo.png';
+        if ((val.startsWith('/') && !val.startsWith('//')) || /^https?:\/\//i.test(val) || /^data:image\//i.test(val)) {
+            return val;
+        }
+        return '/logo.png';
+    }
+
+    let unifiedPoolCache = [];
+
+    function buildUnifiedStudioPool() {
+        const byKey = new Map();
+        const upsert = (rec) => {
+            const clsKey = normalizeClassClient(rec.cls || rec.classId || '');
+            const rNorm = normalizeRollClient(rec.roll);
+            const idNorm = String(rec.id || rec.reg || '').trim().toLowerCase();
+            const key = rNorm ? `${clsKey || 'unknown'}::${rNorm}` : (idNorm ? `id::${idNorm}` : `uniq::${byKey.size}`);
+            const item = {
+                key,
+                clsKey,
+                cls: String(rec.cls || (rec.classId && state.classMap?.[rec.classId]?.name) || '').trim(),
+                roll: String(rec.roll || '').trim(),
+                id: String(rec.id || '').trim(),
+                reg: String(rec.reg || rec.id || '').trim(),
+                name: String(rec.name || '').trim(),
+                father: String(rec.father || '').trim(),
+                mother: String(rec.mother || '').trim(),
+                dob: String(rec.dob || '').trim(),
+                mobile: String(rec.mobile || '').trim(),
+                blood: String(rec.blood || '').trim(),
+                address: String(rec.address || '').trim(),
+                session: String(rec.session || '').trim(),
+                gpa: String(rec.gpa || '').trim(),
+                remark: String(rec.remark || '').trim(),
+                photo: sanitizePhotoClient(rec.photo),
+                hasStudentInfo: Boolean(rec.hasStudentInfo),
+                hasResultInfo: Boolean(rec.hasResultInfo),
+                exam: rec.exam || null,
+                ev: rec.ev || null,
+            };
+            if (!byKey.has(key)) {
+                byKey.set(key, item);
+                return;
+            }
+            const cur = byKey.get(key);
+            ['cls', 'roll', 'id', 'reg', 'name', 'father', 'mother', 'dob', 'mobile', 'blood', 'address', 'session', 'gpa', 'remark'].forEach((k) => {
+                if (!cur[k] && item[k]) cur[k] = item[k];
+            });
+            if ((!cur.photo || cur.photo === '/logo.png') && item.photo && item.photo !== '/logo.png') {
+                cur.photo = item.photo;
+            }
+            if (item.hasStudentInfo) cur.hasStudentInfo = true;
+            if (item.hasResultInfo && !cur.hasResultInfo) {
+                cur.hasResultInfo = true;
+                cur.exam = item.exam;
+                cur.ev = item.ev;
+            }
+        };
+
+        // 1. Students Excel
+        const stu = state.students || { rows: [], mapping: {} };
+        const sm = stu.mapping || {};
+        (stu.rows || []).forEach((row) => {
+            const cls = getMappedField(row, sm, ['class_name']);
+            const roll = getMappedField(row, sm, ['roll', 'id']);
+            const name = getMappedField(row, sm, ['name_bn', 'name_en']);
+            if (!name && !roll) return;
+            upsert({
+                cls,
+                roll,
+                id: getMappedField(row, sm, ['id', 'reg_no']),
+                reg: getMappedField(row, sm, ['reg_no', 'id']),
+                name,
+                father: getMappedField(row, sm, ['father_bn']),
+                mother: getMappedField(row, sm, ['mother_bn']),
+                dob: getMappedField(row, sm, ['dob']),
+                mobile: getMappedField(row, sm, ['mobile']),
+                blood: getMappedField(row, sm, ['blood']),
+                address: getMappedField(row, sm, ['address']),
+                session: getMappedField(row, sm, ['session']) || '২০২৫-২০২৬',
+                gpa: getMappedField(row, sm, ['gpa']),
+                remark: getMappedField(row, sm, ['remark']),
+                photo: getMappedField(row, sm, ['photo']) || row.photo || row['ছবি'] || '',
+                hasStudentInfo: true,
+            });
+        });
+
+        // 2. Results Excel (active exam first, then others)
+        const activeId = state.results?.activeExamId || '';
+        const exams = Object.values(state.results?.exams || {}).slice().sort((a, b) => {
+            if (a.id === activeId) return -1;
+            if (b.id === activeId) return 1;
+            return String(b.updatedAt || '').localeCompare(String(a.updatedAt || ''));
+        });
+        exams.forEach((exam) => {
+            if (!Array.isArray(exam.rows) || exam.rows.length === 0) return;
+            const computed = recomputeExamClient(exam);
+            const exCls = exam.className || (state.classMap?.[exam.classId]?.name || '');
+            computed.evaluatedRows.forEach((ev) => {
+                upsert({
+                    cls: exCls,
+                    classId: exam.classId,
+                    roll: ev.roll,
+                    id: ev.studentId,
+                    reg: ev.studentId,
+                    name: ev.name,
+                    father: ev.father,
+                    session: exam.year || '২০২৬',
+                    gpa: ev.gpa ? ev.gpa.toFixed(2) : ev.statusBn,
+                    hasResultInfo: true,
+                    exam,
+                    ev,
+                });
+            });
+        });
+
+        // 3. Legacy Documents Excel (if populated)
+        const doc = state.documents || { rows: [], mapping: {} };
+        const dm = doc.mapping || {};
+        (doc.rows || []).forEach((row) => {
+            const cls = getMappedField(row, dm, ['class_name']);
+            const roll = getMappedField(row, dm, ['roll', 'id']);
+            const name = getMappedField(row, dm, ['name_bn', 'name_en']);
+            if (!name && !roll) return;
+            upsert({
+                cls,
+                roll,
+                id: getMappedField(row, dm, ['id', 'reg_no']),
+                reg: getMappedField(row, dm, ['reg_no', 'id']),
+                name,
+                father: getMappedField(row, dm, ['father_bn']),
+                mother: getMappedField(row, dm, ['mother_bn']),
+                dob: getMappedField(row, dm, ['dob']),
+                mobile: getMappedField(row, dm, ['mobile']),
+                address: getMappedField(row, dm, ['address']),
+                session: getMappedField(row, dm, ['session']),
+                gpa: getMappedField(row, dm, ['gpa']),
+                remark: getMappedField(row, dm, ['remark']),
+                hasStudentInfo: true,
+            });
+        });
+
+        unifiedPoolCache = Array.from(byKey.values()).sort((a, b) => {
+            const ca = String(a.cls || '').localeCompare(String(b.cls || ''), 'bn');
+            if (ca !== 0) return ca;
+            const na = parseInt(enNum(a.roll), 10);
+            const nb = parseInt(enNum(b.roll), 10);
+            if (!Number.isNaN(na) && !Number.isNaN(nb) && na !== nb) return na - nb;
+            return String(a.roll).localeCompare(String(b.roll), 'bn');
+        });
+        return unifiedPoolCache;
     }
 
     function openInDocStudio(source, rowIndex, docType) {
         switchTab('docstudio');
         document.getElementById('docTypeSelect').value = docType;
         document.getElementById('docBatchMode').value = 'single';
-        document.getElementById('docSourceSelect').value = source;
         const clsFilterEl = document.getElementById('docClassFilter');
         if (clsFilterEl) clsFilterEl.value = '';
         populateDocRecordPicker();
-        document.getElementById('docRecordSelect').value = String(rowIndex);
+
+        let targetKey = '';
+        if (source === 'results') {
+            const exam = getActiveExam();
+            const computed = recomputeExamClient(exam);
+            const ev = computed.evaluatedRows[rowIndex];
+            if (ev) {
+                const ck = normalizeClassClient(exam.className || (state.classMap?.[exam.classId]?.name || ''));
+                const rk = normalizeRollClient(ev.roll);
+                const found = unifiedPoolCache.find((u) => u.clsKey === ck && normalizeRollClient(u.roll) === rk)
+                    || unifiedPoolCache.find((u) => normalizeRollClient(u.roll) === rk);
+                if (found) targetKey = found.key;
+            }
+        } else {
+            const sheet = state[source];
+            const row = sheet?.rows?.[rowIndex];
+            if (row) {
+                const m = sheet.mapping || {};
+                const ck = normalizeClassClient(getMappedField(row, m, ['class_name']));
+                const rk = normalizeRollClient(getMappedField(row, m, ['roll', 'id']));
+                const found = unifiedPoolCache.find((u) => (!ck || u.clsKey === ck) && normalizeRollClient(u.roll) === rk);
+                if (found) targetKey = found.key;
+            }
+        }
+
+        if (targetKey) {
+            document.getElementById('docRecordSelect').value = targetKey;
+        }
         loadSelectedRecordIntoForm();
         onDocConfigChange();
     }
@@ -2380,63 +2564,65 @@
         switchTab('docstudio');
         document.getElementById('docTypeSelect').value = 'marksheet';
         document.getElementById('docBatchMode').value = 'batch';
-        document.getElementById('docSourceSelect').value = 'results';
         populateDocRecordPicker();
+        const clsSelect = document.getElementById('docClassFilter');
+        const exClsKey = normalizeClassClient(exam.className || (state.classMap?.[exam.classId]?.name || ''));
+        if (clsSelect && exClsKey) {
+            clsSelect.value = exClsKey;
+            populateDocRecordPicker(true);
+        }
         onDocConfigChange();
+    }
+
+    function quickSwitchDocType(docType) {
+        document.getElementById('docTypeSelect').value = docType;
+        onDocConfigChange();
+    }
+
+    function syncQuickSwitcherUI(docType) {
+        document.querySelectorAll('[data-doc-switch]').forEach((btn) => {
+            btn.classList.toggle('active', btn.getAttribute('data-doc-switch') === docType);
+        });
     }
 
     function onDocConfigChange() {
         const docType = document.getElementById('docTypeSelect').value;
-        const batchWrap = document.getElementById('batchToggleWrap');
+        syncQuickSwitcherUI(docType);
+        const isBatch = document.getElementById('docBatchMode').value === 'batch';
         const singleWrap = document.getElementById('singleRecordWrap');
-        if (docType === 'marksheet' || docType === 'admit' || docType === 'idcard') {
-            batchWrap.classList.remove('hidden');
-            const isBatch = document.getElementById('docBatchMode').value === 'batch';
-            singleWrap.classList.toggle('hidden', isBatch);
-        } else {
-            batchWrap.classList.add('hidden');
-            document.getElementById('docBatchMode').value = 'single';
-            singleWrap.classList.remove('hidden');
-        }
+        if (singleWrap) singleWrap.classList.toggle('hidden', isBatch);
         renderA4Document();
     }
 
     function populateDocClassFilter() {
-        const source = document.getElementById('docSourceSelect').value;
+        buildUnifiedStudioPool();
         const clsSelect = document.getElementById('docClassFilter');
         if (!clsSelect) return;
         const prev = clsSelect.value;
-        const classSet = new Set();
-
-        if (source === 'results') {
-            const exam = getActiveExam();
-            if (exam?.className) classSet.add(exam.className);
-        } else {
-            const sheet = state[source] || { rows: [], mapping: {} };
-            const m = sheet.mapping || {};
-            (sheet.rows || []).forEach((r) => {
-                const cl = getMappedField(r, m, ['class_name']);
-                if (cl) classSet.add(cl);
-            });
-        }
-
-        clsSelect.innerHTML = '<option value="">-- সকল শ্রেণি --</option>' +
-            Array.from(classSet).map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
-        if (prev && classSet.has(prev)) clsSelect.value = prev;
+        const clsMap = new Map();
+        unifiedPoolCache.forEach((u) => {
+            if (u.clsKey && !clsMap.has(u.clsKey)) {
+                clsMap.set(u.clsKey, u.cls || u.clsKey);
+            }
+        });
+        clsSelect.innerHTML = '<option value="">-- সকল শ্রেণি (' + bnNum(unifiedPoolCache.length) + ' জন) --</option>' +
+            Array.from(clsMap.entries()).map(([k, lbl]) => `<option value="${esc(k)}">${esc(lbl)}</option>`).join('');
+        if (prev && clsMap.has(prev)) clsSelect.value = prev;
     }
 
     function onDocClassFilterChange() {
         populateDocRecordPicker(true);
     }
 
-    function jumpToDocRoll(rawRoll) {
-        const target = normalizeRollClient(rawRoll);
-        if (!target) return;
+    function jumpToDocRoll(rawInput) {
+        const q = String(rawInput || '').trim().toLowerCase();
+        const targetRoll = normalizeRollClient(rawInput);
+        if (!q) return;
         const select = document.getElementById('docRecordSelect');
         const opts = Array.from(select.options);
         const foundOpt = opts.find((o) => {
             const r = normalizeRollClient(o.getAttribute('data-roll') || '');
-            return r === target || o.textContent.toLowerCase().includes(rawRoll.trim().toLowerCase());
+            return (targetRoll && r === targetRoll) || o.textContent.toLowerCase().includes(q);
         });
         if (foundOpt && foundOpt.value !== '') {
             select.value = foundOpt.value;
@@ -2447,91 +2633,60 @@
     function populateDocRecordPicker(preserveClassFilter) {
         if (!preserveClassFilter) {
             populateDocClassFilter();
-        }
-        const source = document.getElementById('docSourceSelect').value;
-        const select = document.getElementById('docRecordSelect');
-        const filterCls = normalizeClassClient(document.getElementById('docClassFilter')?.value || '');
-
-        if (source === 'results') {
-            const exam = getActiveExam();
-            const computed = recomputeExamClient(exam);
-            const exCls = normalizeClassClient(exam.className || '');
-            const filtered = computed.evaluatedRows
-                .map((r, i) => ({ r, i }))
-                .filter(() => !filterCls || !exCls || exCls === filterCls);
-            select.innerHTML = filtered.length
-                ? filtered.map(({ r, i }) => `<option value="${i}" data-roll="${esc(r.roll)}">রোল ${bnNum(r.roll)} - ${esc(r.name || 'নাম নেই')}</option>`).join('')
-                : '<option value="">-- কোনো শিক্ষার্থী নেই --</option>';
         } else {
-            const sheet = state[source];
-            const m = sheet.mapping || {};
-            const filtered = sheet.rows
-                .map((r, i) => ({ r, i }))
-                .filter(({ r }) => {
-                    if (!filterCls) return true;
-                    const cl = normalizeClassClient(getMappedField(r, m, ['class_name']));
-                    return cl === filterCls;
-                });
-            select.innerHTML = filtered.length
-                ? filtered.map(({ r, i }) => {
-                    const nm = getMappedField(r, m, ['name_bn', 'name_en']) || Object.values(r).find((v) => v && !String(v).startsWith('row_')) || `সারি ${i + 1}`;
-                    const rl = getMappedField(r, m, ['roll', 'id']);
-                    const cl = getMappedField(r, m, ['class_name']);
-                    return `<option value="${i}" data-roll="${esc(rl)}">${rl ? 'রোল ' + bnNum(rl) + ' - ' : ''}${esc(nm)}${cl ? ' (' + esc(cl) + ')' : ''}</option>`;
-                }).join('')
-                : '<option value="">-- কোনো তথ্য নেই --</option>';
+            buildUnifiedStudioPool();
+        }
+        const select = document.getElementById('docRecordSelect');
+        const filterClsKey = document.getElementById('docClassFilter')?.value || '';
+        const filtered = unifiedPoolCache.filter((u) => !filterClsKey || u.clsKey === filterClsKey);
+        const prevVal = select.value;
+
+        select.innerHTML = filtered.length
+            ? filtered.map((u) => {
+                const tag = u.hasStudentInfo && u.hasResultInfo
+                    ? 'তথ্য + ফলাফল'
+                    : (u.hasResultInfo ? 'ফলাফল' : 'তথ্য');
+                return `<option value="${esc(u.key)}" data-roll="${esc(u.roll)}">${u.roll ? 'রোল ' + bnNum(u.roll) + ' - ' : ''}${esc(u.name || 'নাম নেই')}${u.cls ? ' (' + esc(u.cls) + ')' : ''} [${tag}]</option>`;
+            }).join('')
+            : '<option value="">-- কোনো শিক্ষার্থী পাওয়া যায়নি --</option>';
+
+        if (prevVal && filtered.some((u) => u.key === prevVal)) {
+            select.value = prevVal;
         }
         loadSelectedRecordIntoForm();
     }
 
+    let currentStudioRecord = null;
+
     function loadSelectedRecordIntoForm() {
-        const source = document.getElementById('docSourceSelect').value;
-        const idx = parseInt(document.getElementById('docRecordSelect').value, 10);
-        if (Number.isNaN(idx)) {
+        const selectedKey = document.getElementById('docRecordSelect').value;
+        const rec = unifiedPoolCache.find((u) => u.key === selectedKey) || null;
+        currentStudioRecord = rec;
+        const noteEl = document.getElementById('docMergeStatusNote');
+
+        if (!rec) {
+            if (noteEl) noteEl.textContent = '';
             renderA4Document();
             return;
         }
 
-        if (source === 'results') {
-            const exam = getActiveExam();
-            const computed = recomputeExamClient(exam);
-            const ev = computed.evaluatedRows[idx];
-            if (!ev) return;
-            const stuRow = findMatchedStudentRow(exam.className || '', ev.roll);
-            const sm = state.students?.mapping || {};
-            document.getElementById('fName').value = ev.name || (stuRow ? getMappedField(stuRow, sm, ['name_bn', 'name_en']) : '') || '';
-            document.getElementById('fRoll').value = ev.roll || '';
-            document.getElementById('fFather').value = ev.father || (stuRow ? getMappedField(stuRow, sm, ['father_bn']) : '') || '';
-            document.getElementById('fMother').value = stuRow ? getMappedField(stuRow, sm, ['mother_bn']) : '';
-            document.getElementById('fClass').value = exam.className || (stuRow ? getMappedField(stuRow, sm, ['class_name']) : '') || '';
-            document.getElementById('fSession').value = exam.year || '২০২৬';
-            if (stuRow) {
-                document.getElementById('fDob').value = getMappedField(stuRow, sm, ['dob']);
-                document.getElementById('fReg').value = getMappedField(stuRow, sm, ['reg_no', 'id']);
-                document.getElementById('fAddress').value = getMappedField(stuRow, sm, ['address']);
-            }
-            document.getElementById('fGpa').value = ev.gpa ? ev.gpa.toFixed(2) : ev.statusBn;
-        } else {
-            const sheet = state[source];
-            const row = sheet.rows[idx];
-            if (!row) return;
-            const m = sheet.mapping || {};
-            const clsVal = getMappedField(row, m, ['class_name']);
-            const rollVal = getMappedField(row, m, ['roll', 'id']);
-            const matchedRes = findMatchedExamResult(clsVal, rollVal);
+        document.getElementById('fName').value = rec.name || '';
+        document.getElementById('fRoll').value = rec.roll || '';
+        document.getElementById('fFather').value = rec.father || '';
+        document.getElementById('fMother').value = rec.mother || '';
+        document.getElementById('fClass').value = rec.cls || '';
+        document.getElementById('fSession').value = rec.session || '২০২৫-২০২৬';
+        document.getElementById('fDob').value = rec.dob || '';
+        document.getElementById('fReg').value = rec.reg || rec.id || '';
+        document.getElementById('fGpa').value = rec.ev ? (rec.ev.gpa ? rec.ev.gpa.toFixed(2) : rec.ev.statusBn) : (rec.gpa || '');
+        document.getElementById('fAddress').value = rec.address || '';
+        if (rec.remark) document.getElementById('fRemark').value = rec.remark;
 
-            document.getElementById('fName').value = getMappedField(row, m, ['name_bn', 'name_en']);
-            document.getElementById('fRoll').value = rollVal;
-            document.getElementById('fFather').value = getMappedField(row, m, ['father_bn']) || (matchedRes?.ev?.father || '');
-            document.getElementById('fMother').value = getMappedField(row, m, ['mother_bn']);
-            document.getElementById('fClass').value = clsVal;
-            document.getElementById('fSession').value = getMappedField(row, m, ['session']) || '২০২৫-২০২৬';
-            document.getElementById('fDob').value = getMappedField(row, m, ['dob']);
-            document.getElementById('fReg').value = getMappedField(row, m, ['reg_no', 'id']);
-            document.getElementById('fGpa').value = getMappedField(row, m, ['gpa']) || (matchedRes?.ev ? matchedRes.ev.gpa.toFixed(2) : '');
-            document.getElementById('fAddress').value = getMappedField(row, m, ['address']);
-            const rem = getMappedField(row, m, ['remark']);
-            if (rem) document.getElementById('fRemark').value = rem;
+        if (noteEl) {
+            const parts = [];
+            if (rec.hasStudentInfo) parts.push('শিক্ষার্থী তথ্য');
+            if (rec.hasResultInfo) parts.push(`ফলাফল (GPA ${bnNum(rec.ev?.gpa ? rec.ev.gpa.toFixed(2) : '0.00')})`);
+            noteEl.textContent = parts.length ? 'সংযুক্ত উৎস: ' + parts.join(' + ') : '';
         }
         renderA4Document();
     }
@@ -2644,196 +2799,25 @@
         `;
     }
 
-    function renderA4Document() {
-        const container = document.getElementById('a4PagesContainer');
-        const docType = document.getElementById('docTypeSelect').value;
-        const batchMode = document.getElementById('docBatchMode').value === 'batch';
-        const style = getDocStyle();
-
-        const memoNo = document.getElementById('docMemoNo').value;
-        const dateText = document.getElementById('docDateText').value;
-        const fName = document.getElementById('fName').value || 'মোঃ আব্দুল্লাহ আল মামুন';
-        const fRoll = document.getElementById('fRoll').value || '০১';
-        const fFather = document.getElementById('fFather').value || 'মোঃ আব্দুর রহমান';
-        const fMother = document.getElementById('fMother').value || 'মোছাঃ আমেনা বেগম';
-        const fClass = document.getElementById('fClass').value || 'দাখিল';
-        const fSession = document.getElementById('fSession').value || '২০২৫-২০২৬';
-        const fDob = document.getElementById('fDob').value || '২০১০-০৫-১২';
-        const fReg = document.getElementById('fReg').value || '—';
-        const fGpa = document.getElementById('fGpa').value || '৫.০০';
-        const fAddress = document.getElementById('fAddress').value || 'নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা';
-        const fPrincipal = document.getElementById('fPrincipalLabel').value || 'অধ্যক্ষ';
-        const fRemark = document.getElementById('fRemark').value || '';
-
-        if (docType === 'marksheet') {
-            const exam = getActiveExam();
-            const computed = recomputeExamClient(exam);
-            if (batchMode) {
-                if (!computed.evaluatedRows.length) {
-                    container.innerHTML = `<div class="a4-page" style="padding:20mm;"><p>রেজাল্ট শিটে কোনো শিক্ষার্থী পাওয়া যায়নি।</p></div>`;
-                    return;
-                }
-                container.innerHTML = computed.evaluatedRows.map((ev) => buildMarksheetPageHtml(ev, exam, style)).join('');
-                return;
-            }
-
-            const idx = parseInt(document.getElementById('docRecordSelect').value, 10);
-            const source = document.getElementById('docSourceSelect').value;
-            let activeExamForSheet = exam;
-            let ev = (source === 'results' && !Number.isNaN(idx)) ? computed.evaluatedRows[idx] : null;
-
-            if (!ev) {
-                const cross = findMatchedExamResult(fClass, fRoll);
-                if (cross) {
-                    activeExamForSheet = cross.exam;
-                    ev = cross.ev;
-                }
-            }
-
-            if (!ev) {
-                const subCols = (exam.columns || []).filter((c) => c.isSubject);
-                ev = {
-                    name: fName,
-                    roll: fRoll,
-                    father: fFather,
-                    totalObtained: subCols.length * 80,
-                    totalFullMarks: subCols.reduce((a, b) => a + (Number(b.fullMarks) || 100), 0),
-                    gpa: parseFloat(enNum(fGpa)) || 5.0,
-                    meritRank: 1,
-                    failCount: 0,
-                    isPromoted: false,
-                    statusBn: 'উত্তীর্ণ',
-                    subjects: subCols.map((s) => ({
-                        name: cleanSubTitle(s.label),
-                        fullMarks: Number(s.fullMarks) || 100,
-                        obtained: '৮০',
-                        grade: 'A+',
-                        gp: '5.00',
-                        isFail: false,
-                    })),
-                };
-            }
-            container.innerHTML = buildMarksheetPageHtml(ev, activeExamForSheet, style, fName, fRoll, fFather, fClass);
-            return;
-        }
-
-        if (docType === 'admit' || docType === 'idcard') {
-            const source = document.getElementById('docSourceSelect').value;
-            const filterCls = normalizeClassClient(document.getElementById('docClassFilter')?.value || '');
-            let records = [];
-            if (batchMode) {
-                if (source === 'results') {
-                    const exam = getActiveExam();
-                    const exCls = normalizeClassClient(exam.className || '');
-                    if (!filterCls || !exCls || exCls === filterCls) {
-                        records = recomputeExamClient(exam).evaluatedRows.map((r) => ({
-                            name: r.name, roll: r.roll, father: r.father, mother: '', cls: exam.className, session: exam.year || '২০২৬', reg: r.studentId || '', dob: '', address: fAddress
-                        }));
-                    }
-                } else {
-                    const sheet = state[source] || { rows: [], mapping: {} };
-                    const m = sheet.mapping || {};
-                    records = sheet.rows
-                        .map((row) => ({
-                            name: getMappedField(row, m, ['name_bn', 'name_en']),
-                            roll: getMappedField(row, m, ['roll', 'id']),
-                            father: getMappedField(row, m, ['father_bn']),
-                            mother: getMappedField(row, m, ['mother_bn']),
-                            cls: getMappedField(row, m, ['class_name']),
-                            session: getMappedField(row, m, ['session']) || fSession,
-                            reg: getMappedField(row, m, ['reg_no', 'id']),
-                            dob: getMappedField(row, m, ['dob']),
-                            address: getMappedField(row, m, ['address']) || fAddress,
-                        }))
-                        .filter((r) => !filterCls || normalizeClassClient(r.cls) === filterCls);
-                }
-                if (!records.length) {
-                    container.innerHTML = `<div class="a4-page" style="padding:20mm;"><p>ব্যাচ প্রিন্টের জন্য কোনো শিক্ষার্থী পাওয়া যায়নি।</p></div>`;
-                    return;
-                }
-            } else {
-                records = [{ name: fName, roll: fRoll, father: fFather, mother: fMother, cls: fClass, session: fSession, reg: fReg, dob: fDob, address: fAddress }];
-            }
-
-            if (docType === 'admit') {
-                const buildAdmitCard = (st) => `
-                    <div style="border:2px solid #166534; padding:16px 18px; border-radius:6px; margin-bottom:14mm; background:#fff;">
-                        <div class="a4-inst-header" style="margin-bottom:10px; padding-bottom:8px;">
-                            <img src="/logo.png" alt="Logo" style="width:54px; height:54px;">
-                            <div class="a4-inst-title">
-                                <h2 style="font-size:1.18em;">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h2>
-                                <p>নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা · EIIN: ১১৮৭৭৮</p>
-                                <p style="color:#14532d; font-weight:700; text-decoration:underline;">প্রবেশপত্র (ADMIT CARD)</p>
-                            </div>
-                            <div style="width:54px;"></div>
-                        </div>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px 14px; font-size:0.95em;">
-                            <div><strong>শিক্ষার্থীর নাম:</strong> ${esc(st.name || '—')}</div>
-                            <div><strong>রোল নম্বর:</strong> ${bnNum(st.roll || '—')}</div>
-                            <div><strong>পিতার নাম:</strong> ${esc(st.father || '—')}</div>
-                            <div><strong>মাতার নাম:</strong> ${esc(st.mother || '—')}</div>
-                            <div><strong>শ্রেণি:</strong> ${esc(st.cls || '—')}</div>
-                            <div><strong>আইডি / রেজিঃ:</strong> ${esc(st.reg || '—')}</div>
-                        </div>
-                        <div class="a4-sign-row" style="margin-top:34px;">
-                            <div class="a4-sign-box"><div class="a4-sign-line">শিক্ষার্থীর স্বাক্ষর</div></div>
-                            <div class="a4-sign-box"><div class="a4-sign-line">পরীক্ষা নিয়ন্ত্রক</div></div>
-                            <div class="a4-sign-box"><div class="a4-sign-line">${esc(fPrincipal.split(',')[0] || 'অধ্যক্ষের স্বাক্ষর')}</div></div>
-                        </div>
-                    </div>
-                `;
-                const pages = [];
-                for (let i = 0; i < records.length; i += 2) {
-                    const pair = records.slice(i, i + 2).map(buildAdmitCard).join('');
-                    pages.push(`<div class="a4-page" style="padding:${style.mTop}mm ${style.mRight}mm ${style.mBottom}mm ${style.mLeft}mm; font-size:${style.fontSize}px;">${pair}</div>`);
-                }
-                container.innerHTML = pages.join('');
-                return;
-            }
-
-            const buildStudioIdCard = (st) => `
-                <div style="width:74mm; min-height:110mm; border:2px solid #14532d; border-radius:8px; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; background:#fff; break-inside:avoid;">
-                    <div>
-                        <div style="background:#14532d; color:#fff; padding:8px; text-align:center; border-bottom:3px solid #f59e0b;">
-                            <div style="display:flex; align-items:center; justify-content:center; gap:6px;">
-                                <img src="/logo.png" style="width:28px; height:28px; border-radius:50%; background:#fff; padding:2px;" alt="Logo">
-                                <strong style="font-size:11.5px; line-height:1.2;">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</strong>
-                            </div>
-                            <div style="font-size:9.5px; color:#fef3c7; margin-top:2px;">শিক্ষার্থী পরিচয়পত্র · EIIN: ১১৮৭৭৮</div>
-                        </div>
-                        <div style="padding:10px; font-size:11.8px; line-height:1.55;">
-                            <div style="text-align:center; font-size:14.5px; font-weight:700; color:#14532d; margin-bottom:6px;">${esc(st.name || '—')}</div>
-                            <div><strong>শ্রেণি:</strong> ${esc(st.cls || '—')}</div>
-                            <div><strong>রোল নম্বর:</strong> ${bnNum(st.roll || '—')}</div>
-                            <div><strong>আইডি / রেজিঃ:</strong> ${esc(st.reg || '—')}</div>
-                            <div><strong>পিতার নাম:</strong> ${esc(st.father || '—')}</div>
-                            <div><strong>মাতার নাম:</strong> ${esc(st.mother || '—')}</div>
-                            <div><strong>জন্ম তারিখ:</strong> ${esc(st.dob || '—')}</div>
-                            <div><strong>ঠিকানা:</strong> ${esc(st.address || 'নলতা, সাতক্ষীরা')}</div>
-                        </div>
-                    </div>
-                    <div style="background:#f0fdf4; border-top:1px solid #bbf7d0; padding:6px 10px; display:flex; justify-content:space-between; font-size:10.5px;">
-                        <span>শিক্ষাবর্ষ: <strong>${esc(st.session || fSession)}</strong></span>
-                        <span style="border-top:1px solid #14532d; padding-top:2px; font-weight:700;">অধ্যক্ষের স্বাক্ষর</span>
-                    </div>
-                </div>
-            `;
-            const idPages = [];
-            for (let i = 0; i < records.length; i += 4) {
-                const chunk = records.slice(i, i + 4).map(buildStudioIdCard).join('');
-                idPages.push(`<div class="a4-page" style="padding:${style.mTop}mm ${style.mRight}mm ${style.mBottom}mm ${style.mLeft}mm; font-size:${style.fontSize}px;"><div style="display:grid; grid-template-columns:1fr 1fr; gap:10mm; justify-items:center;">${chunk}</div></div>`);
-            }
-            container.innerHTML = idPages.join('');
-            return;
-        }
-
+    function buildCertificatePageHtml(docType, st, style, memoNo, dateText, fPrincipal, fRemark) {
         const isTestimonial = docType === 'testimonial';
         const title = isTestimonial ? 'প্রশংসা পত্র (TESTIMONIAL)' : 'প্রত্যায়ন পত্র (ATTESTATION CERTIFICATE)';
+        const fName = st.name || '—';
+        const fFather = st.father || '—';
+        const fMother = st.mother || '—';
+        const fAddress = st.address || 'নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা';
+        const fClass = st.cls || '—';
+        const fSession = st.session || '২০২৫-২০২৬';
+        const fRoll = st.roll || '—';
+        const fReg = st.reg || st.id || '—';
+        const fGpa = st.gpa || '—';
+        const fDob = st.dob || '—';
+        const rem = st.remark || fRemark || '';
         const bodyHtml = isTestimonial
-            ? `এই মর্মে প্রত্যয়ন ও প্রশংসা করা যাচ্ছে যে, <strong>${esc(fName)}</strong>, পিতা: <strong>${esc(fFather)}</strong>, মাতা: <strong>${esc(fMother)}</strong>, ঠিকানা: ${esc(fAddress)} — অত্র <strong>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</strong>-এর একজন নিয়মিত শিক্ষার্থী ছিল। সে অত্র প্রতিষ্ঠান থেকে <strong>${esc(fClass)}</strong> শ্রেণির পরীক্ষায় (শিক্ষাবর্ষ: ${esc(fSession)}, রোল নং: <strong>${bnNum(fRoll)}</strong>, রেজিস্ট্রেশন নং: ${esc(fReg)}) অংশগ্রহণ করে <strong>GPA ${esc(fGpa)}</strong> অর্জনপূর্বক উত্তীর্ণ হয়েছে। নথিপত্র অনুযায়ী তার জন্ম তারিখ <strong>${esc(fDob)}</strong>।<br><br>${esc(fRemark)}<br><br>আমি তার জীবনের সার্বিক মঙ্গল ও উজ্জ্বল ভবিষ্যৎ কামনা করি।`
-            : `এই মর্মে প্রত্যয়ন করা যাচ্ছে যে, <strong>${esc(fName)}</strong>, পিতা: <strong>${esc(fFather)}</strong>, মাতা: <strong>${esc(fMother)}</strong>, গ্রাম/ঠিকানা: ${esc(fAddress)} — অত্র <strong>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</strong>-এর <strong>${esc(fClass)}</strong> শ্রেণির (শিক্ষাবর্ষ: ${esc(fSession)}) একজন নিয়মিত শিক্ষার্থী। তার শ্রেণি রোল নম্বর <strong>${bnNum(fRoll)}</strong> এবং রেজিস্ট্রেশন/আইডি নং <strong>${esc(fReg)}</strong>। প্রতিষ্ঠানের ভর্তি রেজিস্টার অনুযায়ী তার জন্ম তারিখ <strong>${esc(fDob)}</strong>।<br><br>${esc(fRemark)}<br><br>উক্ত শিক্ষার্থীর চরিত্র ও নৈতিকতা সম্পর্কে আমাদের জানা মতে কোনো বিরূপ তথ্য নেই। আমি তার সর্বাঙ্গীণ উন্নতি কামনা করি।`;
+            ? `এই মর্মে প্রত্যয়ন ও প্রশংসা করা যাচ্ছে যে, <strong>${esc(fName)}</strong>, পিতা: <strong>${esc(fFather)}</strong>, মাতা: <strong>${esc(fMother)}</strong>, ঠিকানা: ${esc(fAddress)} — অত্র <strong>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</strong>-এর একজন নিয়মিত শিক্ষার্থী ছিল। সে অত্র প্রতিষ্ঠান থেকে <strong>${esc(fClass)}</strong> শ্রেণির পরীক্ষায় (শিক্ষাবর্ষ: ${esc(fSession)}, রোল নং: <strong>${bnNum(fRoll)}</strong>, রেজিস্ট্রেশন/আইডি নং: ${esc(fReg)}) অংশগ্রহণ করে <strong>GPA ${esc(fGpa)}</strong> অর্জনপূর্বক উত্তীর্ণ হয়েছে। নথিপত্র অনুযায়ী তার জন্ম তারিখ <strong>${esc(fDob)}</strong>।<br><br>${esc(rem)}<br><br>আমি তার জীবনের সার্বিক মঙ্গল ও উজ্জ্বল ভবিষ্যৎ কামনা করি।`
+            : `এই মর্মে প্রত্যয়ন করা যাচ্ছে যে, <strong>${esc(fName)}</strong>, পিতা: <strong>${esc(fFather)}</strong>, মাতা: <strong>${esc(fMother)}</strong>, গ্রাম/ঠিকানা: ${esc(fAddress)} — অত্র <strong>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</strong>-এর <strong>${esc(fClass)}</strong> শ্রেণির (শিক্ষাবর্ষ: ${esc(fSession)}) একজন নিয়মিত শিক্ষার্থী। তার শ্রেণি রোল নম্বর <strong>${bnNum(fRoll)}</strong> এবং রেজিস্ট্রেশন/আইডি নং <strong>${esc(fReg)}</strong>। প্রতিষ্ঠানের ভর্তি রেজিস্টার অনুযায়ী তার জন্ম তারিখ <strong>${esc(fDob)}</strong>।<br><br>${esc(rem)}<br><br>উক্ত শিক্ষার্থীর চরিত্র ও নৈতিকতা সম্পর্কে আমাদের জানা মতে কোনো বিরূপ তথ্য নেই। আমি তার সর্বাঙ্গীণ উন্নতি কামনা করি।`;
 
-        container.innerHTML = `
+        return `
             <div class="a4-page" style="padding:${style.mTop}mm ${style.mRight}mm ${style.mBottom}mm ${style.mLeft}mm; font-size:${style.fontSize}px;">
                 <div class="cert-frame">
                     <div>
@@ -2868,6 +2852,207 @@
                 </div>
             </div>
         `;
+    }
+
+    function renderA4Document() {
+        const container = document.getElementById('a4PagesContainer');
+        const docType = document.getElementById('docTypeSelect').value;
+        const batchMode = document.getElementById('docBatchMode').value === 'batch';
+        const style = getDocStyle();
+        const filterClsKey = document.getElementById('docClassFilter')?.value || '';
+
+        const memoNo = document.getElementById('docMemoNo').value;
+        const dateText = document.getElementById('docDateText').value;
+        const fName = document.getElementById('fName').value || 'মোঃ আব্দুল্লাহ আল মামুন';
+        const fRoll = document.getElementById('fRoll').value || '০১';
+        const fFather = document.getElementById('fFather').value || 'মোঃ আব্দুর রহমান';
+        const fMother = document.getElementById('fMother').value || 'মোছাঃ আমেনা বেগম';
+        const fClass = document.getElementById('fClass').value || 'ষষ্ঠ';
+        const fSession = document.getElementById('fSession').value || '২০২৫-২০২৬';
+        const fDob = document.getElementById('fDob').value || '২০১০-০৫-১২';
+        const fReg = document.getElementById('fReg').value || '—';
+        const fGpa = document.getElementById('fGpa').value || '৫.০০';
+        const fAddress = document.getElementById('fAddress').value || 'নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা';
+        const fPrincipal = document.getElementById('fPrincipalLabel').value || 'অধ্যক্ষ';
+        const fRemark = document.getElementById('fRemark').value || '';
+
+        const filteredPool = unifiedPoolCache.filter((u) => !filterClsKey || u.clsKey === filterClsKey);
+
+        if (docType === 'marksheet') {
+            if (batchMode) {
+                const withRes = filteredPool.filter((u) => u.hasResultInfo && u.ev && u.exam);
+                if (!withRes.length) {
+                    const exam = getActiveExam();
+                    const computed = recomputeExamClient(exam);
+                    if (!computed.evaluatedRows.length) {
+                        container.innerHTML = `<div class="a4-page" style="padding:20mm;"><p>রেজাল্ট শিটে কোনো শিক্ষার্থী পাওয়া যায়নি। প্রথমে "২. রেজাল্ট শিট আপলোড" ট্যাব থেকে শিট আপলোড করুন।</p></div>`;
+                        return;
+                    }
+                    container.innerHTML = computed.evaluatedRows.map((ev) => buildMarksheetPageHtml(ev, exam, style)).join('');
+                    return;
+                }
+                container.innerHTML = withRes.map((u) => buildMarksheetPageHtml(u.ev, u.exam, style, u.name, u.roll, u.father, u.cls)).join('');
+                return;
+            }
+
+            let activeExamForSheet = currentStudioRecord?.exam || getActiveExam();
+            let ev = currentStudioRecord?.ev || null;
+
+            if (!ev) {
+                const subCols = (activeExamForSheet?.columns || []).filter((c) => c.isSubject);
+                container.innerHTML = `
+                    <div class="a4-page" style="padding:${style.mTop}mm ${style.mRight}mm ${style.mBottom}mm ${style.mLeft}mm; font-size:${style.fontSize}px;">
+                        <div class="a4-frame" style="justify-content:center; align-items:center; text-align:center;">
+                            <div>
+                                <img src="/logo.png" alt="Logo" style="width:68px; height:68px; margin-bottom:10px;">
+                                <h3 style="color:#14532d; margin-bottom:6px;">${esc(fName)} (শ্রেণি: ${esc(fClass)}, রোল: ${bnNum(fRoll)})</h3>
+                                <p style="color:#475569; max-width:440px; margin:0 auto;">
+                                    এই শিক্ষার্থীর জন্য এখনো কোনো রেজাল্ট শিট আপলোড করা হয়নি। "২. রেজাল্ট শিট আপলোড" ট্যাবে রেজাল্ট শিট আপলোড করলে এখানে স্বয়ংক্রিয়ভাবে মার্কশিট তৈরি হবে; অথবা আইডি কার্ড, প্রত্যায়ন পত্র ও প্রশংসা পত্র প্রিন্ট করতে পারবেন।
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            container.innerHTML = buildMarksheetPageHtml(ev, activeExamForSheet, style, fName, fRoll, fFather, fClass);
+            return;
+        }
+
+        if (docType === 'admit' || docType === 'idcard') {
+            const records = batchMode
+                ? filteredPool.map((u) => ({
+                    name: u.name,
+                    roll: u.roll,
+                    father: u.father,
+                    mother: u.mother,
+                    cls: u.cls,
+                    session: u.session || fSession,
+                    reg: u.reg || u.id,
+                    dob: u.dob,
+                    mobile: u.mobile,
+                    blood: u.blood,
+                    address: u.address || fAddress,
+                    photo: u.photo || '/logo.png',
+                }))
+                : [{
+                    name: fName,
+                    roll: fRoll,
+                    father: fFather,
+                    mother: fMother,
+                    cls: fClass,
+                    session: fSession,
+                    reg: fReg,
+                    dob: fDob,
+                    mobile: currentStudioRecord?.mobile || '',
+                    blood: currentStudioRecord?.blood || '',
+                    address: fAddress,
+                    photo: currentStudioRecord?.photo || '/logo.png',
+                }];
+
+            if (!records.length) {
+                container.innerHTML = `<div class="a4-page" style="padding:20mm;"><p>ব্যাচ প্রিন্টের জন্য কোনো শিক্ষার্থী পাওয়া যায়নি।</p></div>`;
+                return;
+            }
+
+            if (docType === 'admit') {
+                const buildAdmitCard = (st) => `
+                    <div style="border:2px solid #166534; padding:16px 18px; border-radius:6px; margin-bottom:14mm; background:#fff;">
+                        <div class="a4-inst-header" style="margin-bottom:10px; padding-bottom:8px;">
+                            <img src="/logo.png" alt="Logo" style="width:54px; height:54px;">
+                            <div class="a4-inst-title">
+                                <h2 style="font-size:1.18em;">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h2>
+                                <p>নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা · EIIN: ১১৮৭৭৮</p>
+                                <p style="color:#14532d; font-weight:700; text-decoration:underline;">প্রবেশপত্র (ADMIT CARD)</p>
+                            </div>
+                            <img src="${esc(st.photo || '/logo.png')}" alt="Photo" onerror="this.src='/logo.png'" style="width:54px; height:62px; object-fit:cover; border:1px solid #166534; border-radius:4px;">
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px 14px; font-size:0.95em;">
+                            <div><strong>শিক্ষার্থীর নাম:</strong> ${esc(st.name || '—')}</div>
+                            <div><strong>রোল নম্বর:</strong> ${bnNum(st.roll || '—')}</div>
+                            <div><strong>পিতার নাম:</strong> ${esc(st.father || '—')}</div>
+                            <div><strong>মাতার নাম:</strong> ${esc(st.mother || '—')}</div>
+                            <div><strong>শ্রেণি:</strong> ${esc(st.cls || '—')}</div>
+                            <div><strong>আইডি / রেজিঃ:</strong> ${esc(st.reg || '—')}</div>
+                        </div>
+                        <div class="a4-sign-row" style="margin-top:34px;">
+                            <div class="a4-sign-box"><div class="a4-sign-line">শিক্ষার্থীর স্বাক্ষর</div></div>
+                            <div class="a4-sign-box"><div class="a4-sign-line">পরীক্ষা নিয়ন্ত্রক</div></div>
+                            <div class="a4-sign-box"><div class="a4-sign-line">${esc(fPrincipal.split(',')[0] || 'অধ্যক্ষের স্বাক্ষর')}</div></div>
+                        </div>
+                    </div>
+                `;
+                const pages = [];
+                for (let i = 0; i < records.length; i += 2) {
+                    const pair = records.slice(i, i + 2).map(buildAdmitCard).join('');
+                    pages.push(`<div class="a4-page" style="padding:${style.mTop}mm ${style.mRight}mm ${style.mBottom}mm ${style.mLeft}mm; font-size:${style.fontSize}px;">${pair}</div>`);
+                }
+                container.innerHTML = pages.join('');
+                return;
+            }
+
+            const buildStudioIdCard = (st) => `
+                <div style="width:74mm; min-height:112mm; border:2px solid #14532d; border-radius:8px; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; background:#fff; break-inside:avoid;">
+                    <div>
+                        <div style="background:#14532d; color:#fff; padding:8px; text-align:center; border-bottom:3px solid #f59e0b;">
+                            <div style="display:flex; align-items:center; justify-content:center; gap:6px;">
+                                <img src="/logo.png" style="width:26px; height:26px; border-radius:50%; background:#fff; padding:2px;" alt="Logo">
+                                <strong style="font-size:11px; line-height:1.2;">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</strong>
+                            </div>
+                            <div style="font-size:9.5px; color:#fef3c7; margin-top:2px;">শিক্ষার্থী পরিচয়পত্র · EIIN: ১১৮৭৭৮</div>
+                        </div>
+                        <div style="padding:9px 10px; font-size:11.4px; line-height:1.48;">
+                            <div style="width:52px; height:58px; margin:0 auto 5px auto; border:1.5px solid #14532d; border-radius:6px; overflow:hidden;">
+                                <img src="${esc(st.photo || '/logo.png')}" onerror="this.src='/logo.png'" style="width:100%; height:100%; object-fit:cover;" alt="Photo">
+                            </div>
+                            <div style="text-align:center; font-size:13.8px; font-weight:700; color:#14532d; margin-bottom:4px;">${esc(st.name || '—')}</div>
+                            <div><strong>শ্রেণি:</strong> ${esc(st.cls || '—')} · <strong>রোল:</strong> ${bnNum(st.roll || '—')}</div>
+                            <div><strong>আইডি / রেজিঃ:</strong> ${esc(st.reg || '—')}</div>
+                            <div><strong>পিতার নাম:</strong> ${esc(st.father || '—')}</div>
+                            <div><strong>মাতার নাম:</strong> ${esc(st.mother || '—')}</div>
+                            <div><strong>জন্ম তারিখ:</strong> ${esc(st.dob || '—')}${st.blood ? ' · <strong>রক্ত:</strong> ' + esc(st.blood) : ''}</div>
+                            ${st.mobile ? `<div><strong>মোবাইল:</strong> ${esc(st.mobile)}</div>` : ''}
+                            <div><strong>ঠিকানা:</strong> ${esc(st.address || 'নলতা, সাতক্ষীরা')}</div>
+                        </div>
+                    </div>
+                    <div style="background:#f0fdf4; border-top:1px solid #bbf7d0; padding:6px 10px; display:flex; justify-content:space-between; font-size:10.5px;">
+                        <span>শিক্ষাবর্ষ: <strong>${esc(st.session || fSession)}</strong></span>
+                        <span style="border-top:1px solid #14532d; padding-top:2px; font-weight:700;">অধ্যক্ষের স্বাক্ষর</span>
+                    </div>
+                </div>
+            `;
+            const idPages = [];
+            for (let i = 0; i < records.length; i += 4) {
+                const chunk = records.slice(i, i + 4).map(buildStudioIdCard).join('');
+                idPages.push(`<div class="a4-page" style="padding:${style.mTop}mm ${style.mRight}mm ${style.mBottom}mm ${style.mLeft}mm; font-size:${style.fontSize}px;"><div style="display:grid; grid-template-columns:1fr 1fr; gap:10mm; justify-items:center;">${chunk}</div></div>`);
+            }
+            container.innerHTML = idPages.join('');
+            return;
+        }
+
+        // Attestation or Testimonial (single or batch)
+        if (batchMode) {
+            if (!filteredPool.length) {
+                container.innerHTML = `<div class="a4-page" style="padding:20mm;"><p>ব্যাচ প্রিন্টের জন্য কোনো শিক্ষার্থী পাওয়া যায়নি।</p></div>`;
+                return;
+            }
+            container.innerHTML = filteredPool.map((u) => buildCertificatePageHtml(docType, u, style, memoNo, dateText, fPrincipal, fRemark)).join('');
+            return;
+        }
+
+        container.innerHTML = buildCertificatePageHtml(docType, {
+            name: fName,
+            roll: fRoll,
+            father: fFather,
+            mother: fMother,
+            cls: fClass,
+            session: fSession,
+            dob: fDob,
+            reg: fReg,
+            gpa: fGpa,
+            address: fAddress,
+            remark: fRemark,
+        }, style, memoNo, dateText, fPrincipal, fRemark);
     }
 
     function setDocExportStatus(msg, isErr) {
