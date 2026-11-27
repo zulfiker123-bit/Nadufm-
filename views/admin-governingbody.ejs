@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>গভর্নিং বডি ব্যবস্থাপনা</title>
+    <link rel="icon" href="/pwa-192x192.png" type="image/png" sizes="192x192">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#15803d">
+    <link rel="stylesheet" href="/fonts.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Kalpurush', sans-serif; background: #f6f8f7; color: #0f172a; padding: 18px; }
+        .wrap { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 360px 1fr; gap: 18px; align-items: start; }
+        .left-col { display: flex; flex-direction: column; gap: 18px; }
+        .card { background: #fff; border: 1px solid rgba(15,23,42,0.08); border-radius: 14px; padding: 20px; }
+        .card h2 { font-size: 1.06rem; font-weight: 700; color: #14532d; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid rgba(15,23,42,0.08); }
+        .field { margin-bottom: 12px; }
+        .field label { display: block; font-size: 0.86rem; font-weight: 600; color: #334155; margin-bottom: 4px; }
+        .field input { width: 100%; height: 40px; padding: 0 12px; border: 1px solid rgba(15,23,42,0.14); border-radius: 9px; background: #f8faf9; font-family: inherit; font-size: 0.92rem; outline: none; }
+        .field input:focus { border-color: #15803d; background: #fff; }
+        .btn { min-height: 42px; padding: 0 16px; border: 1px solid transparent; border-radius: 10px; font-family: inherit; font-size: 0.92rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.14s ease, filter 0.14s ease; }
+        .btn:hover { transform: translateY(-1px); filter: brightness(1.04); }
+        .btn:active { transform: translateY(2px); }
+        .btn-primary { width: 100%; background: linear-gradient(180deg, #1ea34d 0%, #15803d 100%); color: #fff; border-color: #146c34; box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 3.5px 0 #0e5427, 0 6px 14px -3px rgba(21,128,61,0.3); }
+        .btn-primary:active { box-shadow: 0 1px 0 #0e5427; }
+        .btn-secondary { width: 100%; background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color: #fff; border-color: #1e40af; box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 3.5px 0 #1e3a8a, 0 6px 14px -3px rgba(29,78,216,0.28); }
+        .btn-secondary:active { box-shadow: 0 1px 0 #1e3a8a; }
+        .btn-cancel { width: 100%; margin-top: 8px; background: linear-gradient(180deg, #ffffff 0%, #f1f5f3 100%); color: #475569; border-color: rgba(15,23,42,0.14); box-shadow: inset 0 1px 0 #ffffff, 0 2.5px 0 rgba(15,23,42,0.1); display: none; }
+        .btn-cancel:active { box-shadow: 0 1px 0 rgba(15,23,42,0.1); }
+        .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+        .search-input { height: 38px; padding: 0 12px; border: 1px solid rgba(15,23,42,0.14); border-radius: 9px; min-width: 220px; font-family: inherit; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+        th { background: #f8faf9; color: #14532d; text-align: left; padding: 11px 12px; border-bottom: 1px solid rgba(15,23,42,0.09); white-space: nowrap; }
+        td { padding: 10px 12px; border-bottom: 1px solid rgba(15,23,42,0.06); vertical-align: middle; }
+        .order-pill { display: inline-flex; align-items: center; justify-content: center; min-width: 30px; height: 28px; padding: 0 8px; border-radius: 8px; background: #ecfdf5; color: #15803d; font-weight: 700; border: 1px solid rgba(21,128,61,0.18); }
+        .act-group { display: flex; gap: 6px; justify-content: flex-end; }
+        .act-btn { padding: 5px 11px; border-radius: 8px; border: 1px solid transparent; font-family: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: transform 0.13s ease, box-shadow 0.13s ease; }
+        .act-btn:hover { transform: translateY(-1px); }
+        .act-btn:active { transform: translateY(1px); }
+        .act-edit { background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%); color: #1d4ed8; border-color: #93c5fd; box-shadow: inset 0 1px 0 #ffffff, 0 2px 0 rgba(29, 78, 216, 0.16); }
+        .act-del { background: linear-gradient(180deg, #fef2f2 0%, #fee2e2 100%); color: #b91c1c; border-color: #fca5a5; box-shadow: inset 0 1px 0 #ffffff, 0 2px 0 rgba(185, 28, 28, 0.16); }
+        .status-msg { padding: 9px 12px; border-radius: 9px; font-size: 0.88rem; font-weight: 600; margin-bottom: 12px; display: none; background: #dcfce7; color: #166534; }
+        .status-msg.is-error { background: #fee2e2; color: #b91c1c; }
+        @media (max-width: 920px) { .wrap { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="left-col">
+            <div class="card">
+                <h2 id="formHeading">নতুন সদস্য যুক্ত করুন</h2>
+                <div id="statusMsg" class="status-msg"></div>
+                <form id="memberForm">
+                    <input type="hidden" id="memberId">
+                    <div class="field">
+                        <label for="mOrder">ক্রম নম্বর</label>
+                        <input type="number" min="1" id="mOrder" required placeholder="যেমন: 1">
+                    </div>
+                    <div class="field">
+                        <label for="mName">সদস্যের নাম</label>
+                        <input type="text" id="mName" required placeholder="সম্পূর্ণ নাম লিখুন">
+                    </div>
+                    <div class="field">
+                        <label for="mDesg">পদবী</label>
+                        <input type="text" id="mDesg" required placeholder="যেমন: সভাপতি / সদস্য (অভিভাবক প্রতিনিধি)">
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="saveBtn">সংরক্ষণ করুন</button>
+                    <button type="button" class="btn btn-cancel" id="cancelEditBtn" onclick="resetForm()">বাতিল করুন</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>কমিটির তথ্য ও কার্যকাল</h2>
+                <div id="infoStatusMsg" class="status-msg"></div>
+                <form id="infoForm">
+                    <div class="field">
+                        <label for="gbMadrasahInput">মাদ্রাসার নাম</label>
+                        <input type="text" id="gbMadrasahInput" required value="<%= (governingBodyInfo && governingBodyInfo.madrasahName) || '' %>">
+                    </div>
+                    <div class="field">
+                        <label for="gbTenureInput">কমিটির কার্যকাল</label>
+                        <input type="text" id="gbTenureInput" required value="<%= (governingBodyInfo && governingBodyInfo.tenure) || '' %>">
+                    </div>
+                    <button type="submit" class="btn btn-secondary">কমিটির তথ্য আপডেট করুন</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="toolbar">
+                <h2 style="margin:0; border:none; padding:0;">গভর্নিং বডি সদস্য তালিকা (<span id="totalCount">০</span>)</h2>
+                <input type="search" id="searchBox" class="search-input" placeholder="নাম বা পদবী খুঁজুন..." oninput="renderTable()">
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ক্রম</th>
+                            <th>সদস্যের নাম</th>
+                            <th>পদবী</th>
+                            <th style="text-align:right;">অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody id="membersBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="/offline-sync.js"></script>
+    <script>
+        let governingBody = <%- JSON.stringify(governingBody || []) %>;
+        let governingBodyInfo = <%- JSON.stringify(governingBodyInfo || {}) %>;
+
+        function bnNum(v) {
+            const d = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+            return String(v == null ? '' : v).replace(/[0-9]/g, ch => d[Number(ch)]);
+        }
+
+        function esc(s) {
+            return String(s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+        }
+
+        function showStatus(msg, isError, boxId) {
+            const el = document.getElementById(boxId || 'statusMsg');
+            if (!el) return;
+            el.textContent = msg;
+            el.classList.toggle('is-error', Boolean(isError));
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 3800);
+        }
+
+        function sortMembers(list) {
+            return list.slice().sort((a, b) => (Number(a.order) || 999) - (Number(b.order) || 999));
+        }
+
+        function nextOrderValue() {
+            const maxOrd = governingBody.reduce((max, m) => Math.max(max, Number(m.order) || 0), 0);
+            return maxOrd + 1;
+        }
+
+        function renderTable() {
+            const q = (document.getElementById('searchBox').value || '').trim().toLowerCase();
+            const sorted = sortMembers(governingBody);
+            const list = sorted.filter(m => {
+                const hay = `${m.order || ''} ${m.name} ${m.designation}`.toLowerCase();
+                return !q || hay.includes(q);
+            });
+            document.getElementById('totalCount').textContent = bnNum(list.length);
+            const tbody = document.getElementById('membersBody');
+            if (!list.length) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:24px; color:#64748b;">কোনো সদস্য পাওয়া যায়নি।</td></tr>';
+                return;
+            }
+            tbody.innerHTML = list.map((m, idx) => `
+                <tr>
+                    <td><span class="order-pill">${esc(bnNum(m.order || (idx + 1)))}</span></td>
+                    <td style="font-weight:700; color:#0f172a;">${esc(m.name)}</td>
+                    <td style="color:#334155;">${esc(m.designation)}</td>
+                    <td>
+                        <div class="act-group">
+                            <button type="button" class="act-btn act-edit" data-gb-action="edit" data-gb-id="${esc(m.id)}">এডিট</button>
+                            <button type="button" class="act-btn act-del" data-gb-action="delete" data-gb-id="${esc(m.id)}">ডিলিট</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        document.getElementById('membersBody').addEventListener('click', function (ev) {
+            const btn = ev.target && ev.target.closest ? ev.target.closest('[data-gb-action]') : null;
+            if (!btn) return;
+            const id = btn.getAttribute('data-gb-id') || '';
+            const action = btn.getAttribute('data-gb-action');
+            if (action === 'edit') editMember(id);
+            if (action === 'delete') deleteMember(id);
+        });
+
+        function editMember(id) {
+            const m = governingBody.find(x => String(x.id) === String(id));
+            if (!m) return;
+            document.getElementById('memberId').value = m.id;
+            document.getElementById('mOrder').value = m.order || 1;
+            document.getElementById('mName').value = m.name || '';
+            document.getElementById('mDesg').value = m.designation || '';
+            document.getElementById('formHeading').textContent = 'সদস্যের তথ্য এডিট করুন';
+            document.getElementById('saveBtn').textContent = 'আপডেট করুন';
+            document.getElementById('cancelEditBtn').style.display = 'inline-flex';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetForm() {
+            document.getElementById('memberForm').reset();
+            document.getElementById('memberId').value = '';
+            document.getElementById('mOrder').value = nextOrderValue();
+            document.getElementById('formHeading').textContent = 'নতুন সদস্য যুক্ত করুন';
+            document.getElementById('saveBtn').textContent = 'সংরক্ষণ করুন';
+            document.getElementById('cancelEditBtn').style.display = 'none';
+        }
+
+        async function deleteMember(id) {
+            const nextList = governingBody.filter(m => String(m.id) !== String(id));
+            if (window.NadufmOffline) {
+                const res = await window.NadufmOffline.saveMutationOrQueue({
+                    label: 'গভর্নিং বডি সদস্য ডিলিট',
+                    url: '/api/portal/governingbody/' + encodeURIComponent(id),
+                    method: 'DELETE',
+                    headers: {},
+                    optimisticUpdate: () => window.NadufmOffline.updateBootstrap(base => {
+                        base.governingBody = nextList;
+                        return base;
+                    }),
+                    onOnlineSuccess: (data) => {
+                        if (data && data.governingBody) {
+                            governingBody = data.governingBody;
+                            return window.NadufmOffline.updateBootstrap(base => {
+                                base.governingBody = data.governingBody;
+                                return base;
+                            });
+                        }
+                    },
+                });
+                if (res.queued) {
+                    governingBody = nextList;
+                    resetForm();
+                    renderTable();
+                    showStatus('অফলাইনে ডিলিট সংরক্ষিত হয়েছে — অনলাইনে অটো সিঙ্ক হবে।');
+                    return;
+                }
+                resetForm();
+                renderTable();
+                showStatus('তালিকা থেকে মুছে ফেলা হয়েছে।');
+                return;
+            }
+            const res = await fetch('/api/portal/governingbody/' + encodeURIComponent(id), { method: 'DELETE' });
+            const data = await res.json();
+            if (res.ok && data.governingBody) {
+                governingBody = data.governingBody;
+                resetForm();
+                renderTable();
+                showStatus('তালিকা থেকে মুছে ফেলা হয়েছে।');
+            } else {
+                showStatus((data && data.error) || 'মুছে ফেলা যায়নি।', true);
+            }
+        }
+
+        document.getElementById('memberForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const existingId = document.getElementById('memberId').value;
+            const orderVal = Math.max(1, parseInt(document.getElementById('mOrder').value || '1', 10) || 1);
+            const payload = {
+                id: existingId || undefined,
+                order: orderVal,
+                name: document.getElementById('mName').value.trim(),
+                designation: document.getElementById('mDesg').value.trim(),
+            };
+            const tempRecord = Object.assign({ id: existingId || ('gb_local_' + Date.now()) }, payload);
+            const optimisticList = sortMembers(
+                existingId
+                    ? governingBody.map(m => (String(m.id) === String(existingId) ? Object.assign({}, m, tempRecord) : m))
+                    : governingBody.concat([tempRecord])
+            );
+
+            if (window.NadufmOffline) {
+                const res = await window.NadufmOffline.saveMutationOrQueue({
+                    label: 'গভর্নিং বডি সদস্য সংরক্ষণ (' + payload.name + ')',
+                    url: '/api/portal/governingbody',
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    optimisticUpdate: () => window.NadufmOffline.updateBootstrap(base => {
+                        base.governingBody = optimisticList;
+                        return base;
+                    }),
+                    onOnlineSuccess: (data) => {
+                        if (data && data.governingBody) {
+                            governingBody = data.governingBody;
+                            return window.NadufmOffline.updateBootstrap(base => {
+                                base.governingBody = data.governingBody;
+                                return base;
+                            });
+                        }
+                    },
+                });
+                if (res.queued) {
+                    governingBody = optimisticList;
+                    resetForm();
+                    renderTable();
+                    showStatus('অফলাইনে সংরক্ষিত হয়েছে — অনলাইনে অটো সিঙ্ক হবে।');
+                    return;
+                }
+                resetForm();
+                renderTable();
+                showStatus('গভর্নিং বডির সদস্য সফলভাবে সংরক্ষণ করা হয়েছে।');
+                return;
+            }
+
+            const res = await fetch('/api/portal/governingbody', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const data = await res.json();
+            if (res.ok && data.governingBody) {
+                governingBody = data.governingBody;
+                resetForm();
+                renderTable();
+                showStatus('গভর্নিং বডির সদস্য সফলভাবে সংরক্ষণ করা হয়েছে।');
+            } else {
+                showStatus((data && data.error) || 'সংরক্ষণ করা যায়নি।', true);
+            }
+        });
+
+        document.getElementById('infoForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const payload = {
+                madrasahName: document.getElementById('gbMadrasahInput').value.trim(),
+                tenure: document.getElementById('gbTenureInput').value.trim(),
+            };
+            if (window.NadufmOffline) {
+                const res = await window.NadufmOffline.saveMutationOrQueue({
+                    label: 'গভর্নিং বডি কমিটির তথ্য আপডেট',
+                    url: '/api/portal/governingbody/info',
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    optimisticUpdate: () => window.NadufmOffline.updateBootstrap(base => {
+                        base.governingBodyInfo = payload;
+                        return base;
+                    }),
+                    onOnlineSuccess: (data) => {
+                        if (data && data.governingBodyInfo) {
+                            governingBodyInfo = data.governingBodyInfo;
+                            return window.NadufmOffline.updateBootstrap(base => {
+                                base.governingBodyInfo = data.governingBodyInfo;
+                                return base;
+                            });
+                        }
+                    },
+                });
+                if (res.queued) {
+                    governingBodyInfo = payload;
+                    showStatus('অফলাইনে সংরক্ষিত হয়েছে — অনলাইনে অটো সিঙ্ক হবে।', false, 'infoStatusMsg');
+                    return;
+                }
+                showStatus('কমিটির তথ্য ও কার্যকাল আপডেট করা হয়েছে।', false, 'infoStatusMsg');
+                return;
+            }
+
+            const res = await fetch('/api/portal/governingbody/info', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const data = await res.json();
+            if (res.ok && data.governingBodyInfo) {
+                governingBodyInfo = data.governingBodyInfo;
+                showStatus('কমিটির তথ্য ও কার্যকাল আপডেট করা হয়েছে।', false, 'infoStatusMsg');
+            } else {
+                showStatus((data && data.error) || 'আপডেট করা যায়নি।', true, 'infoStatusMsg');
+            }
+        });
+
+        async function hydrateOfflineGoverningBody() {
+            if (!window.NadufmOffline) return;
+            const queue = await window.NadufmOffline.getQueue();
+            const hasPending = queue.some(q => q.url && q.url.indexOf('/api/portal/governingbody') !== -1);
+            if (!navigator.onLine || hasPending) {
+                const snap = await window.NadufmOffline.getSnapshot('bootstrap');
+                if (snap && Array.isArray(snap.governingBody)) {
+                    governingBody = snap.governingBody;
+                    renderTable();
+                }
+                if (snap && snap.governingBodyInfo) {
+                    governingBodyInfo = snap.governingBodyInfo;
+                    document.getElementById('gbMadrasahInput').value = governingBodyInfo.madrasahName || '';
+                    document.getElementById('gbTenureInput').value = governingBodyInfo.tenure || '';
+                }
+            }
+        }
+
+        window.addEventListener('nadufm:sync-status', function (ev) {
+            if (ev && ev.detail && ev.detail.type === 'BOOTSTRAP_REFRESHED') {
+                hydrateOfflineGoverningBody();
+            }
+        });
+
+        document.getElementById('mOrder').value = nextOrderValue();
+        renderTable();
+        hydrateOfflineGoverningBody();
+    </script>
+    <script src="/pwa.js" defer></script>
+</body>
+</html>
