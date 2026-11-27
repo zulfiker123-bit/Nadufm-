@@ -93,17 +93,27 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        padding: 5px 10px;
-        border-radius: 8px;
-        border: 1px solid rgba(21, 128, 61, 0.28);
-        background: #ffffff;
+        padding: 6px 11px;
+        border-radius: 9px;
+        border: 1px solid rgba(21, 128, 61, 0.25);
+        background: linear-gradient(180deg, #ffffff 0%, #f4f9f6 100%);
         color: #0f172a;
         font-family: inherit;
         font-size: 0.84rem;
+        font-weight: 600;
         cursor: pointer;
+        box-shadow: inset 0 1px 0 #ffffff, 0 2px 0 rgba(21, 128, 61, 0.14);
+        transition: transform 0.13s ease, box-shadow 0.13s ease, background 0.13s ease, color 0.13s ease;
     }
     .roll-chip-btn:hover,
-    .roll-chip-btn.active { background: #15803d; color: #ffffff; border-color: #15803d; }
+    .roll-chip-btn.active {
+        background: linear-gradient(180deg, #1ea34d 0%, #15803d 100%);
+        color: #ffffff;
+        border-color: #146c34;
+        transform: translateY(-1px);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.26), 0 2.5px 0 #0e5427;
+    }
+    .roll-chip-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 #0e5427; }
 
     .roll-empty-note { font-size: 0.83rem; color: #64748b; }
 
@@ -137,16 +147,19 @@
         width: 100%;
         min-height: 46px;
         padding: 0 22px;
-        border: none;
-        border-radius: 10px;
-        background: #15803d;
+        border: 1px solid #146c34;
+        border-radius: 11px;
+        background: linear-gradient(180deg, #1ea34d 0%, #15803d 100%);
         color: #ffffff;
         font-family: inherit;
         font-weight: 700;
         font-size: 0.98rem;
         cursor: pointer;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 3.5px 0 #0e5427, 0 6px 14px -3px rgba(21, 128, 61, 0.32);
+        transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.14s ease, filter 0.14s ease;
     }
-    .search-btn:hover { background: #14532d; }
+    .search-btn:hover { transform: translateY(-1px); filter: brightness(1.04); }
+    .search-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #0e5427; }
 
     #loading { display: none; margin-top: 12px; color: #15803d; font-weight: 600; text-align: center; }
     #searchMsg { display: none; margin-top: 12px; color: #b91c1c; font-weight: 600; text-align: center; }
@@ -162,7 +175,20 @@
     .res-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.92rem; }
     .res-table th, .res-table td { padding: 10px 12px; border-bottom: 1px solid rgba(15, 23, 42, 0.08); text-align: left; }
     .res-table th { background: #f8faf9; color: #14532d; }
-    .view-btn { background: #15803d; color: #ffffff; border: none; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 600; }
+    .view-btn {
+        background: linear-gradient(180deg, #1ea34d 0%, #15803d 100%);
+        color: #ffffff;
+        border: 1px solid #146c34;
+        padding: 6px 14px;
+        border-radius: 9px;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 600;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 2.5px 0 #0e5427;
+        transition: transform 0.13s ease, box-shadow 0.13s ease;
+    }
+    .view-btn:hover { transform: translateY(-1px); }
+    .view-btn:active { transform: translateY(1.5px); box-shadow: 0 1px 0 #0e5427; }
 
     #print-preview-section { display: none; }
 
@@ -196,30 +222,46 @@
         flex-wrap: wrap;
         gap: 8px;
         justify-content: center;
-        padding-bottom: 12px;
-        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
-        margin-bottom: 12px;
+        padding: 8px;
+        background: linear-gradient(180deg, #e9efec 0%, #f4f7f5 100%);
+        border: 1px solid rgba(15, 23, 42, 0.09);
+        border-radius: 14px;
+        box-shadow: inset 0 2px 5px rgba(15, 23, 42, 0.07);
+        margin-bottom: 14px;
     }
 
     .doc-tab-btn {
         display: inline-flex;
         align-items: center;
         gap: 7px;
-        min-height: 39px;
-        padding: 0 14px;
+        min-height: 40px;
+        padding: 0 15px;
         border-radius: 10px;
-        border: 1px solid rgba(15, 23, 42, 0.12);
-        background: #f8faf9;
+        border: 1px solid rgba(15, 23, 42, 0.1);
+        background: linear-gradient(180deg, #ffffff 0%, #f2f6f4 100%);
         color: #0f172a;
         font-family: inherit;
         font-size: 0.9rem;
         font-weight: 700;
         cursor: pointer;
+        box-shadow: inset 0 1px 0 #ffffff, 0 2.5px 0 rgba(15, 23, 42, 0.09), 0 4px 8px -3px rgba(15, 23, 42, 0.08);
+        transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.14s ease, background 0.14s ease, color 0.14s ease;
+    }
+    .doc-tab-btn:hover {
+        transform: translateY(-1px);
+        color: #14532d;
+        background: linear-gradient(180deg, #ffffff 0%, #ebf7ef 100%);
+    }
+    .doc-tab-btn:active {
+        transform: translateY(1.5px);
+        box-shadow: 0 1px 0 rgba(15, 23, 42, 0.09);
     }
     .doc-tab-btn.active {
-        background: #14532d;
+        background: linear-gradient(180deg, #1ea34d 0%, #15803d 100%);
         color: #ffffff;
-        border-color: #14532d;
+        border-color: #146c34;
+        transform: translateY(-1px);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 3px 0 #0e5427, 0 6px 14px -3px rgba(21, 128, 61, 0.34);
     }
 
     .print-toolbar {
@@ -233,20 +275,27 @@
         display: inline-flex;
         align-items: center;
         gap: 7px;
-        min-height: 40px;
+        min-height: 41px;
         padding: 0 16px;
         border-radius: 10px;
-        border: none;
+        border: 1px solid transparent;
         font-family: inherit;
         font-size: 0.9rem;
         font-weight: 700;
         cursor: pointer;
         text-decoration: none;
+        transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.14s ease, filter 0.14s ease;
     }
-    .tool-green { background: #15803d; color: #ffffff; }
-    .tool-rose { background: #be123c; color: #ffffff; }
-    .tool-blue { background: #1d4ed8; color: #ffffff; }
-    .tool-slate { background: #f1f5f9; color: #0f172a; border: 1px solid rgba(15, 23, 42, 0.12); }
+    .tool-btn:hover { transform: translateY(-1px); filter: brightness(1.04); }
+    .tool-btn:active { transform: translateY(2px); }
+    .tool-green { background: linear-gradient(180deg, #1ea34d 0%, #15803d 100%); color: #ffffff; border-color: #146c34; box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 3px 0 #0e5427, 0 5px 12px -3px rgba(21,128,61,0.3); }
+    .tool-green:active { box-shadow: 0 1px 0 #0e5427; }
+    .tool-rose { background: linear-gradient(180deg, #e11d48 0%, #be123c 100%); color: #ffffff; border-color: #9f1239; box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 3px 0 #881337, 0 5px 12px -3px rgba(190,18,60,0.3); }
+    .tool-rose:active { box-shadow: 0 1px 0 #881337; }
+    .tool-blue { background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; border-color: #1e40af; box-shadow: inset 0 1px 0 rgba(255,255,255,0.26), 0 3px 0 #172f82, 0 5px 12px -3px rgba(29,78,216,0.3); }
+    .tool-blue:active { box-shadow: 0 1px 0 #172f82; }
+    .tool-slate { background: linear-gradient(180deg, #ffffff 0%, #f1f5f3 100%); color: #0f172a; border-color: rgba(15, 23, 42, 0.14); box-shadow: inset 0 1px 0 #ffffff, 0 2.5px 0 rgba(15,23,42,0.1), 0 4px 8px -3px rgba(15,23,42,0.08); }
+    .tool-slate:active { box-shadow: 0 1px 0 rgba(15,23,42,0.1); }
 
     .cert-extra-bar {
         display: none;
@@ -908,9 +957,12 @@
                             </thead>
                             <tbody>
                                 ${rs.subjects.map((sub, i) => `
-                                    <tr>
+                                    <tr style="${sub.isOptional ? 'background:#fefce8;' : ''}">
                                         <td>${bnNum(i + 1)}</td>
-                                        <td style="text-align:left; padding-left:10px; font-weight:600;">${esc(sub.name)} (${bnNum(sub.fullMarks)})</td>
+                                        <td style="text-align:left; padding-left:10px; font-weight:600;">
+                                            ${esc(sub.name)} (${bnNum(sub.fullMarks)})
+                                            ${sub.isOptional ? '<span style="display:inline-block; margin-left:6px; padding:1px 6px; font-size:0.78em; font-weight:700; border-radius:4px; background:#fef08a; color:#854d0e; border:1px solid #facc15;">৪র্থ বিষয়</span>' : ''}
+                                        </td>
                                         <td>${bnNum(sub.fullMarks)}</td>
                                         <td style="font-weight:700;">${esc(sub.obtained === 'Abs' ? 'Abs' : bnNum(sub.obtained))}</td>
                                         <td style="font-weight:700; color:${sub.isFail ? '#b91c1c' : '#166534'};">${esc(sub.grade)}</td>
@@ -919,10 +971,11 @@
                                 `).join('')}
                             </tbody>
                         </table>
-                        <div class="ms-summary">
+                        <div class="ms-summary" style="${rs.hasOptionalSubject ? 'grid-template-columns: repeat(5, 1fr);' : ''}">
                             <div>ফলাফল: <span style="color:${rs.isPromoted ? '#b45309' : (rs.failCount > 0 ? '#b91c1c' : '#15803d')};">${esc(rs.statusBn)}</span></div>
                             <div>মোট নম্বর: ${bnNum(rs.totalObtained)} / ${bnNum(rs.totalFullMarks)}</div>
-                            <div>GPA: ${bnNum(Number(rs.gpa || 0).toFixed(2))}</div>
+                            ${rs.hasOptionalSubject ? `<div>GPA (৪র্থ ছাড়া): ${bnNum(Number(rs.gpaWithoutOptional ?? rs.gpa ?? 0).toFixed(2))}${Number(rs.optionalBonus || 0) > 0 && rs.failCount === 0 ? `<div style="font-size:0.78em; font-weight:500; color:#475569;">বোনাস: +${bnNum(Number(rs.optionalBonus).toFixed(2))}</div>` : ''}</div>` : ''}
+                            <div>${rs.hasOptionalSubject ? 'চূড়ান্ত GPA' : 'GPA'}: ${bnNum(Number(rs.gpa || 0).toFixed(2))}</div>
                             <div>মেধাক্রম: ${rs.meritRank ? (bnNum(rs.meritRank) + (rs.isScience ? ' (বিজ্ঞান)' : '')) : '—'}</div>
                         </div>
                     </div>

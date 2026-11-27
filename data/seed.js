@@ -241,3 +241,187 @@ export function parseCsv(text) {
   }
   return rows;
 }
+
+export function getBoardExamType(classId = '', className = '') {
+  const cid = String(classId ?? '').trim();
+  if (cid === '11' || cid === '12') return 'alim';
+  if (cid === '9' || cid === '10') return 'dakhil';
+  if (cid === '6' || cid === '7' || cid === '8') return 'junior';
+  if (cid === '0' || cid === '1' || cid === '2' || cid === '3' || cid === '4' || cid === '5') return '';
+  const raw = bnToEnNumber(String(className ?? '').trim());
+  if (!raw) return '';
+  if (/আলিম|alim|\b11(?:th)?\b|\b12(?:th)?\b/i.test(raw)) return 'alim';
+  if (/নবম|দশম|দাখিল|dakhil|\b9(?:th)?\b|\b10(?:th)?\b/i.test(raw)) return 'dakhil';
+  if (/ষষ্ঠ|সপ্তম|অষ্টম|\b6(?:th)?\b|\b7(?:th)?\b|\b8(?:th)?\b/i.test(raw)) return 'junior';
+  return '';
+}
+
+export function stripSubjectDecorations(label) {
+  return String(label || '')
+    .normalize('NFC')
+    .replace(/\([^)]*\)/g, ' ')
+    .replace(/\[[^\]]*\]/g, ' ')
+    .replace(/\+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function normalizeSubjectCanonical(str) {
+  return bnToEnNumber(String(str || ''))
+    .normalize('NFC')
+    .toLowerCase()
+    .replace(/য়/g, 'য়')
+    .replace(/ী/g, 'ি')
+    .replace(/ূ/g, 'ু')
+    .replace(/[-–—_:.,/]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/জীব(?:\s*বিজ্ঞান)?/g, 'জীববিজ্ঞান')
+    .replace(/পদার্থ(?:\s*বিজ্ঞান)?/g, 'পদার্থবিজ্ঞান')
+    .replace(/আল\s+ফিকহ/g, 'আল ফিকহ')
+    .replace(/^ফিকহ$/g, 'আল ফিকহ')
+    .replace(/(?:ইংরেজি|english|eng\b)/g, 'ইংরেজি')
+    .replace(/(?:বাংলা|bangla|bengali)/g, 'বাংলা')
+    .replace(/(?:আরবি|arabic)/g, 'আরবি');
+}
+
+export function parseSubjectPaperInfo(label) {
+  const raw = String(label || '').trim();
+  const hasPlus = raw.includes('+');
+  const isOptionalTagged = /\(\s*(?:4th|৪র্থ|ঐচ্ছিক|optional|opt|অতিরিক্ত|extra)\s*\)/i.test(raw);
+  const titleOnly = stripSubjectDecorations(raw);
+  const alreadyCombined = /(?:১ম|প্রথম|1st|i)\s*(?:ও|এবং|&|and)\s*(?:২য়|২য়|দ্বিতীয়|দ্বিতীয়|2nd|ii)/i.test(titleOnly);
+
+  const paper1Re = /(?:^|[\s\-–_])(?:(১ম|প্রথম|1st|paper[\s\-]*1|part[\s\-]*1|i)(?:\s*(?:পত্র|paper|part))?|(?:পত্র|paper)\s*[-–:]?\s*(?:১|1))$/iu;
+  const paper2Re = /(?:^|[\s\-–_])(?:(২য়|২য়|দ্বিতীয়|দ্বিতীয়|2nd|paper[\s\-]*2|part[\s\-]*2|ii)(?:\s*(?:পত্র|paper|part))?|(?:পত্র|paper)\s*[-–:]?\s*(?:২|2))$/iu;
+  const digit1Re = /(?:^|[\s\-–_])(১|1)$/u;
+  const digit2Re = /(?:^|[\s\-–_])(২|2)$/u;
+
+  let paper = 0;
+  let baseTitle = titleOnly;
+
+  if (!alreadyCombined) {
+    if (paper1Re.test(titleOnly)) {
+      paper = 1;
+      baseTitle = titleOnly.replace(paper1Re, '').trim();
+    } else if (paper2Re.test(titleOnly)) {
+      paper = 2;
+      baseTitle = titleOnly.replace(paper2Re, '').trim();
+    } else if (digit1Re.test(titleOnly)) {
+      paper = 1;
+      baseTitle = titleOnly.replace(digit1Re, '').trim();
+    } else if (digit2Re.test(titleOnly)) {
+      paper = 2;
+      baseTitle = titleOnly.replace(digit2Re, '').trim();
+    }
+  }
+
+  baseTitle = baseTitle.replace(/[-–—:]+$/g, '').trim() || titleOnly;
+  const canonicalBase = normalizeSubjectCanonical(baseTitle);
+  const canonicalTitle = normalizeSubjectCanonical(titleOnly);
+  const hasQuranWord = /কুরআন|কোরআন|কুরআনে|quran/i.test(canonicalTitle);
+  const hasHadithWord = /হাদিস|হাদীস|hadith|hadis/i.test(canonicalTitle);
+
+  return {
+    raw,
+    titleOnly,
+    baseTitle,
+    canonicalBase,
+    paper,
+    hasPlus,
+    isOptionalTagged,
+    isQuranOnly: hasQuranWord && !hasHadithWord,
+    isHadithOnly: hasHadithWord && !hasQuranWord,
+  };
+}
+
+export function shouldAutoCombinePapers(boardType, info1, info2) {
+  if (!info1 || !info2) return false;
+  if (info1.hasPlus) return true;
+  if (!boardType) return false;
+  if (boardType === 'dakhil' && ((info1.isQuranOnly && info2.isHadithOnly) || (info1.isHadithOnly && info2.isQuranOnly))) {
+    return true;
+  }
+  if (info1.paper !== 1 || info2.paper !== 2) return false;
+  if (!info1.canonicalBase || info1.canonicalBase !== info2.canonicalBase) return false;
+
+  if (boardType === 'junior') {
+    // Classes 6-8: Arabic 1st+2nd, Bangla 1st+2nd, English 1st+2nd combine
+    return info1.canonicalBase === 'বাংলা' || info1.canonicalBase === 'ইংরেজি' || info1.canonicalBase === 'আরবি';
+  }
+  if (boardType === 'dakhil') {
+    // Classes 9-10: Bangla 1+2, English 1+2, Arabic 1+2 combine (plus Quran+Hadith above)
+    return info1.canonicalBase === 'বাংলা' || info1.canonicalBase === 'ইংরেজি' || info1.canonicalBase === 'আরবি';
+  }
+  if (boardType === 'alim') {
+    // Alim (Classes 11-12): All two-paper subjects combine
+    return true;
+  }
+  return false;
+}
+
+const PROTECTED_MAIN_RE = /কুরআন|কোরআন|quran|হাদিস|হাদীস|hadith|আকাঈদ|আকাইদ|aqaid|ফিকহ|fiqh|আরবি|arabic|বাংলা|bangla|bengali|ইংরেজি|english|তথ্য\s*ও\s*যোগাযোগ|ict|পদার্থ|physics|রসায়ন|রসায়ন|chemistry/i;
+const GENERAL_MATH_ONLY_RE = /(?:^|\s)(?:সাধারণ\s*)?গণিত(?:\s|$)|^(?:general\s*)?math(?:ematics)?$/i;
+const HIGHER_MATH_RE = /উচ্চতর\s*গণিত|higher\s*math/i;
+const BIOLOGY_RE = /জীব\s*বিজ্ঞান|জীববিজ্ঞান|biology/i;
+const AGRI_HOME_RE = /কৃষি|agriculture|গার্হস্থ্য|home\s*(?:science|economics)|শারীরিক|physical|চারু|কারু|ক্যারিয়ার|career/i;
+const ALIM_OPTIONAL_ELECTIVE_RE = /পৌরনীতি|civics|অর্থনীতি|economics|যুক্তিবিদ্যা|logic|সমাজবিজ্ঞান|সমাজকর্ম|sociology|social\s*work|ভূগোল|geography|মনোবিজ্ঞান|psychology|উর্দু|urdu|ফারসি|persian|কৃষি|agriculture|গার্হস্থ্য|home\s*(?:science|economics)|উচ্চতর\s*গণিত|higher\s*math|জীব\s*বিজ্ঞান|জীববিজ্ঞান|biology/i;
+
+export function isProtectedMainSubject(name) {
+  const s = String(name || '').trim();
+  if (!s) return false;
+  if (HIGHER_MATH_RE.test(s)) return false;
+  if (PROTECTED_MAIN_RE.test(s)) return true;
+  if (GENERAL_MATH_ONLY_RE.test(s)) return true;
+  return false;
+}
+
+export function pickOptionalSubjectIndex(subjects, { boardType = '', isScience = false, explicitOptionalText = '' } = {}) {
+  if (!Array.isArray(subjects) || subjects.length === 0) return -1;
+
+  // 1) Explicit per-row optional subject name (e.g. from a "৪র্থ বিষয়" column)
+  const expText = normalizeSubjectCanonical(stripSubjectDecorations(explicitOptionalText));
+  if (expText) {
+    const idx = subjects.findIndex((s) => {
+      const sn = normalizeSubjectCanonical(s.name);
+      return sn === expText || sn.includes(expText) || expText.includes(sn);
+    });
+    if (idx >= 0) return idx;
+  }
+
+  // 2) Explicit column tag (e.g. "(4th)" / "(ঐচ্ছিক)" or admin checkbox)
+  const taggedIdx = subjects.findIndex((s) => Boolean(s.isOptionalTagged));
+  if (taggedIdx >= 0) return taggedIdx;
+
+  // 3) Auto-detection only applies to Class 9-10 (dakhil) and Alim (11-12); not 1-5 or 6-8
+  if (boardType !== 'dakhil' && boardType !== 'alim') return -1;
+
+  const minCountForAuto = 6;
+  if (subjects.length < minCountForAuto) return -1;
+
+  // Priority A: Agriculture / Home Economics / Home Science (অতিরিক্ত: কৃষি / গার্হস্থ্য অর্থনীতি)
+  const agriIdx = subjects.findIndex((s) => AGRI_HOME_RE.test(s.name) && !isProtectedMainSubject(s.name));
+  if (agriIdx >= 0) return agriIdx;
+
+  // Priority B: Science group with BOTH Biology and Higher Math -> Higher Math is default 4th subject
+  const bioIdx = subjects.findIndex((s) => BIOLOGY_RE.test(s.name));
+  const hMathIdx = subjects.findIndex((s) => HIGHER_MATH_RE.test(s.name));
+  if (bioIdx >= 0 && hMathIdx >= 0) {
+    return hMathIdx;
+  }
+  if (isScience && hMathIdx >= 0 && subjects.length >= minCountForAuto + 1) {
+    return hMathIdx;
+  }
+
+  // Priority C: Alim General/Humanities extra elective beyond core subjects
+  if (boardType === 'alim' && !isScience && subjects.length >= 7) {
+    for (let i = subjects.length - 1; i >= 0; i--) {
+      if (!isProtectedMainSubject(subjects[i].name) && ALIM_OPTIONAL_ELECTIVE_RE.test(subjects[i].name)) {
+        return i;
+      }
+    }
+  }
+
+  return -1;
+}
+

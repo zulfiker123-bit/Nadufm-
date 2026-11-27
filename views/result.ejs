@@ -144,22 +144,29 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        padding: 5px 10px;
-        border-radius: 8px;
-        border: 1px solid rgba(21, 128, 61, 0.28);
-        background: #ffffff;
+        padding: 6px 11px;
+        border-radius: 9px;
+        border: 1px solid rgba(21, 128, 61, 0.25);
+        background: linear-gradient(180deg, #ffffff 0%, #f4f9f6 100%);
         color: #0f172a;
         font-family: inherit;
         font-size: 0.84rem;
+        font-weight: 600;
         cursor: pointer;
+        box-shadow: inset 0 1px 0 #ffffff, 0 2px 0 rgba(21, 128, 61, 0.14);
+        transition: transform 0.13s ease, box-shadow 0.13s ease, background 0.13s ease, color 0.13s ease;
     }
 
     .roll-chip-btn:hover,
     .roll-chip-btn.active {
-        background: #15803d;
+        background: linear-gradient(180deg, #1ea34d 0%, #15803d 100%);
         color: #ffffff;
-        border-color: #15803d;
+        border-color: #146c34;
+        transform: translateY(-1px);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.26), 0 2.5px 0 #0e5427;
     }
+
+    .roll-chip-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 #0e5427; }
 
     .roll-empty-note { font-size: 0.83rem; color: #64748b; }
 
@@ -178,26 +185,27 @@
         justify-content: center;
         gap: 8px;
         min-height: 44px;
-        padding: 0 16px;
-        border-radius: 10px;
+        padding: 0 17px;
+        border-radius: 11px;
         font-size: 0.92rem;
         font-weight: 600;
         text-decoration: none;
-        border: none;
+        border: 1px solid transparent;
         cursor: pointer;
         white-space: nowrap;
-        transition: background-color 0.15s ease, transform 0.12s ease;
+        transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.14s ease, filter 0.14s ease;
     }
 
-    .r-btn:active { transform: scale(0.98); }
-    .r-btn-primary { background: #15803d; color: #ffffff; }
-    .r-btn-primary:hover { background: #14532d; }
-    .r-btn-blue { background: #1d4ed8; color: #ffffff; }
-    .r-btn-blue:hover { background: #1e40af; }
-    .r-btn-rose { background: #be123c; color: #ffffff; }
-    .r-btn-rose:hover { background: #9f1239; }
-    .r-btn-secondary { background: #f1f5f9; color: #0f172a; border: 1px solid rgba(15, 23, 42, 0.1); }
-    .r-btn-secondary:hover { background: #e2e8f0; }
+    .r-btn:hover { transform: translateY(-1px); filter: brightness(1.04); }
+    .r-btn:active { transform: translateY(2px); }
+    .r-btn-primary { background: linear-gradient(180deg, #1ea34d 0%, #15803d 100%); color: #ffffff; border-color: #146c34; box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 3.5px 0 #0e5427, 0 6px 14px -3px rgba(21,128,61,0.3); }
+    .r-btn-primary:active { box-shadow: 0 1px 0 #0e5427; }
+    .r-btn-blue { background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; border-color: #1e40af; box-shadow: inset 0 1px 0 rgba(255,255,255,0.26), 0 3.5px 0 #172f82, 0 6px 14px -3px rgba(29,78,216,0.3); }
+    .r-btn-blue:active { box-shadow: 0 1px 0 #172f82; }
+    .r-btn-rose { background: linear-gradient(180deg, #e11d48 0%, #be123c 100%); color: #ffffff; border-color: #9f1239; box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 3.5px 0 #881337, 0 6px 14px -3px rgba(190,18,60,0.3); }
+    .r-btn-rose:active { box-shadow: 0 1px 0 #881337; }
+    .r-btn-secondary { background: linear-gradient(180deg, #ffffff 0%, #f1f5f3 100%); color: #0f172a; border-color: rgba(15, 23, 42, 0.14); box-shadow: inset 0 1px 0 #ffffff, 0 3px 0 rgba(15,23,42,0.1), 0 5px 10px -3px rgba(15,23,42,0.08); }
+    .r-btn-secondary:active { box-shadow: 0 1px 0 rgba(15,23,42,0.1); }
 
     .marksheet-controls {
         background: #ffffff;
@@ -579,11 +587,18 @@
                             const failCount = studentResult.fail;
                             studentResult.subs.forEach(function(s) {
                                 const g = (s.grade && s.gp) ? [s.grade, s.gp] : getGradeInfo(s.sum, s.fm, s.is_fail);
-                                totalGp += parseFloat(g[1]);
+                                if (!s.isOptional) {
+                                    totalGp += parseFloat(g[1]);
+                                }
                             %>
-                            <tr>
+                            <tr style="<%= s.isOptional ? 'background:#fefce8;' : '' %>">
                                 <td><%= convertToBengali(sl++) %></td>
-                                <td style="text-align:left; padding-left:10px; font-weight:600;"><%= s.name %> (<%= convertToBengali(s.fm) %>)</td>
+                                <td style="text-align:left; padding-left:10px; font-weight:600;">
+                                    <%= s.name %> (<%= convertToBengali(s.fm) %>)
+                                    <% if (s.isOptional) { %>
+                                        <span style="display:inline-block; margin-left:6px; padding:1px 6px; font-size:0.78em; font-weight:700; border-radius:4px; background:#fef08a; color:#854d0e; border:1px solid #facc15;">৪র্থ বিষয় (ঐচ্ছিক)</span>
+                                    <% } %>
+                                </td>
                                 <td><%= convertToBengali(s.fm) %></td>
                                 <td style="font-weight:700;"><%= s.obtained %></td>
                                 <td><%= convertToBengali(Math.round(s.display_avg * 10) / 10) %></td>
@@ -597,16 +612,30 @@
                     <%
                         const isPromoted = Boolean(studentResult.isPromoted);
                         const statusText = studentResult.statusBn || (failCount === 0 ? "উত্তীর্ণ (Passed)" : "অকৃতকার্য (Failed)");
+                        const mainSubsCount = studentResult.subs.filter(function(s) { return !s.isOptional; }).length;
                         const gpaVal = typeof studentResult.gpa === 'number'
                             ? studentResult.gpa
-                            : ((failCount > 0) ? 0.00 : (totalGp / Math.max(studentResult.subs.length, 1)));
+                            : ((failCount > 0) ? 0.00 : (totalGp / Math.max(mainSubsCount, 1)));
+                        const hasOptBoard = Boolean(studentResult.hasOptionalSubject);
+                        const gpaWithoutOptVal = typeof studentResult.gpaWithoutOptional === 'number'
+                            ? studentResult.gpaWithoutOptional
+                            : gpaVal;
+                        const optBonusVal = Number(studentResult.optionalBonus || 0);
                         const css = isPromoted ? "promoted-text" : (failCount > 0 ? "failed-text" : "passed-text");
                     %>
 
-                    <div class="status-box">
+                    <div class="status-box" style="<%= hasOptBoard ? 'grid-template-columns: repeat(5, 1fr);' : '' %>">
                         <div>ফলাফল: <span class="<%= css %>"><%= statusText %></span></div>
                         <div>মোট নম্বর: <%= convertToBengali(studentResult.total) %></div>
-                        <div>GPA: <%= convertToBengali(Number(gpaVal).toFixed(2)) %></div>
+                        <% if (hasOptBoard) { %>
+                            <div>
+                                GPA (৪র্থ ছাড়া): <%= convertToBengali(Number(gpaWithoutOptVal).toFixed(2)) %>
+                                <% if (optBonusVal > 0 && failCount === 0) { %>
+                                    <div style="font-size:0.78em; font-weight:500; color:#475569; margin-top:2px;">বোনাস: +<%= convertToBengali(optBonusVal.toFixed(2)) %></div>
+                                <% } %>
+                            </div>
+                        <% } %>
+                        <div><%= hasOptBoard ? 'চূড়ান্ত GPA' : 'GPA' %>: <%= convertToBengali(Number(gpaVal).toFixed(2)) %></div>
                         <div>মেধাক্রম: <%= studentResult.meritRank ? convertToBengali(studentResult.meritRank) + (studentResult.isScience ? ' (বিজ্ঞান)' : '') : '—' %></div>
                     </div>
                 </div>

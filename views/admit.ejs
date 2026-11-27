@@ -92,17 +92,27 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        padding: 5px 10px;
-        border-radius: 8px;
-        border: 1px solid rgba(21, 128, 61, 0.28);
-        background: #ffffff;
+        padding: 6px 11px;
+        border-radius: 9px;
+        border: 1px solid rgba(21, 128, 61, 0.25);
+        background: linear-gradient(180deg, #ffffff 0%, #f4f9f6 100%);
         color: #0f172a;
         font-family: inherit;
         font-size: 0.84rem;
+        font-weight: 600;
         cursor: pointer;
+        box-shadow: inset 0 1px 0 #ffffff, 0 2px 0 rgba(21, 128, 61, 0.14);
+        transition: transform 0.13s ease, box-shadow 0.13s ease, background 0.13s ease, color 0.13s ease;
     }
     .roll-chip-btn:hover,
-    .roll-chip-btn.active { background: #15803d; color: #ffffff; border-color: #15803d; }
+    .roll-chip-btn.active {
+        background: linear-gradient(180deg, #1ea34d 0%, #15803d 100%);
+        color: #ffffff;
+        border-color: #146c34;
+        transform: translateY(-1px);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.26), 0 2.5px 0 #0e5427;
+    }
+    .roll-chip-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 #0e5427; }
 
     .roll-empty-note { font-size: 0.83rem; color: #64748b; }
 
@@ -118,16 +128,19 @@
     .btn-search {
         width: 100%;
         min-height: 46px;
-        background: #15803d;
+        background: linear-gradient(180deg, #1ea34d 0%, #15803d 100%);
         color: #ffffff;
-        border: none;
-        border-radius: 10px;
+        border: 1px solid #146c34;
+        border-radius: 11px;
         font-family: inherit;
         font-weight: 700;
         cursor: pointer;
         font-size: 1rem;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 3.5px 0 #0e5427, 0 6px 14px -3px rgba(21, 128, 61, 0.3);
+        transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.14s ease, filter 0.14s ease;
     }
-    .btn-search:hover { background: #14532d; }
+    .btn-search:hover { transform: translateY(-1px); filter: brightness(1.04); }
+    .btn-search:active { transform: translateY(2px); box-shadow: 0 1px 0 #0e5427; }
 
     #admit-card-result { display: none; }
 
@@ -144,20 +157,28 @@
         align-items: center;
         gap: 7px;
         min-height: 42px;
-        padding: 0 16px;
-        border-radius: 10px;
-        border: none;
+        padding: 0 17px;
+        border-radius: 11px;
+        border: 1px solid transparent;
         text-decoration: none;
         font-family: inherit;
         font-size: 0.9rem;
         font-weight: 600;
         cursor: pointer;
+        white-space: nowrap;
+        transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.14s ease, filter 0.14s ease;
     }
+    .btn-admit-action:hover { transform: translateY(-1px); filter: brightness(1.04); }
+    .btn-admit-action:active { transform: translateY(2px); }
 
-    .btn-print-admit { background: #15803d; color: #ffffff; }
-    .btn-pdf-admit { background: #be123c; color: #ffffff; }
-    .btn-link-admit { background: #1d4ed8; color: #ffffff; }
-    .btn-reset-admit { background: #f1f5f9; color: #0f172a; border: 1px solid rgba(15, 23, 42, 0.12); }
+    .btn-print-admit { background: linear-gradient(180deg, #1ea34d 0%, #15803d 100%); color: #ffffff; border-color: #146c34; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 3.5px 0 #0e5427, 0 6px 14px -3px rgba(21, 128, 61, 0.3); }
+    .btn-print-admit:active { box-shadow: 0 1px 0 #0e5427; }
+    .btn-pdf-admit { background: linear-gradient(180deg, #e11d48 0%, #be123c 100%); color: #ffffff; border-color: #9f1239; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 3.5px 0 #881337, 0 6px 14px -3px rgba(190, 18, 60, 0.3); }
+    .btn-pdf-admit:active { box-shadow: 0 1px 0 #881337; }
+    .btn-link-admit { background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; border-color: #1e40af; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.26), 0 3.5px 0 #172f82, 0 6px 14px -3px rgba(29, 78, 216, 0.3); }
+    .btn-link-admit:active { box-shadow: 0 1px 0 #172f82; }
+    .btn-reset-admit { background: linear-gradient(180deg, #ffffff 0%, #f1f5f3 100%); color: #0f172a; border-color: rgba(15, 23, 42, 0.14); box-shadow: inset 0 1px 0 #ffffff, 0 3px 0 rgba(15, 23, 42, 0.1), 0 5px 10px -3px rgba(15, 23, 42, 0.08); }
+    .btn-reset-admit:active { box-shadow: 0 1px 0 rgba(15, 23, 42, 0.1); }
 
     .admit-scroll-wrap { overflow-x: auto; }
 

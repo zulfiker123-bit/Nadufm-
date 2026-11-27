@@ -8,6 +8,10 @@ import {
   getGradeInfo,
   isScienceGroupText,
   formatStudentNameWithGroup,
+  getBoardExamType,
+  parseSubjectPaperInfo,
+  shouldAutoCombinePapers,
+  pickOptionalSubjectIndex,
 } from './seed.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -73,6 +77,7 @@ function createDefaultStore() {
             father: 'father',
             id: '',
             group: '',
+            optionalSubject: '',
           },
           rows: [],
           updatedAt: null,
@@ -311,6 +316,7 @@ export function autoDetectStudentMapping(columns) {
     name_en: findKey(['নাম (ইংরেজি)', 'english name', 'name_en']),
     class_name: findKey(['শ্রেণি', 'শ্রেণী', 'class']),
     group: findKey(['বিভাগ', 'গ্রুপ', 'group', 'department', 'dept', 'stream', 'division', 'শাখা', 'branch']),
+    optionalSubject: findKey(['৪র্থ বিষয়', '৪র্থ বিষয়', 'ঐচ্ছিক বিষয়', 'ঐচ্ছিক বিষয়', 'optional subject', '4th subject', 'অতিরিক্ত বিষয়']),
     father_bn: findKey(['পিতা', 'বাবা', 'father']),
     mother_bn: findKey(['মাতা', 'মা', 'mother']),
     dob: findKey(['জন্ম তারিখ', 'dob', 'birth']),
@@ -326,7 +332,8 @@ export function autoDetectStudentMapping(columns) {
 }
 
 export function extractFullMarksFromLabel(label) {
-  const normalized = bnToEnNumber(String(label || ''));
+  const withoutOpt = String(label || '').replace(/\(\s*(?:4th|৪র্থ|ঐচ্ছিক|optional|opt|অতিরিক্ত|extra)\s*\)/gi, '');
+  const normalized = bnToEnNumber(withoutOpt);
   const match = normalized.match(/\((\d+(?:\.\d+)?)\)/);
   if (match) return parseFloat(match[1]);
   return 100;
@@ -341,14 +348,17 @@ export function detectResultColumns(columns) {
     'mother', 'মাতা', 'মাতার নাম', 'mother name',
     'class', 'শ্রেণি', 'শ্রেণী', 'section', 'শাখা',
     'group', 'বিভাগ', 'গ্রুপ', 'department', 'dept', 'division', 'stream', 'branch',
+    '4th subject', 'optional subject', '৪র্থ বিষয়', '৪র্থ বিষয়', 'ঐচ্ছিক বিষয়', 'ঐচ্ছিক বিষয়', 'অতিরিক্ত বিষয়', 'অতিরিক্ত বিষয়',
     'mobile', 'মোবাইল', 'ফোন', 'phone',
     'reg', 'reg no', 'registration', 'রেজি', 'রেজি নং', 'রেজিস্ট্রেশন', 'রেজিস্ট্রেশন নং',
     'sl', 'serial', 'ক্রম', 'ক্রমিক', 'ক্রমিক নং', 'মন্তব্য', 'remark', 'remarks', 'note',
   ]);
   return columns.map((col) => {
-    const cleanLower = cleanSubjectTitle(col.label).toLowerCase();
+    const rawLabel = String(col.label || '');
+    const cleanLower = cleanSubjectTitle(rawLabel).toLowerCase();
     const keyLower = String(col.key || '').toLowerCase();
-    const hasMarksInParens = /\(\s*[0-9০-৯]+(?:\.[0-9০-৯]+)?\s*\)/.test(String(col.label || ''));
+    const withoutOpt = rawLabel.replace(/\(\s*(?:4th|৪র্থ|ঐচ্ছিক|optional|opt|অতিরিক্ত|extra)\s*\)/gi, '');
+    const hasMarksInParens = /\(\s*[0-9০-৯]+(?:\.[0-9০-৯]+)?\s*\)/.test(withoutOpt);
     const isInfo = !hasMarksInParens && (
       exactInfoWords.has(cleanLower) ||
       exactInfoWords.has(keyLower) ||
@@ -360,35 +370,147 @@ export function detectResultColumns(columns) {
       cleanLower.includes('মোবাইল') ||
       cleanLower.includes('বিভাগ') ||
       cleanLower.includes('গ্রুপ') ||
+      cleanLower.includes('৪র্থ বিষয়') ||
+      cleanLower.includes('৪র্থ বিষয়') ||
+      cleanLower.includes('ঐচ্ছিক বিষয়') ||
+      cleanLower.includes('ঐচ্ছিক বিষয়') ||
+      cleanLower.includes('optional subject') ||
+      cleanLower.includes('4th subject') ||
       /(?:^|\b)(roll|name|father|mother|class|section|group|department|dept|division|stream|mobile|phone|reg_no|registration)(?:\b|$)/i.test(cleanLower)
     );
-    const fullMarks = isInfo ? 0 : extractFullMarksFromLabel(col.label);
+    const fullMarks = isInfo ? 0 : extractFullMarksFromLabel(rawLabel);
+    const isOptional = !isInfo && /\(\s*(?:4th|৪র্থ|ঐচ্ছিক|optional|opt|অতিরিক্ত|extra)\s*\)/i.test(rawLabel);
     return {
       key: col.key,
       label: col.label,
       isSubject: !isInfo,
       fullMarks: fullMarks > 0 ? fullMarks : 100,
+      isOptional,
     };
   });
 }
 
 export function cleanSubjectTitle(label) {
-  return String(label || '').replace(/\s*\([^)]*\)/g, '').trim();
+  return String(label || '').replace(/\s*\([^)]*\)/g, '').replace(/\+/g, '').trim();
 }
 
 const SCIENCE_SUBJECT_RE = /পদার্থ|রসায়ন|রসায়ন|জীব\s*বিজ্ঞান|জীববিজ্ঞান|উচ্চতর\s*গণিত|physics|chemistry|biology|higher\s*math/i;
 const EXPLICIT_NON_SCIENCE_RE = /সাধারণ|মানবিক|ব্যবসায়|ব্যবসায়|বাণিজ্য|arts|humanities|commerce|general|মুজাব্বিদ|হিফজ/i;
 
+export function buildCombinedSubjectUnits(subjectCols, boardType = '') {
+  const infos = subjectCols.map((sub) => ({
+    sub,
+    info: parseSubjectPaperInfo(sub.label),
+  }));
+  const used = new Set();
+  const units = [];
+
+  for (let i = 0; i < infos.length; i++) {
+    if (used.has(i)) continue;
+    const cur = infos[i];
+    let partnerIdx = -1;
+    let isQuranHadithPair = false;
+
+    if (cur.info.hasPlus && i + 1 < infos.length && !used.has(i + 1)) {
+      partnerIdx = i + 1;
+    } else if (boardType && (cur.info.paper === 1 || cur.info.paper === 2)) {
+      for (let j = i + 1; j < infos.length; j++) {
+        if (used.has(j)) continue;
+        const cand = infos[j];
+        if (cur.info.paper === 1 && cand.info.paper === 2 && shouldAutoCombinePapers(boardType, cur.info, cand.info)) {
+          partnerIdx = j;
+          break;
+        }
+        if (cur.info.paper === 2 && cand.info.paper === 1 && shouldAutoCombinePapers(boardType, cand.info, cur.info)) {
+          partnerIdx = j;
+          break;
+        }
+      }
+    }
+
+    if (partnerIdx < 0 && boardType === 'dakhil' && (cur.info.isQuranOnly || cur.info.isHadithOnly)) {
+      for (let j = i + 1; j < infos.length; j++) {
+        if (used.has(j)) continue;
+        const cand = infos[j];
+        if ((cur.info.isQuranOnly && cand.info.isHadithOnly) || (cur.info.isHadithOnly && cand.info.isQuranOnly)) {
+          partnerIdx = j;
+          isQuranHadithPair = true;
+          break;
+        }
+      }
+    }
+
+    if (partnerIdx >= 0) {
+      used.add(i);
+      used.add(partnerIdx);
+      const partner = infos[partnerIdx];
+      let first;
+      let second;
+      if (isQuranHadithPair) {
+        first = cur.info.isQuranOnly ? cur : partner;
+        second = first === cur ? partner : cur;
+      } else {
+        first = (cur.info.paper === 2 && partner.info.paper === 1) ? partner : cur;
+        second = first === cur ? partner : cur;
+      }
+      const baseTitle = first.info.baseTitle || cleanSubjectTitle(first.sub.label);
+      units.push({
+        type: 'combined',
+        first: first.sub,
+        second: second.sub,
+        combinedName: isQuranHadithPair ? 'কুরআন ও হাদীস শরীফ' : `${baseTitle} (১ম ও ২য় পত্র)`,
+        single1Name: cleanSubjectTitle(first.sub.label),
+        single2Name: cleanSubjectTitle(second.sub.label),
+        isOptionalTagged: Boolean(first.sub.isOptional || second.sub.isOptional || first.info.isOptionalTagged || second.info.isOptionalTagged),
+      });
+    } else {
+      used.add(i);
+      units.push({
+        type: 'single',
+        sub: cur.sub,
+        name: cleanSubjectTitle(cur.sub.label),
+        isOptionalTagged: Boolean(cur.sub.isOptional || cur.info.isOptionalTagged),
+      });
+    }
+  }
+
+  return units;
+}
+
+function evaluateSinglePaperValue(rawVal, fm, passPercent) {
+  const upper = rawVal.toUpperCase();
+  const isAbsent = upper === 'A' || upper === 'ABS' || upper === 'ABSENT' || rawVal === 'অনুপস্থিত';
+  let mark = 0;
+  let isFail = false;
+
+  if (isAbsent) {
+    isFail = true;
+  } else {
+    const parsed = parseFloat(bnToEnNumber(rawVal));
+    mark = Number.isNaN(parsed) ? 0 : parsed;
+    if (Math.round(mark * 10000) < Math.round(fm * passPercent * 100)) {
+      isFail = true;
+    }
+  }
+  return { isAbsent, mark, isFail };
+}
+
 export function computeResultSheet(exam) {
   const passPercent = Number(exam.passPercent) > 0 ? Number(exam.passPercent) : 33;
   const maxPromoteFail = Number(exam.maxPromoteFail) || 0;
   const promotionLabel = String(exam.promotionLabel || 'বিশেষ বিবেচনায় প্রমোটেড');
+  const boardType = getBoardExamType(exam.classId, exam.className);
+  const isBoardExam = boardType === 'dakhil' || boardType === 'alim';
   const columns = Array.isArray(exam.columns) ? exam.columns : [];
   const subjectCols = columns.filter((c) => c.isSubject);
+  const subjectUnits = buildCombinedSubjectUnits(subjectCols, boardType);
   const mapping = exam.mapping || {};
   const rows = Array.isArray(exam.rows) ? exam.rows : [];
   const fallbackGroupCol = mapping.group
     || columns.find((c) => !c.isSubject && /বিভাগ|গ্রুপ|group|department|dept|stream|division/i.test(`${c.label} ${c.key}`))?.key
+    || '';
+  const fallbackOptionalCol = mapping.optionalSubject
+    || columns.find((c) => !c.isSubject && /৪র্থ\s*বিষয়|৪র্থ\s*বিষয়|ঐচ্ছিক\s*বিষয়|ঐচ্ছিক\s*বিষয়|4th\s*subject|optional\s*subject/i.test(`${c.label} ${c.key}`))?.key
     || '';
 
   const evaluated = rows.map((row, idx) => {
@@ -399,68 +521,112 @@ export function computeResultSheet(exam) {
     const rawGroup = fallbackGroupCol
       ? String(row[fallbackGroupCol] ?? '').trim()
       : String(row.group || row['বিভাগ'] || '').trim();
+    const explicitOptionalText = fallbackOptionalCol
+      ? String(row[fallbackOptionalCol] ?? '').trim()
+      : String(row.optionalSubject || row['৪র্থ বিষয়'] || '').trim();
 
     let totalObtained = 0;
     let totalFullMarks = 0;
-    let failCount = 0;
     let absentSubjects = 0;
-    let totalGp = 0;
     let hasScienceSubject = false;
-    const failedSubjects = [];
     const subjects = [];
 
-    for (const sub of subjectCols) {
-      const fm = Number(sub.fullMarks) > 0 ? Number(sub.fullMarks) : 100;
-      const rawVal = String(row[sub.key] ?? '').trim();
-
-      // Blank cell: skip this subject completely (do not count or show in marksheet)
-      if (rawVal === '') {
-        continue;
-      }
-
-      if (SCIENCE_SUBJECT_RE.test(String(sub.label || ''))) {
+    const pushSingleSubject = (subCol, subName, rawVal, isOptTag) => {
+      const fm = Number(subCol.fullMarks) > 0 ? Number(subCol.fullMarks) : 100;
+      if (SCIENCE_SUBJECT_RE.test(String(subCol.label || ''))) {
         hasScienceSubject = true;
       }
-
-      const upper = rawVal.toUpperCase();
-      const isAbsent = upper === 'A' || upper === 'ABS' || upper === 'ABSENT' || rawVal === 'অনুপস্থিত';
-
-      let mark = 0;
-      let isFail = false;
-
-      if (isAbsent) {
-        absentSubjects++;
-        isFail = true;
-      } else {
-        const parsed = parseFloat(bnToEnNumber(rawVal));
-        mark = Number.isNaN(parsed) ? 0 : parsed;
-        if (Math.round(mark * 10000) < Math.round(fm * passPercent * 100)) {
-          isFail = true;
-        }
-      }
-
-      if (isFail) {
-        failCount++;
-        failedSubjects.push(cleanSubjectTitle(sub.label));
-      }
-
+      const { isAbsent, mark, isFail } = evaluateSinglePaperValue(rawVal, fm, passPercent);
+      if (isAbsent) absentSubjects++;
       const [lg, gp] = getGradeInfo(mark, fm, isFail);
       totalObtained += mark;
       totalFullMarks += fm;
-      totalGp += parseFloat(gp);
 
       subjects.push({
-        key: sub.key,
-        name: cleanSubjectTitle(sub.label),
+        key: subCol.key,
+        keys: [subCol.key],
+        name: subName,
         fullMarks: fm,
         rawVal,
         obtained: isAbsent ? 'Abs' : convertToBengali(mark),
-        numericMark: mark,
+        numericMark: Math.round(mark * 100) / 100,
+        averageMark: Math.round(mark * 100) / 100,
         isAbsent,
         isFail,
         grade: lg,
         gp,
+        isCombined: false,
+        isOptionalTagged: Boolean(isOptTag),
+        isOptional: false,
       });
+    };
+
+    for (const unit of subjectUnits) {
+      if (unit.type === 'single') {
+        const rawVal = String(row[unit.sub.key] ?? '').trim();
+        if (rawVal === '') continue; // Blank cell: skip subject completely
+        pushSingleSubject(unit.sub, unit.name, rawVal, unit.isOptionalTagged);
+      } else {
+        const v1 = String(row[unit.first.key] ?? '').trim();
+        const v2 = String(row[unit.second.key] ?? '').trim();
+        if (v1 === '' && v2 === '') continue; // Both papers blank: skip combined subject
+        if (v1 !== '' && v2 === '') {
+          pushSingleSubject(unit.first, unit.single1Name, v1, unit.isOptionalTagged);
+          continue;
+        }
+        if (v1 === '' && v2 !== '') {
+          pushSingleSubject(unit.second, unit.single2Name, v2, unit.isOptionalTagged);
+          continue;
+        }
+
+        const f1 = Number(unit.first.fullMarks) > 0 ? Number(unit.first.fullMarks) : 100;
+        const f2 = Number(unit.second.fullMarks) > 0 ? Number(unit.second.fullMarks) : 100;
+        if (SCIENCE_SUBJECT_RE.test(`${unit.first.label} ${unit.second.label}`)) {
+          hasScienceSubject = true;
+        }
+
+        const p1 = evaluateSinglePaperValue(v1, f1, passPercent);
+        const p2 = evaluateSinglePaperValue(v2, f2, passPercent);
+        const combinedAbsent = p1.isAbsent && p2.isAbsent;
+        if (combinedAbsent) absentSubjects++;
+
+        const sumMark = Math.round((p1.mark + p2.mark) * 100) / 100;
+        const sumFm = f1 + f2;
+        const avgMark = Math.round((sumMark / 2) * 100) / 100;
+        const combinedTotalFail = Math.round(sumMark * 10000) < Math.round(sumFm * passPercent * 100);
+        const isFail = p1.isFail || p2.isFail || combinedTotalFail;
+
+        const [lg, gp] = getGradeInfo(sumMark, sumFm, isFail);
+        totalObtained += sumMark;
+        totalFullMarks += sumFm;
+
+        const disp1 = p1.isAbsent ? 'Abs' : convertToBengali(p1.mark);
+        const disp2 = p2.isAbsent ? 'Abs' : convertToBengali(p2.mark);
+        const obtainedDisplay = combinedAbsent
+          ? 'Abs'
+          : `${disp1} + ${disp2} = ${convertToBengali(sumMark)}`;
+
+        subjects.push({
+          key: `${unit.first.key}__${unit.second.key}`,
+          keys: [unit.first.key, unit.second.key],
+          name: unit.combinedName,
+          fullMarks: sumFm,
+          rawVal: `${v1} + ${v2}`,
+          obtained: obtainedDisplay,
+          paperBreakdown: `${disp1} + ${disp2}`,
+          numericMark: sumMark,
+          averageMark: avgMark,
+          paper1Fail: p1.isFail,
+          paper2Fail: p2.isFail,
+          isAbsent: combinedAbsent,
+          isFail,
+          grade: lg,
+          gp,
+          isCombined: true,
+          isOptionalTagged: unit.isOptionalTagged,
+          isOptional: false,
+        });
+      }
     }
 
     let isScience = false;
@@ -477,12 +643,39 @@ export function computeResultSheet(exam) {
     const groupLabel = isScience ? 'বিজ্ঞান' : (rawGroup || 'সাধারণ');
     const displayName = formatStudentNameWithGroup(name, isScience);
 
+    // Optional (4th) subject & Bangladesh Madrasah Board GPA calculation
+    const optIdx = pickOptionalSubjectIndex(subjects, {
+      boardType,
+      isScience,
+      explicitOptionalText,
+    });
+    if (optIdx >= 0) {
+      subjects[optIdx].isOptional = true;
+    }
+    const optSubject = optIdx >= 0 ? subjects[optIdx] : null;
+    const mainSubjects = optIdx >= 0 ? subjects.filter((_, i) => i !== optIdx) : subjects;
+
+    const failedSubjects = mainSubjects.filter((s) => s.isFail).map((s) => s.name);
+    const failCount = failedSubjects.length;
+    const optionalFailCount = optSubject && optSubject.isFail ? 1 : 0;
+
     const attemptedCount = subjects.length;
     const allAbsent = attemptedCount > 0 && absentSubjects === attemptedCount;
     const noSubjects = attemptedCount === 0;
     const percentage = totalFullMarks > 0 ? (totalObtained / totalFullMarks) * 100 : 0;
-    const rawGpa = attemptedCount > 0 ? totalGp / attemptedCount : 0;
-    const gpa = failCount === 0 && attemptedCount > 0 ? rawGpa : 0;
+
+    const mainGpSum = mainSubjects.reduce((acc, s) => acc + parseFloat(s.gp), 0);
+    const mainCount = mainSubjects.length;
+    const gpaWithoutOptional = (failCount === 0 && mainCount > 0)
+      ? Math.min(5, mainGpSum / mainCount)
+      : 0;
+    const optionalBonus = (optSubject && !optSubject.isFail)
+      ? Math.max(0, parseFloat(optSubject.gp) - 2)
+      : 0;
+    const rawGpa = mainCount > 0
+      ? Math.min(5, (mainGpSum + optionalBonus) / mainCount)
+      : 0;
+    const gpa = (failCount === 0 && mainCount > 0) ? rawGpa : 0;
 
     const manualPromoted = row._promoted === true;
     const manualDemoted = row._promoted === false;
@@ -516,6 +709,13 @@ export function computeResultSheet(exam) {
       father,
       studentId,
       subjects,
+      isBoardExam,
+      boardType,
+      hasOptionalSubject: Boolean(optSubject),
+      optionalSubjectName: optSubject ? optSubject.name : '',
+      optionalBonus: Math.round(optionalBonus * 100) / 100,
+      optionalFailCount,
+      gpaWithoutOptional: Number(gpaWithoutOptional.toFixed(2)),
       totalObtained: Math.round(totalObtained * 100) / 100,
       totalFullMarks,
       percentage: Math.round(percentage * 100) / 100,
@@ -541,6 +741,7 @@ export function computeResultSheet(exam) {
       }
       if (a.status === 'Passed') {
         if (b.gpa !== a.gpa) return b.gpa - a.gpa;
+        if (b.gpaWithoutOptional !== a.gpaWithoutOptional) return b.gpaWithoutOptional - a.gpaWithoutOptional;
         if (b.totalObtained !== a.totalObtained) return b.totalObtained - a.totalObtained;
         return b.percentage - a.percentage;
       }
@@ -581,6 +782,8 @@ export function computeResultSheet(exam) {
       promoted,
       failed,
       absent,
+      isBoardExam,
+      boardType,
       scienceCount: scienceMeritList.length,
       otherCount: otherMeritList.length,
       passRate: total > 0 ? Math.round(((passed + promoted) / total) * 1000) / 10 : 0,

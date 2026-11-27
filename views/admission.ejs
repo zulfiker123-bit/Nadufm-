@@ -76,16 +76,19 @@
         gap: 8px;
         min-height: 48px;
         padding: 0 32px;
-        border: none;
+        border: 1px solid #146c34;
         border-radius: 12px;
-        background: #15803d;
+        background: linear-gradient(180deg, #1ea34d 0%, #15803d 100%);
         color: #ffffff;
         font-size: 1rem;
         font-weight: 700;
         cursor: pointer;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 4px 0 #0e5427, 0 8px 16px -4px rgba(21, 128, 61, 0.34);
+        transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.14s ease, filter 0.14s ease;
     }
 
-    .btn-submit:hover { background: #14532d; }
+    .btn-submit:hover { transform: translateY(-1px); filter: brightness(1.04); }
+    .btn-submit:active { transform: translateY(2px); box-shadow: 0 1.5px 0 #0e5427; }
 
     #print-preview-section {
         display: none;
@@ -106,15 +109,21 @@
         gap: 8px;
         min-height: 44px;
         padding: 0 20px;
-        border-radius: 10px;
-        border: none;
+        border-radius: 11px;
+        border: 1px solid transparent;
         font-size: 0.95rem;
         font-weight: 600;
         cursor: pointer;
+        white-space: nowrap;
+        transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.14s ease, filter 0.14s ease;
     }
+    .btn-tool:hover { transform: translateY(-1px); filter: brightness(1.04); }
+    .btn-tool:active { transform: translateY(2px); }
 
-    .btn-print { background: #15803d; color: #ffffff; }
-    .btn-new-student { background: #f1f5f9; color: #0f172a; border: 1px solid rgba(15, 23, 42, 0.12); }
+    .btn-print { background: linear-gradient(180deg, #1ea34d 0%, #15803d 100%); color: #ffffff; border-color: #146c34; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 3.5px 0 #0e5427, 0 6px 14px -3px rgba(21, 128, 61, 0.3); }
+    .btn-print:active { box-shadow: 0 1px 0 #0e5427; }
+    .btn-new-student { background: linear-gradient(180deg, #ffffff 0%, #f1f5f3 100%); color: #0f172a; border-color: rgba(15, 23, 42, 0.14); box-shadow: inset 0 1px 0 #ffffff, 0 3px 0 rgba(15, 23, 42, 0.1), 0 5px 10px -3px rgba(15, 23, 42, 0.08); }
+    .btn-new-student:active { box-shadow: 0 1px 0 rgba(15, 23, 42, 0.1); }
 
     .print-scroll-wrap {
         overflow-x: auto;

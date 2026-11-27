@@ -277,6 +277,72 @@ function formatClassLabel(name, classId = '') {
   return /(?:শ্রেণি|শ্রেণী)$/.test(raw) ? raw : `${raw} শ্রেণি`;
 }
 
+function buildCsvSyntheticExam(classId, className, csvRows) {
+  const headers = csvRows[0] || [];
+  const rawSubjectCols = [];
+  const infoCols = [];
+
+  for (let i = 0; i < headers.length; i++) {
+    const label = String(headers[i] || '').trim();
+    const key = `col_${i}`;
+    if (i < 3) {
+      infoCols.push({ key, label: label || key, isSubject: false, fullMarks: 0, idx: i });
+    } else if (label !== '') {
+      rawSubjectCols.push({ key, label, idx: i });
+    }
+  }
+
+  const detectedSubs = detectResultColumns(rawSubjectCols).map((col, pos) => ({
+    ...col,
+    idx: rawSubjectCols[pos].idx,
+  }));
+
+  const columns = [
+    ...infoCols.map(({ key, label, isSubject, fullMarks }) => ({ key, label, isSubject, fullMarks })),
+    ...detectedSubs.map(({ key, label, isSubject, fullMarks, isOptional }) => ({ key, label, isSubject, fullMarks, isOptional })),
+  ];
+
+  const col1Label = String(headers[1] || '').trim();
+  const groupCol = detectedSubs.find((c) => !c.isSubject && /বিভাগ|গ্রুপ|group|department|dept|stream/i.test(c.label))?.key
+    || (/বিভাগ|গ্রুপ|group|department|dept|stream/i.test(col1Label) ? 'col_1' : '');
+  const fatherCol = /পিতা|father/i.test(col1Label) ? 'col_1' : '';
+  const optionalCol = detectedSubs.find((c) => !c.isSubject && /৪র্থ|ঐচ্ছিক|4th|optional/i.test(c.label))?.key || '';
+
+  const rows = [];
+  for (let r = 1; r < csvRows.length; r++) {
+    const data = csvRows[r];
+    if (!data || !data[0] || !String(data[0]).trim()) continue;
+    const obj = { _id: `csv_${r}` };
+    for (const c of infoCols) {
+      obj[c.key] = String(data[c.idx] ?? '').trim();
+    }
+    for (const c of detectedSubs) {
+      obj[c.key] = String(data[c.idx] ?? '').trim();
+    }
+    rows.push(obj);
+  }
+
+  return {
+    id: `csv_${classId}`,
+    classId: String(classId || ''),
+    className: String(className || ''),
+    examName: 'বার্ষিক পরীক্ষা',
+    year: '২০২৬',
+    passPercent: 33,
+    maxPromoteFail: 0,
+    columns,
+    mapping: {
+      roll: 'col_2',
+      name: 'col_0',
+      father: fatherCol,
+      id: '',
+      group: groupCol,
+      optionalSubject: optionalCol,
+    },
+    rows,
+  };
+}
+
 function getUploadedExamsSummary(store) {
   const exams = (store.results && store.results.exams) || {};
   return Object.values(exams)
@@ -526,6 +592,10 @@ app.get(['/merit-list', '/merit-list.php'], async (req, res) => {
     fullMarks: item.totalFullMarks,
     pct: item.percentage,
     gpa: item.gpa,
+    gpaWithoutOptional: item.gpaWithoutOptional ?? item.gpa,
+    isBoardExam: Boolean(item.isBoardExam),
+    hasOptionalSubject: Boolean(item.hasOptionalSubject),
+    optionalBonus: item.optionalBonus || 0,
     fail: item.failCount,
     absent: item.allAbsent,
     isPromoted: item.isPromoted,
@@ -556,94 +626,10 @@ app.get(['/merit-list', '/merit-list.php'], async (req, res) => {
         const csvText = await response.text();
         const rows = parseCsv(csvText);
         if (rows.length > 1) {
-          const headers = rows[0];
-          const subjectFullMarks = {};
-          const scienceColFlags = {};
-          for (let i = 3; i < headers.length; i++) {
-            const hStr = String(headers[i] || '');
-            const match = bnToEnNumber(hStr).match(/\((\d+(?:\.\d+)?)\)/);
-            subjectFullMarks[i] = match ? parseFloat(match[1]) : 100;
-            scienceColFlags[i] = /পদার্থ|রসায়ন|রসায়ন|জীব\s*বিজ্ঞান|জীববিজ্ঞান|উচ্চতর\s*গণিত|physics|chemistry|biology|higher\s*math/i.test(hStr);
-          }
-
-          const rawItems = [];
-          for (const data of rows.slice(1)) {
-            if (!data[0] || !String(data[0]).trim()) continue;
-            let obtainedTotal = 0;
-            let attemptedFullTotal = 0;
-            let failCount = 0;
-            let absentSubjectCount = 0;
-            let totalGp = 0;
-            let subjectCount = 0;
-            let hasScienceSubject = false;
-
-            for (let i = 3; i < headers.length; i++) {
-              const rawCell = String(data[i] || '').trim();
-              if (rawCell === '') continue; // Blank cell: skip subject
-
-              if (scienceColFlags[i]) hasScienceSubject = true;
-              const val = rawCell.toUpperCase();
-              const isAbs = val === 'A' || val === 'ABS' || val === 'ABSENT' || rawCell === 'অনুপস্থিত';
-
-              if (isAbs) {
-                subjectCount++;
-                absentSubjectCount++;
-                failCount++;
-                attemptedFullTotal += subjectFullMarks[i];
-              } else {
-                const mark = parseFloat(bnToEnNumber(rawCell));
-                if (!Number.isNaN(mark)) {
-                  subjectCount++;
-                  obtainedTotal += mark;
-                  attemptedFullTotal += subjectFullMarks[i];
-                  const subFail = Math.round(mark * 10000) < Math.round(subjectFullMarks[i] * 33 * 100);
-                  if (subFail) failCount++;
-                  const [, gp] = getGradeInfo(mark, subjectFullMarks[i], subFail);
-                  totalGp += parseFloat(gp);
-                }
-              }
-            }
-
-            const allAbsent = subjectCount > 0 && absentSubjectCount === subjectCount;
-            const noSubjects = subjectCount === 0;
-            const percentage = attemptedFullTotal > 0 ? (obtainedTotal / attemptedFullTotal) * 100 : 0;
-            const gpa = !allAbsent && !noSubjects && failCount === 0 && subjectCount > 0 ? totalGp / subjectCount : 0;
-            const isScience = isScienceGroupText(data[0]) || hasScienceSubject;
-
-            rawItems.push({
-              name: data[0],
-              displayName: formatStudentNameWithGroup(data[0], isScience),
-              isScience,
-              groupLabel: isScience ? 'বিজ্ঞান' : 'সাধারণ',
-              roll: String(data[2] || '').trim(),
-              total: Math.round(obtainedTotal * 100) / 100,
-              fullMarks: attemptedFullTotal,
-              pct: percentage,
-              gpa: Number(gpa.toFixed(2)),
-              fail: failCount,
-              absent: allAbsent || noSubjects,
-              isPromoted: false,
-              status: (allAbsent || noSubjects) ? 'Absent' : failCount > 0 ? 'Failed' : 'Passed',
-              statusBn: noSubjects ? 'নম্বর নেই' : allAbsent ? 'অনুপস্থিত' : failCount > 0 ? 'অকৃতকার্য' : 'উত্তীর্ণ',
-            });
-          }
-
-          const sortAndRankCsvGroup = (arr) => arr
-            .slice()
-            .sort((a, b) => {
-              if (a.absent !== b.absent) return Number(a.absent) - Number(b.absent);
-              if (a.fail !== b.fail) return a.fail - b.fail;
-              if (b.gpa !== a.gpa) return b.gpa - a.gpa;
-              if (b.total !== a.total) return b.total - a.total;
-              return b.pct - a.pct;
-            })
-            .map((item, idx) => ({
-              ...item,
-              meritRank: item.absent ? null : idx + 1,
-            }));
-
-          scienceMeritData = sortAndRankCsvGroup(rawItems.filter((r) => r.isScience));
-          otherMeritData = sortAndRankCsvGroup(rawItems.filter((r) => !r.isScience));
+          const syntheticExam = buildCsvSyntheticExam(selectedClass, classMap[selectedClass].name, rows);
+          const computed = computeResultSheet(syntheticExam);
+          scienceMeritData = (computed.scienceMeritList || []).map(mapComputedMeritItem);
+          otherMeritData = (computed.otherMeritList || []).map(mapComputedMeritItem);
           meritData = [...otherMeritData, ...scienceMeritData];
         }
       }
@@ -1154,6 +1140,7 @@ app.post('/api/excel/upload', requireAdminApi, verifySameOrigin, (req, res) => {
           father: mappingGuess.father_bn || '',
           id: mappingGuess.id || '',
           group: mappingGuess.group || '',
+          optionalSubject: mappingGuess.optionalSubject || '',
         },
         rows: parsed.rows,
         updatedAt: now,
@@ -1235,7 +1222,7 @@ app.post('/api/excel/results/create', requireAdminApi, verifySameOrigin, (req, r
       { key: 'sub_english', label: 'ইংরেজি (100)', isSubject: true, fullMarks: 100 },
       { key: 'sub_math', label: 'গণিত (100)', isSubject: true, fullMarks: 100 },
     ],
-    mapping: { roll: 'roll', name: 'name', father: 'father', id: '', group: '' },
+    mapping: { roll: 'roll', name: 'name', father: 'father', id: '', group: '', optionalSubject: '' },
     rows: [],
     updatedAt: new Date().toISOString(),
   };
@@ -1553,16 +1540,25 @@ app.all(['/result', '/result.php', '/view_result.php'], async (req, res) => {
             name: s.name,
             fm: s.fullMarks,
             obtained: s.obtained,
-            display_avg: s.numericMark,
+            display_avg: s.averageMark ?? s.numericMark,
             sum: s.numericMark,
             is_fail: s.isFail,
             grade: s.grade,
             gp: s.gp,
+            isCombined: Boolean(s.isCombined),
+            isOptional: Boolean(s.isOptional),
           })),
           total: found.totalObtained,
           tfm: found.totalFullMarks,
           fail: found.failCount,
           gpa: found.gpa,
+          gpaWithoutOptional: found.gpaWithoutOptional ?? found.gpa,
+          isBoardExam: Boolean(found.isBoardExam),
+          boardType: found.boardType || '',
+          hasOptionalSubject: Boolean(found.hasOptionalSubject),
+          optionalSubjectName: found.optionalSubjectName || '',
+          optionalBonus: found.optionalBonus || 0,
+          optionalFailCount: found.optionalFailCount || 0,
           meritRank: found.meritRank,
           status: found.status,
           statusBn: found.statusBn,
@@ -1590,135 +1586,53 @@ app.all(['/result', '/result.php', '/view_result.php'], async (req, res) => {
           const csvText = await response.text();
           const rows = parseCsv(csvText);
           if (rows.length > 1) {
-            const headers = rows[0];
-            const isAbsText = (v) => {
-              const up = String(v || '').trim().toUpperCase();
-              return up === 'A' || up === 'ABS' || up === 'ABSENT' || String(v || '').trim() === 'অনুপস্থিত';
-            };
-
-            for (const data of rows.slice(1)) {
-              if (!data[0] || !String(data[0]).trim()) continue;
-              if (bnToEnNumber(String(data[2] || '').trim()).toLowerCase() !== searchRollNorm) continue;
-
-              let tm = 0;
-              let tfm = 0;
-              let fc = 0;
-              let totalGp = 0;
-              let hasScienceSubject = false;
-              const subs = [];
-              const skip = new Set();
-              const cleanName = (name) => String(name).replace(/\s*[\(\[].*?[\)\]]/gu, '').trim();
-
-              for (let i = 3; i < headers.length; i++) {
-                if (skip.has(i)) continue;
-                const h1 = String(headers[i] || '').trim();
-                const v1 = String(data[i] || '').trim();
-
-                if (h1.includes('+') && headers[i + 1] !== undefined) {
-                  const h2 = String(headers[i + 1] || '').trim();
-                  const v2 = String(data[i + 1] || '').trim();
-                  skip.add(i + 1);
-                  if (v1 === '' && v2 === '') continue; // Both papers blank: skip subject
-
-                  if (/পদার্থ|রসায়ন|রসায়ন|জীব\s*বিজ্ঞান|জীববিজ্ঞান|উচ্চতর\s*গণিত|physics|chemistry|biology|higher\s*math/i.test(`${h1} ${h2}`)) {
-                    hasScienceSubject = true;
-                  }
-
-                  const h1En = bnToEnNumber(h1);
-                  const h2En = bnToEnNumber(h2);
-                  const m1 = h1En.match(/\((\d+(?:\.\d+)?)\)/);
-                  const m2 = h2En.match(/\((\d+(?:\.\d+)?)\)/);
-                  const f1 = m1 ? parseFloat(m1[1]) : 100;
-                  const f2 = m2 ? parseFloat(m2[1]) : 100;
-                  const abs1 = isAbsText(v1);
-                  const abs2 = isAbsText(v2);
-                  const m1Val = abs1 || v1 === '' ? 0 : parseFloat(bnToEnNumber(v1)) || 0;
-                  const m2Val = abs2 || v2 === '' ? 0 : parseFloat(bnToEnNumber(v2)) || 0;
-
-                  const fail1 = abs1 || (v1 !== '' && Math.round(m1Val * 10000) < Math.round(f1 * 33 * 100));
-                  const fail2 = abs2 || (v2 !== '' && Math.round(m2Val * 10000) < Math.round(f2 * 33 * 100));
-                  const subjectFail = fail1 || fail2;
-                  if (subjectFail) fc++;
-
-                  const [lg, gp] = getGradeInfo(m1Val + m2Val, f1 + f2, subjectFail);
-                  totalGp += parseFloat(gp);
-
-                  const disp1 = abs1 ? 'Abs' : (v1 === '' ? '০' : convertToBengali(m1Val));
-                  const disp2 = abs2 ? 'Abs' : (v2 === '' ? '০' : convertToBengali(m2Val));
-
-                  subs.push({
-                    name: `${cleanName(h1)}  ${cleanName(h2)}`,
-                    fm: f1 + f2,
-                    obtained: (abs1 && abs2) ? 'Abs' : `${disp1} + ${disp2}`,
-                    display_avg: (m1Val + m2Val) / 2,
-                    sum: m1Val + m2Val,
-                    is_fail: subjectFail,
-                    grade: lg,
-                    gp,
-                  });
-                  tm += m1Val + m2Val;
-                  tfm += f1 + f2;
-                } else {
-                  if (h1 === '' || v1 === '') continue; // Blank cell: skip subject
-                  if (/পদার্থ|রসায়ন|রসায়ন|জীব\s*বিজ্ঞান|জীববিজ্ঞান|উচ্চতর\s*গণিত|physics|chemistry|biology|higher\s*math/i.test(h1)) {
-                    hasScienceSubject = true;
-                  }
-                  const h1En = bnToEnNumber(h1);
-                  const m = h1En.match(/\((\d+(?:\.\d+)?)\)/);
-                  const f = m ? parseFloat(m[1]) : 100;
-                  const abs1 = isAbsText(v1);
-                  const mv = abs1 ? 0 : parseFloat(bnToEnNumber(v1)) || 0;
-
-                  const subjectFail = abs1 || Math.round(mv * 10000) < Math.round(f * 33 * 100);
-                  if (subjectFail) fc++;
-
-                  const [lg, gp] = getGradeInfo(mv, f, subjectFail);
-                  totalGp += parseFloat(gp);
-
-                  subs.push({
-                    name: cleanName(h1),
-                    fm: f,
-                    obtained: abs1 ? 'Abs' : convertToBengali(mv),
-                    display_avg: mv,
-                    sum: mv,
-                    is_fail: subjectFail,
-                    grade: lg,
-                    gp,
-                  });
-                  tm += mv;
-                  tfm += f;
-                }
-              }
-
+            const syntheticExam = buildCsvSyntheticExam(csvClassKey, selectedClassName, rows);
+            const { evaluatedRows } = computeResultSheet(syntheticExam);
+            const found = evaluatedRows.find((r) => normalizeRollKey(r.roll) === searchRollNorm);
+            if (found) {
               const unifiedCsv = findUnifiedStudents(excelStore, portal, {
                 classParam: selectedClassName || csvClassKey,
-                rollParam: data[2],
+                rollParam: found.roll,
               }).exact;
-              const gpaVal = fc > 0 || subs.length === 0 ? 0 : Number((totalGp / subs.length).toFixed(2));
-              const rawStuName = data[0] || unifiedCsv?.name_bn || '—';
-              const isScience = isScienceGroupText(rawStuName) || isScienceGroupText(unifiedCsv?.group) || hasScienceSubject;
               studentResult = {
-                name: rawStuName,
-                displayName: formatStudentNameWithGroup(rawStuName, isScience),
-                isScience,
-                groupLabel: isScience ? 'বিজ্ঞান' : 'সাধারণ',
-                father: unifiedCsv?.father_bn || '',
+                name: found.name || unifiedCsv?.name_bn || '—',
+                displayName: found.displayName || formatStudentNameWithGroup(found.name || unifiedCsv?.name_bn || '—', Boolean(found.isScience)),
+                isScience: Boolean(found.isScience),
+                groupLabel: found.groupLabel || (found.isScience ? 'বিজ্ঞান' : 'সাধারণ'),
+                father: found.father || unifiedCsv?.father_bn || '',
                 mother: unifiedCsv?.mother_bn || '',
-                id: unifiedCsv?.id || unifiedCsv?.reg_no || '',
-                roll: data[2],
-                subs,
-                total: Math.round(tm * 100) / 100,
-                tfm,
-                fail: fc,
-                gpa: gpaVal,
-                meritRank: null,
-                status: fc > 0 ? 'Failed' : 'Passed',
-                statusBn: fc > 0 ? 'অকৃতকার্য (Failed)' : 'উত্তীর্ণ (Passed)',
-                isPromoted: false,
+                id: found.studentId || unifiedCsv?.id || unifiedCsv?.reg_no || '',
+                roll: found.roll,
+                subs: found.subjects.map((s) => ({
+                  name: s.name,
+                  fm: s.fullMarks,
+                  obtained: s.obtained,
+                  display_avg: s.averageMark ?? s.numericMark,
+                  sum: s.numericMark,
+                  is_fail: s.isFail,
+                  grade: s.grade,
+                  gp: s.gp,
+                  isCombined: Boolean(s.isCombined),
+                  isOptional: Boolean(s.isOptional),
+                })),
+                total: found.totalObtained,
+                tfm: found.totalFullMarks,
+                fail: found.failCount,
+                gpa: found.gpa,
+                gpaWithoutOptional: found.gpaWithoutOptional ?? found.gpa,
+                isBoardExam: Boolean(found.isBoardExam),
+                boardType: found.boardType || '',
+                hasOptionalSubject: Boolean(found.hasOptionalSubject),
+                optionalSubjectName: found.optionalSubjectName || '',
+                optionalBonus: found.optionalBonus || 0,
+                optionalFailCount: found.optionalFailCount || 0,
+                meritRank: found.meritRank,
+                status: found.status,
+                statusBn: found.statusBn,
+                isPromoted: found.isPromoted,
                 examName: 'বার্ষিক পরীক্ষা',
                 year: '২০২৬',
               };
-              break;
             }
           }
         }

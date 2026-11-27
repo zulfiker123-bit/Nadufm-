@@ -105,21 +105,22 @@
 
         .studio-tabs {
             display: flex;
-            gap: 6px;
+            gap: 8px;
             flex-wrap: wrap;
-            background: var(--surface);
-            padding: 6px;
-            border: 1px solid var(--border);
-            border-radius: 12px;
+            background: linear-gradient(180deg, #e9efec 0%, #f4f7f5 100%);
+            padding: 7px;
+            border: 1px solid rgba(15, 23, 42, 0.1);
+            border-radius: 14px;
+            box-shadow: inset 0 2px 5px rgba(15, 23, 42, 0.08), 0 1px 0 rgba(255, 255, 255, 0.9);
             margin-bottom: 16px;
         }
 
         .studio-tab {
             flex: 1 1 180px;
-            min-height: 42px;
-            border: none;
-            border-radius: 8px;
-            background: transparent;
+            min-height: 43px;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            border-radius: 10px;
+            background: linear-gradient(180deg, #ffffff 0%, #f3f6f4 100%);
             color: var(--muted);
             font-size: 0.92rem;
             font-weight: 600;
@@ -130,17 +131,34 @@
             gap: 8px;
             padding: 6px 14px;
             white-space: nowrap;
-            transition: background-color 0.15s ease, color 0.15s ease;
+            box-shadow: inset 0 1px 0 #ffffff, 0 2.5px 0 rgba(15, 23, 42, 0.08), 0 4px 8px -3px rgba(15, 23, 42, 0.08);
+            transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.14s ease, background 0.14s ease, color 0.14s ease;
         }
 
         .studio-tab:hover {
-            background: #f1f5f9;
-            color: var(--text);
+            transform: translateY(-1px);
+            background: linear-gradient(180deg, #ffffff 0%, #ebf7ef 100%);
+            color: var(--brand);
+            box-shadow: inset 0 1px 0 #ffffff, 0 3.5px 0 rgba(21, 128, 61, 0.18), 0 6px 12px -3px rgba(21, 128, 61, 0.15);
+        }
+
+        .studio-tab:active {
+            transform: translateY(1.5px);
+            box-shadow: 0 1px 0 rgba(15, 23, 42, 0.09);
         }
 
         .studio-tab.active {
-            background: var(--brand);
+            background: linear-gradient(180deg, #1ea34d 0%, #15803d 100%);
+            border-color: #146c34;
             color: #ffffff;
+            font-weight: 700;
+            transform: translateY(-1px);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 3.5px 0 #0e5427, 0 7px 15px -3px rgba(21, 128, 61, 0.36);
+        }
+
+        .studio-tab.active:hover {
+            color: #ffffff;
+            filter: brightness(1.03);
         }
 
         .tab-panel { display: none; }
@@ -201,8 +219,8 @@
             justify-content: center;
             gap: 7px;
             min-height: 40px;
-            padding: 0 14px;
-            border-radius: 9px;
+            padding: 0 15px;
+            border-radius: 10px;
             border: 1px solid transparent;
             font-size: 0.88rem;
             font-weight: 600;
@@ -210,26 +228,69 @@
             text-decoration: none;
             white-space: nowrap;
             flex-shrink: 0;
-            transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+            transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.14s ease, filter 0.14s ease, border-color 0.14s ease;
         }
 
-        .btn:active { transform: scale(0.985); }
+        .btn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.03); }
+        .btn:active:not(:disabled) { transform: translateY(2px); }
         .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .btn-sm { min-height: 36px; padding: 0 11px; font-size: 0.82rem; border-radius: 8px; }
-        .btn-primary { background: var(--brand-strong); color: #ffffff; }
-        .btn-primary:hover { background: var(--brand); }
-        .btn-dark { background: #1e293b; color: #ffffff; }
-        .btn-dark:hover { background: #0f172a; }
-        .btn-blue { background: var(--blue); color: #ffffff; }
-        .btn-blue:hover { background: #1e40af; }
-        .btn-rose { background: #be123c; color: #ffffff; }
-        .btn-rose:hover { background: #9f1239; }
-        .btn-amber { background: #d97706; color: #ffffff; }
-        .btn-amber:hover { background: #b45309; }
-        .btn-outline { background: var(--surface); color: var(--text); border-color: var(--border-strong); }
-        .btn-outline:hover { background: var(--surface-subtle); }
-        .btn-danger-outline { background: var(--surface); color: var(--danger); border-color: #fecaca; }
-        .btn-danger-outline:hover { background: #fef2f2; }
+        .btn-sm { min-height: 36px; padding: 0 12px; font-size: 0.82rem; border-radius: 9px; }
+
+        .btn-primary {
+            background: linear-gradient(180deg, #1ea34d 0%, #15803d 100%);
+            color: #ffffff;
+            border-color: #146c34;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 3px 0 #0e5427, 0 5px 12px -3px rgba(21, 128, 61, 0.3);
+        }
+        .btn-primary:active:not(:disabled) { box-shadow: 0 1px 0 #0e5427; }
+
+        .btn-dark {
+            background: linear-gradient(180deg, #334155 0%, #1e293b 100%);
+            color: #ffffff;
+            border-color: #0f172a;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 3px 0 #090e1a, 0 5px 12px -3px rgba(15, 23, 42, 0.32);
+        }
+        .btn-dark:active:not(:disabled) { box-shadow: 0 1px 0 #090e1a; }
+
+        .btn-blue {
+            background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff;
+            border-color: #1e40af;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.26), 0 3px 0 #172f82, 0 5px 12px -3px rgba(29, 78, 216, 0.3);
+        }
+        .btn-blue:active:not(:disabled) { box-shadow: 0 1px 0 #172f82; }
+
+        .btn-rose {
+            background: linear-gradient(180deg, #e11d48 0%, #be123c 100%);
+            color: #ffffff;
+            border-color: #9f1239;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 3px 0 #881337, 0 5px 12px -3px rgba(190, 18, 60, 0.3);
+        }
+        .btn-rose:active:not(:disabled) { box-shadow: 0 1px 0 #881337; }
+
+        .btn-amber {
+            background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+            color: #ffffff;
+            border-color: #b45309;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 3px 0 #92400e, 0 5px 12px -3px rgba(217, 119, 6, 0.3);
+        }
+        .btn-amber:active:not(:disabled) { box-shadow: 0 1px 0 #92400e; }
+
+        .btn-outline {
+            background: linear-gradient(180deg, #ffffff 0%, #f2f6f4 100%);
+            color: var(--text);
+            border-color: rgba(15, 23, 42, 0.14);
+            box-shadow: inset 0 1px 0 #ffffff, 0 2.5px 0 rgba(15, 23, 42, 0.1), 0 4px 8px -3px rgba(15, 23, 42, 0.08);
+        }
+        .btn-outline:active:not(:disabled) { box-shadow: 0 1px 0 rgba(15, 23, 42, 0.1); }
+
+        .btn-danger-outline {
+            background: linear-gradient(180deg, #ffffff 0%, #fff1f2 100%);
+            color: var(--danger);
+            border-color: #fca5a5;
+            box-shadow: inset 0 1px 0 #ffffff, 0 2.5px 0 #fca5a5, 0 4px 8px -3px rgba(185, 28, 28, 0.12);
+        }
+        .btn-danger-outline:active:not(:disabled) { box-shadow: 0 1px 0 #fca5a5; }
 
         .btn-group {
             display: flex;
@@ -1432,6 +1493,7 @@
         { key: 'father', label: 'পিতার নাম কলাম' },
         { key: 'id', label: 'আইডি কলাম' },
         { key: 'group', label: 'বিভাগ / গ্রুপ কলাম' },
+        { key: 'optionalSubject', label: '৪র্থ / ঐচ্ছিক বিষয় কলাম' },
     ];
 
     function bnNum(input) {
@@ -1476,7 +1538,7 @@
     }
 
     function cleanSubTitle(label) {
-        return String(label || '').replace(/\s*\([^)]*\)/g, '').trim();
+        return String(label || '').replace(/\s*\([^)]*\)/g, '').replace(/\+/g, '').trim();
     }
 
     function esc(s) {
@@ -1533,17 +1595,230 @@
 
     const SCIENCE_SUBJECT_RE_CLIENT = /পদার্থ|রসায়ন|রসায়ন|জীব\s*বিজ্ঞান|জীববিজ্ঞান|উচ্চতর\s*গণিত|physics|chemistry|biology|higher\s*math/i;
     const EXPLICIT_NON_SCIENCE_RE_CLIENT = /সাধারণ|মানবিক|ব্যবসায়|ব্যবসায়|বাণিজ্য|arts|humanities|commerce|general|মুজাব্বিদ|হিফজ/i;
+    const PROTECTED_MAIN_RE_CLIENT = /কুরআন|কোরআন|quran|হাদিস|হাদীস|hadith|আকাঈদ|আকাইদ|aqaid|ফিকহ|fiqh|আরবি|arabic|বাংলা|bangla|bengali|ইংরেজি|english|তথ্য\s*ও\s*যোগাযোগ|ict|পদার্থ|physics|রসায়ন|রসায়ন|chemistry/i;
+    const GENERAL_MATH_ONLY_RE_CLIENT = /(?:^|\s)(?:সাধারণ\s*)?গণিত(?:\s|$)|^(?:general\s*)?math(?:ematics)?$/i;
+    const HIGHER_MATH_RE_CLIENT = /উচ্চতর\s*গণিত|higher\s*math/i;
+    const BIOLOGY_RE_CLIENT = /জীব\s*বিজ্ঞান|জীববিজ্ঞান|biology/i;
+    const AGRI_HOME_RE_CLIENT = /কৃষি|agriculture|গার্হস্থ্য|home\s*(?:science|economics)|শারীরিক|physical|চারু|কারু|ক্যারিয়ার|career/i;
+    const ALIM_OPT_ELECTIVE_RE_CLIENT = /পৌরনীতি|civics|অর্থনীতি|economics|যুক্তিবিদ্যা|logic|সমাজবিজ্ঞান|সমাজকর্ম|sociology|social\s*work|ভূগোল|geography|মনোবিজ্ঞান|psychology|উর্দু|urdu|ফারসি|persian|কৃষি|agriculture|গার্হস্থ্য|home\s*(?:science|economics)|উচ্চতর\s*গণিত|higher\s*math|জীব\s*বিজ্ঞান|জীববিজ্ঞান|biology/i;
+
+    function getBoardExamTypeClient(classId, className) {
+        const cid = String(classId ?? '').trim();
+        if (cid === '11' || cid === '12') return 'alim';
+        if (cid === '9' || cid === '10') return 'dakhil';
+        if (cid === '6' || cid === '7' || cid === '8') return 'junior';
+        if (cid === '0' || cid === '1' || cid === '2' || cid === '3' || cid === '4' || cid === '5') return '';
+        const raw = enNum(String(className ?? '').trim());
+        if (!raw) return '';
+        if (/আলিম|alim|\b11(?:th)?\b|\b12(?:th)?\b/i.test(raw)) return 'alim';
+        if (/নবম|দশম|দাখিল|dakhil|\b9(?:th)?\b|\b10(?:th)?\b/i.test(raw)) return 'dakhil';
+        if (/ষষ্ঠ|সপ্তম|অষ্টম|\b6(?:th)?\b|\b7(?:th)?\b|\b8(?:th)?\b/i.test(raw)) return 'junior';
+        return '';
+    }
+
+    function stripSubDecorClient(label) {
+        return String(label || '').normalize('NFC').replace(/\([^)]*\)/g, ' ').replace(/\[[^\]]*\]/g, ' ').replace(/\+/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    function normalizeSubCanonicalClient(str) {
+        return enNum(String(str || ''))
+            .normalize('NFC')
+            .toLowerCase()
+            .replace(/য়/g, 'য়')
+            .replace(/ী/g, 'ি')
+            .replace(/ূ/g, 'ু')
+            .replace(/[-–—_:.,/]+/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .replace(/জীব(?:\s*বিজ্ঞান)?/g, 'জীববিজ্ঞান')
+            .replace(/পদার্থ(?:\s*বিজ্ঞান)?/g, 'পদার্থবিজ্ঞান')
+            .replace(/আল\s+ফিকহ/g, 'আল ফিকহ')
+            .replace(/^ফিকহ$/g, 'আল ফিকহ')
+            .replace(/(?:ইংরেজি|english|eng\b)/g, 'ইংরেজি')
+            .replace(/(?:বাংলা|bangla|bengali)/g, 'বাংলা')
+            .replace(/(?:আরবি|arabic)/g, 'আরবি');
+    }
+
+    function parseSubPaperInfoClient(label) {
+        const raw = String(label || '').trim();
+        const hasPlus = raw.includes('+');
+        const isOptionalTagged = /\(\s*(?:4th|৪র্থ|ঐচ্ছিক|optional|opt|অতিরিক্ত|extra)\s*\)/i.test(raw);
+        const titleOnly = stripSubDecorClient(raw);
+        const alreadyCombined = /(?:১ম|প্রথম|1st|i)\s*(?:ও|এবং|&|and)\s*(?:২য়|২য়|দ্বিতীয়|দ্বিতীয়|2nd|ii)/i.test(titleOnly);
+        const paper1Re = /(?:^|[\s\-–_])(?:(১ম|প্রথম|1st|paper[\s\-]*1|part[\s\-]*1|i)(?:\s*(?:পত্র|paper|part))?|(?:পত্র|paper)\s*[-–:]?\s*(?:১|1))$/iu;
+        const paper2Re = /(?:^|[\s\-–_])(?:(২য়|২য়|দ্বিতীয়|দ্বিতীয়|2nd|paper[\s\-]*2|part[\s\-]*2|ii)(?:\s*(?:পত্র|paper|part))?|(?:পত্র|paper)\s*[-–:]?\s*(?:২|2))$/iu;
+        const digit1Re = /(?:^|[\s\-–_])(১|1)$/u;
+        const digit2Re = /(?:^|[\s\-–_])(২|2)$/u;
+
+        let paper = 0;
+        let baseTitle = titleOnly;
+        if (!alreadyCombined) {
+            if (paper1Re.test(titleOnly)) { paper = 1; baseTitle = titleOnly.replace(paper1Re, '').trim(); }
+            else if (paper2Re.test(titleOnly)) { paper = 2; baseTitle = titleOnly.replace(paper2Re, '').trim(); }
+            else if (digit1Re.test(titleOnly)) { paper = 1; baseTitle = titleOnly.replace(digit1Re, '').trim(); }
+            else if (digit2Re.test(titleOnly)) { paper = 2; baseTitle = titleOnly.replace(digit2Re, '').trim(); }
+        }
+        baseTitle = baseTitle.replace(/[-–—:]+$/g, '').trim() || titleOnly;
+        const canonicalBase = normalizeSubCanonicalClient(baseTitle);
+        const canonicalTitle = normalizeSubCanonicalClient(titleOnly);
+        const hasQuranWord = /কুরআন|কোরআন|কুরআনে|quran/i.test(canonicalTitle);
+        const hasHadithWord = /হাদিস|হাদীস|hadith|hadis/i.test(canonicalTitle);
+        return {
+            raw,
+            titleOnly,
+            baseTitle,
+            canonicalBase,
+            paper,
+            hasPlus,
+            isOptionalTagged,
+            isQuranOnly: hasQuranWord && !hasHadithWord,
+            isHadithOnly: hasHadithWord && !hasQuranWord,
+        };
+    }
+
+    function shouldCombineClient(boardType, info1, info2) {
+        if (!info1 || !info2) return false;
+        if (info1.hasPlus) return true;
+        if (!boardType) return false;
+        if (boardType === 'dakhil' && ((info1.isQuranOnly && info2.isHadithOnly) || (info1.isHadithOnly && info2.isQuranOnly))) return true;
+        if (info1.paper !== 1 || info2.paper !== 2) return false;
+        if (!info1.canonicalBase || info1.canonicalBase !== info2.canonicalBase) return false;
+        if (boardType === 'junior' || boardType === 'dakhil') {
+            return info1.canonicalBase === 'বাংলা' || info1.canonicalBase === 'ইংরেজি' || info1.canonicalBase === 'আরবি';
+        }
+        if (boardType === 'alim') return true;
+        return false;
+    }
+
+    function isProtectedMainClient(name) {
+        const s = String(name || '').trim();
+        if (!s || HIGHER_MATH_RE_CLIENT.test(s)) return false;
+        return PROTECTED_MAIN_RE_CLIENT.test(s) || GENERAL_MATH_ONLY_RE_CLIENT.test(s);
+    }
+
+    function pickOptionalIndexClient(subjects, { boardType, isScience, explicitOptionalText }) {
+        if (!Array.isArray(subjects) || !subjects.length) return -1;
+        const expText = normalizeSubCanonicalClient(stripSubDecorClient(explicitOptionalText));
+        if (expText) {
+            const idx = subjects.findIndex((s) => {
+                const sn = normalizeSubCanonicalClient(s.name);
+                return sn === expText || sn.includes(expText) || expText.includes(sn);
+            });
+            if (idx >= 0) return idx;
+        }
+        const taggedIdx = subjects.findIndex((s) => Boolean(s.isOptionalTagged));
+        if (taggedIdx >= 0) return taggedIdx;
+        if (boardType !== 'dakhil' && boardType !== 'alim') return -1;
+        const minCount = 6;
+        if (subjects.length < minCount) return -1;
+        const agriIdx = subjects.findIndex((s) => AGRI_HOME_RE_CLIENT.test(s.name) && !isProtectedMainClient(s.name));
+        if (agriIdx >= 0) return agriIdx;
+        const bioIdx = subjects.findIndex((s) => BIOLOGY_RE_CLIENT.test(s.name));
+        const hMathIdx = subjects.findIndex((s) => HIGHER_MATH_RE_CLIENT.test(s.name));
+        if (bioIdx >= 0 && hMathIdx >= 0) return hMathIdx;
+        if (isScience && hMathIdx >= 0 && subjects.length >= minCount + 1) return hMathIdx;
+        if (boardType === 'alim' && !isScience && subjects.length >= 7) {
+            for (let i = subjects.length - 1; i >= 0; i--) {
+                if (!isProtectedMainClient(subjects[i].name) && ALIM_OPT_ELECTIVE_RE_CLIENT.test(subjects[i].name)) return i;
+            }
+        }
+        return -1;
+    }
+
+    function buildCombinedUnitsClient(subjectCols, boardType) {
+        const infos = subjectCols.map((sub) => ({ sub, info: parseSubPaperInfoClient(sub.label) }));
+        const used = new Set();
+        const units = [];
+        for (let i = 0; i < infos.length; i++) {
+            if (used.has(i)) continue;
+            const cur = infos[i];
+            let partnerIdx = -1;
+            let isQuranHadithPair = false;
+            if (cur.info.hasPlus && i + 1 < infos.length && !used.has(i + 1)) {
+                partnerIdx = i + 1;
+            } else if (boardType && (cur.info.paper === 1 || cur.info.paper === 2)) {
+                for (let j = i + 1; j < infos.length; j++) {
+                    if (used.has(j)) continue;
+                    const cand = infos[j];
+                    if (cur.info.paper === 1 && cand.info.paper === 2 && shouldCombineClient(boardType, cur.info, cand.info)) { partnerIdx = j; break; }
+                    if (cur.info.paper === 2 && cand.info.paper === 1 && shouldCombineClient(boardType, cand.info, cur.info)) { partnerIdx = j; break; }
+                }
+            }
+            if (partnerIdx < 0 && boardType === 'dakhil' && (cur.info.isQuranOnly || cur.info.isHadithOnly)) {
+                for (let j = i + 1; j < infos.length; j++) {
+                    if (used.has(j)) continue;
+                    const cand = infos[j];
+                    if ((cur.info.isQuranOnly && cand.info.isHadithOnly) || (cur.info.isHadithOnly && cand.info.isQuranOnly)) {
+                        partnerIdx = j;
+                        isQuranHadithPair = true;
+                        break;
+                    }
+                }
+            }
+            if (partnerIdx >= 0) {
+                used.add(i); used.add(partnerIdx);
+                const partner = infos[partnerIdx];
+                let first, second;
+                if (isQuranHadithPair) {
+                    first = cur.info.isQuranOnly ? cur : partner;
+                    second = first === cur ? partner : cur;
+                } else {
+                    first = (cur.info.paper === 2 && partner.info.paper === 1) ? partner : cur;
+                    second = first === cur ? partner : cur;
+                }
+                units.push({
+                    type: 'combined',
+                    first: first.sub,
+                    second: second.sub,
+                    combinedName: isQuranHadithPair ? 'কুরআন ও হাদীস শরীফ' : `${first.info.baseTitle || cleanSubTitle(first.sub.label)} (১ম ও ২য় পত্র)`,
+                    single1Name: cleanSubTitle(first.sub.label),
+                    single2Name: cleanSubTitle(second.sub.label),
+                    isOptionalTagged: Boolean(first.sub.isOptional || second.sub.isOptional || first.info.isOptionalTagged || second.info.isOptionalTagged),
+                });
+            } else {
+                used.add(i);
+                units.push({
+                    type: 'single',
+                    sub: cur.sub,
+                    name: cleanSubTitle(cur.sub.label),
+                    isOptionalTagged: Boolean(cur.sub.isOptional || cur.info.isOptionalTagged),
+                });
+            }
+        }
+        return units;
+    }
+
+    function evalSinglePaperClient(rawVal, fm, passPercent) {
+        const up = rawVal.toUpperCase();
+        const isAbsent = up === 'A' || up === 'ABS' || up === 'ABSENT' || rawVal === 'অনুপস্থিত';
+        let mark = 0;
+        let isFail = false;
+        if (isAbsent) {
+            isFail = true;
+        } else {
+            const p = parseFloat(enNum(rawVal));
+            mark = Number.isNaN(p) ? 0 : p;
+            if (Math.round(mark * 10000) < Math.round(fm * passPercent * 100)) isFail = true;
+        }
+        return { isAbsent, mark, isFail };
+    }
 
     function recomputeExamClient(exam) {
         const passPercent = Number(exam.passPercent) > 0 ? Number(exam.passPercent) : 33;
         const maxPromoteFail = Number(exam.maxPromoteFail) || 0;
         const promotionLabel = String(exam.promotionLabel || 'বিশেষ বিবেচনায় প্রমোটেড');
+        const boardType = getBoardExamTypeClient(exam.classId, exam.className);
+        const isBoardExam = boardType === 'dakhil' || boardType === 'alim';
         const cols = exam.columns || [];
         const subjectCols = cols.filter((c) => c.isSubject);
+        const subjectUnits = buildCombinedUnitsClient(subjectCols, boardType);
         const mapping = exam.mapping || {};
         const rows = exam.rows || [];
         const fallbackGroupCol = mapping.group
             || cols.find((c) => !c.isSubject && /বিভাগ|গ্রুপ|group|department|dept|stream|division/i.test(`${c.label} ${c.key}`))?.key
+            || '';
+        const fallbackOptionalCol = mapping.optionalSubject
+            || cols.find((c) => !c.isSubject && /৪র্থ\s*বিষয়|৪র্থ\s*বিষয়|ঐচ্ছিক\s*বিষয়|ঐচ্ছিক\s*বিষয়|4th\s*subject|optional\s*subject/i.test(`${c.label} ${c.key}`))?.key
             || '';
 
         const evaluated = rows.map((row, idx) => {
@@ -1554,56 +1829,93 @@
             const rawGroup = fallbackGroupCol
                 ? String(row[fallbackGroupCol] ?? '').trim()
                 : String(row.group || row['বিভাগ'] || '').trim();
+            const explicitOptionalText = fallbackOptionalCol
+                ? String(row[fallbackOptionalCol] ?? '').trim()
+                : String(row.optionalSubject || row['৪র্থ বিষয়'] || '').trim();
 
             let totalObtained = 0;
             let totalFullMarks = 0;
-            let failCount = 0;
             let absentSubjects = 0;
-            let totalGp = 0;
             let hasScienceSubject = false;
             const subjects = [];
 
-            for (const sub of subjectCols) {
-                const fm = Number(sub.fullMarks) > 0 ? Number(sub.fullMarks) : 100;
-                const rawVal = String(row[sub.key] ?? '').trim();
-                if (rawVal === '') continue; // Blank cell: skip subject
-
-                if (SCIENCE_SUBJECT_RE_CLIENT.test(String(sub.label || ''))) {
-                    hasScienceSubject = true;
-                }
-
-                const up = rawVal.toUpperCase();
-                const isAbsent = up === 'A' || up === 'ABS' || up === 'ABSENT' || rawVal === 'অনুপস্থিত';
-                let mark = 0;
-                let isFail = false;
-
-                if (isAbsent) {
-                    absentSubjects++;
-                    isFail = true;
-                } else {
-                    const p = parseFloat(enNum(rawVal));
-                    mark = Number.isNaN(p) ? 0 : p;
-                    if (Math.round(mark * 10000) < Math.round(fm * passPercent * 100)) isFail = true;
-                }
-
-                if (isFail) failCount++;
+            const pushSingle = (subCol, subName, rawVal, isOptTag) => {
+                const fm = Number(subCol.fullMarks) > 0 ? Number(subCol.fullMarks) : 100;
+                if (SCIENCE_SUBJECT_RE_CLIENT.test(String(subCol.label || ''))) hasScienceSubject = true;
+                const { isAbsent, mark, isFail } = evalSinglePaperClient(rawVal, fm, passPercent);
+                if (isAbsent) absentSubjects++;
                 const [grade, gp] = getGradeClient(mark, fm, isFail);
                 totalObtained += mark;
                 totalFullMarks += fm;
-                totalGp += parseFloat(gp);
-
                 subjects.push({
-                    key: sub.key,
-                    name: cleanSubTitle(sub.label),
+                    key: subCol.key,
+                    keys: [subCol.key],
+                    name: subName,
                     fullMarks: fm,
                     rawVal,
                     obtained: isAbsent ? 'Abs' : bnNum(mark),
-                    numericMark: mark,
+                    numericMark: Math.round(mark * 100) / 100,
+                    averageMark: Math.round(mark * 100) / 100,
                     isAbsent,
                     isFail,
                     grade,
                     gp,
+                    isCombined: false,
+                    isOptionalTagged: Boolean(isOptTag),
+                    isOptional: false,
                 });
+            };
+
+            for (const unit of subjectUnits) {
+                if (unit.type === 'single') {
+                    const rawVal = String(row[unit.sub.key] ?? '').trim();
+                    if (rawVal === '') continue;
+                    pushSingle(unit.sub, unit.name, rawVal, unit.isOptionalTagged);
+                } else {
+                    const v1 = String(row[unit.first.key] ?? '').trim();
+                    const v2 = String(row[unit.second.key] ?? '').trim();
+                    if (v1 === '' && v2 === '') continue;
+                    if (v1 !== '' && v2 === '') { pushSingle(unit.first, unit.single1Name, v1, unit.isOptionalTagged); continue; }
+                    if (v1 === '' && v2 !== '') { pushSingle(unit.second, unit.single2Name, v2, unit.isOptionalTagged); continue; }
+
+                    const f1 = Number(unit.first.fullMarks) > 0 ? Number(unit.first.fullMarks) : 100;
+                    const f2 = Number(unit.second.fullMarks) > 0 ? Number(unit.second.fullMarks) : 100;
+                    if (SCIENCE_SUBJECT_RE_CLIENT.test(`${unit.first.label} ${unit.second.label}`)) hasScienceSubject = true;
+                    const p1 = evalSinglePaperClient(v1, f1, passPercent);
+                    const p2 = evalSinglePaperClient(v2, f2, passPercent);
+                    const combinedAbsent = p1.isAbsent && p2.isAbsent;
+                    if (combinedAbsent) absentSubjects++;
+                    const sumMark = Math.round((p1.mark + p2.mark) * 100) / 100;
+                    const sumFm = f1 + f2;
+                    const avgMark = Math.round((sumMark / 2) * 100) / 100;
+                    const combinedTotalFail = Math.round(sumMark * 10000) < Math.round(sumFm * passPercent * 100);
+                    const isFail = p1.isFail || p2.isFail || combinedTotalFail;
+                    const [grade, gp] = getGradeClient(sumMark, sumFm, isFail);
+                    totalObtained += sumMark;
+                    totalFullMarks += sumFm;
+                    const disp1 = p1.isAbsent ? 'Abs' : bnNum(p1.mark);
+                    const disp2 = p2.isAbsent ? 'Abs' : bnNum(p2.mark);
+                    subjects.push({
+                        key: `${unit.first.key}__${unit.second.key}`,
+                        keys: [unit.first.key, unit.second.key],
+                        name: unit.combinedName,
+                        fullMarks: sumFm,
+                        rawVal: `${v1} + ${v2}`,
+                        obtained: combinedAbsent ? 'Abs' : `${disp1} + ${disp2} = ${bnNum(sumMark)}`,
+                        paperBreakdown: `${disp1} + ${disp2}`,
+                        numericMark: sumMark,
+                        averageMark: avgMark,
+                        paper1Fail: p1.isFail,
+                        paper2Fail: p2.isFail,
+                        isAbsent: combinedAbsent,
+                        isFail,
+                        grade,
+                        gp,
+                        isCombined: true,
+                        isOptionalTagged: unit.isOptionalTagged,
+                        isOptional: false,
+                    });
+                }
             }
 
             let isScience = false;
@@ -1619,12 +1931,25 @@
             const groupLabel = isScience ? 'বিজ্ঞান' : (rawGroup || 'সাধারণ');
             const displayName = formatStudentNameClient(name, isScience);
 
+            const optIdx = pickOptionalIndexClient(subjects, { boardType, isScience, explicitOptionalText });
+            if (optIdx >= 0) subjects[optIdx].isOptional = true;
+            const optSubject = optIdx >= 0 ? subjects[optIdx] : null;
+            const mainSubjects = optIdx >= 0 ? subjects.filter((_, i) => i !== optIdx) : subjects;
+
+            const failCount = mainSubjects.filter((s) => s.isFail).length;
+            const optionalFailCount = optSubject && optSubject.isFail ? 1 : 0;
+
             const attemptedCount = subjects.length;
             const allAbsent = attemptedCount > 0 && absentSubjects === attemptedCount;
             const noSubjects = attemptedCount === 0;
             const percentage = totalFullMarks > 0 ? (totalObtained / totalFullMarks) * 100 : 0;
-            const rawGpa = attemptedCount > 0 ? totalGp / attemptedCount : 0;
-            const gpa = failCount === 0 && attemptedCount > 0 ? rawGpa : 0;
+
+            const mainGpSum = mainSubjects.reduce((acc, s) => acc + parseFloat(s.gp), 0);
+            const mainCount = mainSubjects.length;
+            const gpaWithoutOptional = (failCount === 0 && mainCount > 0) ? Math.min(5, mainGpSum / mainCount) : 0;
+            const optionalBonus = (optSubject && !optSubject.isFail) ? Math.max(0, parseFloat(optSubject.gp) - 2) : 0;
+            const rawGpa = mainCount > 0 ? Math.min(5, (mainGpSum + optionalBonus) / mainCount) : 0;
+            const gpa = (failCount === 0 && mainCount > 0) ? rawGpa : 0;
 
             const manualPromoted = row._promoted === true;
             const manualDemoted = row._promoted === false;
@@ -1658,6 +1983,13 @@
                 father,
                 studentId,
                 subjects,
+                isBoardExam,
+                boardType,
+                hasOptionalSubject: Boolean(optSubject),
+                optionalSubjectName: optSubject ? optSubject.name : '',
+                optionalBonus: Math.round(optionalBonus * 100) / 100,
+                optionalFailCount,
+                gpaWithoutOptional: Number(gpaWithoutOptional.toFixed(2)),
                 totalObtained: Math.round(totalObtained * 100) / 100,
                 totalFullMarks,
                 percentage: Math.round(percentage * 100) / 100,
@@ -1677,6 +2009,7 @@
                 if (rankOrder[a.status] !== rankOrder[b.status]) return rankOrder[a.status] - rankOrder[b.status];
                 if (a.status === 'Passed') {
                     if (b.gpa !== a.gpa) return b.gpa - a.gpa;
+                    if (b.gpaWithoutOptional !== a.gpaWithoutOptional) return b.gpaWithoutOptional - a.gpaWithoutOptional;
                     if (b.totalObtained !== a.totalObtained) return b.totalObtained - a.totalObtained;
                     return b.percentage - a.percentage;
                 }
@@ -1713,6 +2046,8 @@
                 promoted,
                 failed,
                 absent,
+                isBoardExam,
+                boardType,
                 scienceCount: scienceMeritList.length,
                 otherCount: otherMeritList.length,
                 passRate: total > 0 ? Math.round(((passed + promoted) / total) * 1000) / 10 : 0,
@@ -2138,7 +2473,7 @@
                 { key: 'sub_english', label: 'ইংরেজি (100)', isSubject: true, fullMarks: 100 },
                 { key: 'sub_math', label: 'গণিত (100)', isSubject: true, fullMarks: 100 },
             ],
-            mapping: { roll: 'roll', name: 'name', father: 'father', id: '', group: '' },
+            mapping: { roll: 'roll', name: 'name', father: 'father', id: '', group: '', optionalSubject: '' },
             rows: [],
             updatedAt: null,
         };
@@ -2411,6 +2746,9 @@
                     <div class="subject-mark-item">
                         <span title="${esc(col.label)}">${esc(cleanSubTitle(col.label))}</span>
                         <input type="number" min="5" max="500" value="${Number(col.fullMarks) || 100}" onchange="updateResultColFM(${idx}, this.value)" aria-label="${esc(col.label)} পূর্ণমান">
+                        <label style="display:inline-flex; align-items:center; gap:3px; font-size:0.74rem; color:#475569; cursor:pointer; margin-left:4px;" title="৪র্থ / ঐচ্ছিক বিষয় হিসেবে চিহ্নিত করুন">
+                            <input type="checkbox" ${col.isOptional ? 'checked' : ''} onchange="toggleResultColOptional(${idx}, this.checked)"> ৪র্থ
+                        </label>
                     </div>
                 `).join('')
                 : '<p style="font-size:0.84rem; color:var(--muted);">কোনো বিষয়ের কলাম পাওয়া যায়নি।</p>';
@@ -2432,6 +2770,13 @@
     function updateResultColFM(idx, val) {
         const exam = getActiveExam();
         exam.columns[idx].fullMarks = Number(val) > 0 ? Number(val) : 100;
+        markDirty('results', true);
+        renderResultsTableAndStats();
+    }
+
+    function toggleResultColOptional(idx, checked) {
+        const exam = getActiveExam();
+        exam.columns[idx].isOptional = Boolean(checked);
         markDirty('results', true);
         renderResultsTableAndStats();
     }
@@ -2629,9 +2974,12 @@
                             </thead>
                             <tbody>
                                 ${selectedEv.subjects.map((sub, i) => `
-                                    <tr>
+                                    <tr style="${sub.isOptional ? 'background:#fefce8;' : ''}">
                                         <td>${bnNum(i + 1)}</td>
-                                        <td style="text-align:left; font-weight:600;">${esc(sub.name)} (${bnNum(sub.fullMarks)})</td>
+                                        <td style="text-align:left; font-weight:600;">
+                                            ${esc(sub.name)} (${bnNum(sub.fullMarks)})
+                                            ${sub.isOptional ? '<span style="display:inline-block; margin-left:5px; padding:1px 6px; font-size:0.75rem; font-weight:700; border-radius:4px; background:#fef08a; color:#854d0e; border:1px solid #facc15;">৪র্থ বিষয়</span>' : ''}
+                                        </td>
                                         <td>${bnNum(sub.fullMarks)}</td>
                                         <td style="font-weight:700;">${esc(sub.obtained)}</td>
                                         <td style="font-weight:700; color:${sub.isFail ? '#b91c1c' : '#15803d'};">${esc(sub.grade)}</td>
@@ -2644,7 +2992,8 @@
                     <div class="inline-ms-summary">
                         <div class="inline-ms-sum-item"><strong>মোট নম্বর:</strong> ${bnNum(selectedEv.totalObtained)} / ${bnNum(selectedEv.totalFullMarks)}</div>
                         <div class="inline-ms-sum-item"><strong>শতকরা:</strong> ${bnNum(selectedEv.percentage)}%</div>
-                        <div class="inline-ms-sum-item"><strong>GPA:</strong> ${bnNum(selectedEv.gpa.toFixed(2))}</div>
+                        ${selectedEv.hasOptionalSubject ? `<div class="inline-ms-sum-item"><strong>GPA (৪র্থ ছাড়া):</strong> ${bnNum(Number(selectedEv.gpaWithoutOptional ?? selectedEv.gpa).toFixed(2))}</div>` : ''}
+                        <div class="inline-ms-sum-item"><strong>${selectedEv.hasOptionalSubject ? 'চূড়ান্ত GPA:' : 'GPA:'}</strong> ${bnNum(selectedEv.gpa.toFixed(2))}</div>
                         <div class="inline-ms-sum-item"><strong>মেধাক্রম:</strong> ${selectedEv.meritRank ? bnNum(selectedEv.meritRank) + (selectedEv.isScience ? ' (বিজ্ঞান)' : '') : '—'}</div>
                         <div class="inline-ms-sum-item"><strong>ফলাফল:</strong> <span class="${statusClass}">${esc(selectedEv.statusBn)}</span></div>
                     </div>
@@ -2698,7 +3047,10 @@
                                                 <td style="font-weight:700;">${m.allAbsent ? 'Abs' : bnNum(m.totalObtained)}</td>
                                                 <td>${bnNum(m.totalFullMarks)}</td>
                                                 <td>${bnNum(m.percentage)}%</td>
-                                                <td style="font-weight:700;">${bnNum(m.gpa.toFixed(2))}</td>
+                                                <td style="font-weight:700;">
+                                                    ${bnNum(m.gpa.toFixed(2))}
+                                                    ${m.hasOptionalSubject && m.gpa > 0 ? `<div style="font-size:0.72rem; font-weight:500; color:#64748b;">(৪র্থ ছাড়া: ${bnNum(Number(m.gpaWithoutOptional ?? m.gpa).toFixed(2))})</div>` : ''}
+                                                </td>
                                                 <td>${bnNum(m.failCount)}</td>
                                                 <td class="${statusClass}">${esc(m.statusBn)}</td>
                                                 <td style="white-space:nowrap;">
@@ -2757,8 +3109,13 @@
                                 <tr>
                                     <td>${bnNum(sl + 1)}</td>
                                     ${exam.columns.map((c) => {
-                                        const sub = ev.subjects.find((s) => s.key === c.key);
-                                        const cellStyle = sub && sub.isFail ? 'color:#b91c1c; font-weight:700;' : '';
+                                        const sub = ev.subjects.find((s) => s.key === c.key || (Array.isArray(s.keys) && s.keys.includes(c.key)));
+                                        const paperFail = sub
+                                            ? (sub.isCombined
+                                                ? (sub.keys?.[0] === c.key ? sub.paper1Fail : sub.paper2Fail)
+                                                : sub.isFail)
+                                            : false;
+                                        const cellStyle = paperFail ? 'color:#b91c1c; font-weight:700;' : '';
                                         return `<td><input class="cell-input" style="${cellStyle}" value="${esc(exam.rows[idx][c.key] ?? '')}" onchange="updateResultCell(${idx}, '${esc(c.key)}', this.value)"></td>`;
                                     }).join('')}
                                     <td style="font-weight:700;">${ev.allAbsent ? 'Abs' : bnNum(ev.totalObtained)}</td>
@@ -2839,13 +3196,17 @@
     async function exportComputedResultsExcel() {
         const exam = getActiveExam();
         const computed = recomputeExamClient(exam);
-        const headers = [...exam.columns.map((c) => c.label), 'বিভাগ', 'মোট প্রাপ্ত নম্বর', 'পূর্ণমান', 'শতকরা (%)', 'GPA', 'ফেল বিষয়', 'মেধাক্রম', 'ফলাফল'];
+        const isBoard = Boolean(computed.stats?.isBoardExam);
+        const headers = isBoard
+            ? [...exam.columns.map((c) => c.label), 'বিভাগ', 'মোট প্রাপ্ত নম্বর', 'পূর্ণমান', 'শতকরা (%)', 'GPA (৪র্থ ছাড়া)', 'চূড়ান্ত GPA', 'ফেল বিষয়', 'মেধাক্রম', 'ফলাফল']
+            : [...exam.columns.map((c) => c.label), 'বিভাগ', 'মোট প্রাপ্ত নম্বর', 'পূর্ণমান', 'শতকরা (%)', 'GPA', 'ফেল বিষয়', 'মেধাক্রম', 'ফলাফল'];
         const rows = computed.meritList.map((m) => [
             ...exam.columns.map((c) => m.raw[c.key] ?? ''),
             m.groupLabel || 'সাধারণ',
             m.totalObtained,
             m.totalFullMarks,
             m.percentage,
+            ...(isBoard ? [Number(m.gpaWithoutOptional ?? m.gpa).toFixed(2)] : []),
             m.gpa.toFixed(2),
             m.failCount,
             m.meritRank ?? '',
@@ -3347,9 +3708,12 @@
                             </thead>
                             <tbody>
                                 ${ev.subjects.map((sub, i) => `
-                                    <tr>
+                                    <tr style="${sub.isOptional ? 'background:#fefce8;' : ''}">
                                         <td>${bnNum(i + 1)}</td>
-                                        <td style="text-align:left; padding-left:10px; font-weight:600;">${esc(sub.name)} (${bnNum(sub.fullMarks)})</td>
+                                        <td style="text-align:left; padding-left:10px; font-weight:600;">
+                                            ${esc(sub.name)} (${bnNum(sub.fullMarks)})
+                                            ${sub.isOptional ? '<span style="display:inline-block; margin-left:5px; padding:1px 5px; font-size:0.75em; font-weight:700; border-radius:4px; background:#fef08a; color:#854d0e; border:1px solid #facc15;">৪র্থ বিষয়</span>' : ''}
+                                        </td>
                                         <td>${bnNum(sub.fullMarks)}</td>
                                         <td style="font-weight:700;">${esc(sub.obtained)}</td>
                                         <td style="font-weight:700; color:${sub.isFail ? '#b91c1c' : '#166534'};">${esc(sub.grade)}</td>
@@ -3359,10 +3723,11 @@
                             </tbody>
                         </table>
 
-                        <div class="a4-summary-grid">
+                        <div class="a4-summary-grid" style="${ev.hasOptionalSubject ? 'grid-template-columns: repeat(5, 1fr);' : ''}">
                             <div>ফলাফল: <span style="color:${statusColor};">${esc(ev.statusBn)}</span></div>
                             <div>মোট নম্বর: ${bnNum(ev.totalObtained)} / ${bnNum(ev.totalFullMarks)}</div>
-                            <div>GPA: ${bnNum(ev.gpa.toFixed(2))}</div>
+                            ${ev.hasOptionalSubject ? `<div>GPA (৪র্থ ছাড়া): ${bnNum(Number(ev.gpaWithoutOptional ?? ev.gpa).toFixed(2))}${Number(ev.optionalBonus || 0) > 0 && ev.failCount === 0 ? `<div style="font-size:0.76em; font-weight:500; color:#475569;">বোনাস: +${bnNum(Number(ev.optionalBonus).toFixed(2))}</div>` : ''}</div>` : ''}
+                            <div>${ev.hasOptionalSubject ? 'চূড়ান্ত GPA' : 'GPA'}: ${bnNum(ev.gpa.toFixed(2))}</div>
                             <div>মেধাক্রম: ${ev.meritRank ? bnNum(ev.meritRank) + (ev.isScience ? ' (বিজ্ঞান)' : '') : '—'}</div>
                         </div>
                     </div>
