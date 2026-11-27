@@ -2,7 +2,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { initialNotices, allTeachersAndStaff } from './seed.js';
-import { initialGalleryItems } from './gallerySeed.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -51,7 +50,6 @@ function createDefaultPortalStore() {
       { id: 'st_4', className: 'আলিম (১ম ও ২য় বর্ষ)', boys: 84, girls: 76 },
       { id: 'st_5', className: 'ফাজিল (স্নাতক)', boys: 62, girls: 48 },
     ],
-    gallery: initialGalleryItems.map((g) => ({ ...g })),
   };
 }
 
@@ -74,7 +72,6 @@ export function loadPortalStore() {
       fees: Array.isArray(parsed.fees) ? parsed.fees : defaults.fees,
       registrations: Array.isArray(parsed.registrations) ? parsed.registrations : defaults.registrations,
       studentStats: Array.isArray(parsed.studentStats) ? parsed.studentStats : defaults.studentStats,
-      gallery: Array.isArray(parsed.gallery) && parsed.gallery.length > 0 ? parsed.gallery : defaults.gallery,
     };
   } catch (err) {
     console.warn('Could not read portal store, resetting defaults:', err.message);

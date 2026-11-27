@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'nadufm-pwa-v17';
+const CACHE_VERSION = 'nadufm-pwa-v16';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PAGE_CACHE = `${CACHE_VERSION}-pages`;
 const ADMIN_PAGE_CACHE = `${CACHE_VERSION}-admin-pages`;
@@ -7,7 +7,7 @@ const API_CACHE = `${CACHE_VERSION}-api`;
 const PRECACHE_URLS = [
   '/',
   '/fonts.css',
-  '/style.css?v=16',
+  '/style.css?v=15',
   '/script.js?v=15',
   '/student-picker.js',
   '/doc-export.js',
@@ -17,12 +17,6 @@ const PRECACHE_URLS = [
   '/logo.png',
   '/home-icon.png',
   '/header.jpg',
-  '/images/gallery/campus-aerial.jpg',
-  '/images/gallery/classroom-study.jpg',
-  '/images/gallery/library-reading.jpg',
-  '/images/gallery/annual-prize.jpg',
-  '/images/gallery/assembly-sports.jpg',
-  '/images/gallery/milestone-heritage.jpg',
   '/kalpurush.ttf',
   '/nikosh.ttf',
   '/vendor/html2pdf.bundle.min.js',
@@ -38,8 +32,6 @@ const PUBLIC_WARM_PAGES = [
   '/index.php',
   '/notices.php',
   '/notice.php',
-  '/gallery.php',
-  '/gallery',
   '/about.php',
   '/teacher-list.php',
   '/contact.php',
@@ -79,7 +71,6 @@ const ADMIN_WARM_PAGES = [
   '/admission.php?embed=1',
   '/add_notice.php?embed=1',
   '/admin-teachers.php?embed=1',
-  '/admin-gallery.php?embed=1',
   '/admin-academic.php?embed=1',
   '/admin-admissions.php?embed=1',
   '/accounting_entry.php?embed=1',
@@ -97,8 +88,6 @@ const ADMIN_PATHS = [
   '/add_notice.php',
   '/admin-teachers',
   '/admin-teachers.php',
-  '/admin-gallery',
-  '/admin-gallery.php',
   '/admin-academic',
   '/admin-academic.php',
   '/admin-admissions',
