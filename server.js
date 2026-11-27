@@ -506,7 +506,6 @@ app.get('/api/offline/bootstrap', (req, res) => {
       notices: getNoticesForBoard(),
     },
     teachers: portal.teachers || [],
-    governingBody: portal.governingBody || { institutionName: '', tenure: '', members: [] },
     academic: {
       routines: portal.routines || [],
       syllabus: portal.syllabus || [],
@@ -552,10 +551,8 @@ app.get(['/student', '/student.php'], (req, res) => {
 });
 
 app.get(['/governingbody', '/governingbody.php'], (req, res) => {
-  const portal = loadPortalStore();
   res.render('governingbody', {
     pageTitle: 'গভর্নিং বডি- নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা',
-    governingBody: portal.governingBody || { institutionName: '', tenure: '', members: [] },
   });
 });
 
@@ -796,7 +793,6 @@ app.all(['/dashboard', '/dashboard.php', '/admin', '/admin.php', '/admin-panel',
   const excelExamsCount = Object.values(store.results?.exams || {}).filter((e) => (e.rows || []).length > 0).length;
   const excelDocsCount = (store.documents?.rows || []).length;
   const teachersCount = (portal.teachers || []).length;
-  const governingCount = ((portal.governingBody && portal.governingBody.members) || []).length;
   const admissionsCount = (portal.admissions || []).length;
   const routinesCount = (portal.routines || []).length;
   const syllabusCount = (portal.syllabus || []).length;
@@ -910,15 +906,6 @@ app.all(['/dashboard', '/dashboard.php', '/admin', '/admin.php', '/admin-panel',
       icon: 'chalkboard',
       tone: 'ic-teal',
       src: '/admin-teachers.php?embed=1',
-    },
-    {
-      id: 'governing-body',
-      category: 'academic',
-      label: 'গভর্নিং বডি',
-      meta: `${convertToBengali(governingCount)} জন সদস্য`,
-      icon: 'users',
-      tone: 'ic-blue',
-      src: '/admin-governing.php?embed=1',
     },
     {
       id: 'routine',
@@ -1052,76 +1039,6 @@ app.delete('/api/portal/teachers/:id', requireAdminApi, verifySameOrigin, (req, 
   portal.teachers = (portal.teachers || []).filter((t) => t.id !== String(req.params.id));
   savePortalStore(portal);
   res.json({ ok: true, teachers: portal.teachers });
-});
-
-app.get(['/admin-governing', '/admin-governing.php'], requireAdminPage, (req, res) => {
-  const portal = loadPortalStore();
-  res.render('admin-governing', {
-    governingBody: portal.governingBody || { institutionName: '', tenure: '', members: [] },
-  });
-});
-
-app.post('/api/portal/governing/meta', requireAdminApi, verifySameOrigin, (req, res) => {
-  const portal = loadPortalStore();
-  const body = req.body && typeof req.body === 'object' ? req.body : {};
-  const institutionName = String(body.institutionName || '').trim().slice(0, 250);
-  const tenure = String(body.tenure || '').trim().slice(0, 250);
-  if (!institutionName || !tenure) {
-    return res.status(400).json({ error: 'মাদ্রাসার নাম ও কার্যকাল আবশ্যক।' });
-  }
-  const currentMembers = Array.isArray(portal.governingBody?.members) ? portal.governingBody.members : [];
-  portal.governingBody = {
-    institutionName,
-    tenure,
-    members: currentMembers,
-  };
-  savePortalStore(portal);
-  res.json({ ok: true, governingBody: portal.governingBody });
-});
-
-app.post('/api/portal/governing/members', requireAdminApi, verifySameOrigin, (req, res) => {
-  const portal = loadPortalStore();
-  const body = req.body && typeof req.body === 'object' ? req.body : {};
-  const id = body.id ? String(body.id).trim().slice(0, 80) : `gb_${Date.now()}`;
-  const orderNum = Number.parseInt(body.order, 10);
-  const order = Number.isFinite(orderNum) && orderNum >= 1 ? Math.min(orderNum, 500) : 1;
-  const name = String(body.name || '').trim().slice(0, 200);
-  const designation = String(body.designation || '').trim().slice(0, 250);
-  const mobile = String(body.mobile || '').trim().slice(0, 40);
-  if (!name || !designation) {
-    return res.status(400).json({ error: 'সদস্যের নাম ও পদবি আবশ্যক।' });
-  }
-  const gb = portal.governingBody || { institutionName: '', tenure: '', members: [] };
-  const members = Array.isArray(gb.members) ? gb.members.slice() : [];
-  const item = { id, order, name, designation, mobile };
-  const idx = members.findIndex((m) => String(m.id) === id);
-  if (idx !== -1) {
-    members[idx] = item;
-  } else {
-    members.push(item);
-  }
-  members.sort((a, b) => (Number(a.order) || 999) - (Number(b.order) || 999));
-  portal.governingBody = {
-    institutionName: gb.institutionName || 'নলতা আহ্ছানিয়া দারুল উলূম ফাযিল মাদ্রাসা, সাতক্ষীরা।',
-    tenure: gb.tenure || '২৫.০৪.২০২৫ হতে ২৪.০৪.২০২৮ খ্রি: পর্যন্ত (০৩ বছর)।',
-    members,
-  };
-  savePortalStore(portal);
-  res.json({ ok: true, governingBody: portal.governingBody });
-});
-
-app.delete('/api/portal/governing/members/:id', requireAdminApi, verifySameOrigin, (req, res) => {
-  const portal = loadPortalStore();
-  const gb = portal.governingBody || { institutionName: '', tenure: '', members: [] };
-  const targetId = String(req.params.id || '');
-  const members = (Array.isArray(gb.members) ? gb.members : []).filter((m) => String(m.id) !== targetId);
-  portal.governingBody = {
-    institutionName: gb.institutionName || 'নলতা আহ্ছানিয়া দারুল উলূম ফাযিল মাদ্রাসা, সাতক্ষীরা।',
-    tenure: gb.tenure || '২৫.০৪.২০২৫ হতে ২৪.০৪.২০২৮ খ্রি: পর্যন্ত (০৩ বছর)।',
-    members,
-  };
-  savePortalStore(portal);
-  res.json({ ok: true, governingBody: portal.governingBody });
 });
 
 app.get(['/admin-academic', '/admin-academic.php'], requireAdminPage, (req, res) => {
