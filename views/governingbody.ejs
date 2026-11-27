@@ -12,44 +12,31 @@
         text-align: left;
     }
     .gb-table th {
-        background-color: #15803d;
+        background-color: #4CAF50;
         color: white;
         text-align: center;
     }
     .gb-table tr:nth-child(even) {
-        background-color: #f8faf9;
+        background-color: #f2f2f2;
     }
     .gb-table tr:hover {
-        background-color: #edf7f1;
+        background-color: #ddd;
     }
     .committee-info {
-        background: #f8faf9;
+        background: #f9f9f9;
         padding: 15px;
-        border-left: 5px solid #15803d;
-        border-radius: 6px;
+        border-left: 5px solid green;
         margin-bottom: 20px;
-    }
-    .gb-mobile-sub {
-        display: block;
-        font-size: 0.85em;
-        color: #475569;
-        margin-top: 2px;
     }
 </style>
 
-<%
-    const gb = governingBody || { institutionName: '', tenure: '', members: [] };
-    const bnDigits = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
-    const toBn = (v) => String(v ?? '').replace(/[0-9]/g, (d) => bnDigits[Number(d)]);
-%>
-
 <main>
     <section id="notice-section">
-        <h2 style="text-align: center; color: #15803d; margin-top: 20px;">গভর্নিং বডি</h2>
+        <h2 style="text-align: center; color: green; margin-top: 20px;">গভর্নিং বডি</h2>
 
         <div class="committee-info">
-            <p><strong>মাদ্রাসার নাম:</strong> <span id="gbInstitutionName"><%= gb.institutionName || 'নলতা আহ্ছানিয়া দারুল উলূম ফাযিল মাদ্রাসা, সাতক্ষীরা।' %></span></p>
-            <p><strong>কার্যকাল:</strong> <span id="gbTenure"><%= gb.tenure || '২৫.০৪.২০২৫ হতে ২৪.০৪.২০২৮ খ্রি: পর্যন্ত (০৩ বছর)।' %></span></p>
+            <p><strong>মাদ্রাসার নাম:</strong> নলতা আহ্ছানিয়া দারুল উলূম ফাযিল মাদ্রাসা, সাতক্ষীরা।</p>
+            <p><strong>কার্যকাল:</strong> ২৫.০৪.২০২৫ হতে ২৪.০৪.২০২৮ খ্রি: পর্যন্ত (০৩ বছর)।</p>
         </div>
 
         <table class="gb-table">
@@ -60,81 +47,25 @@
                     <th>পদবী</th>
                 </tr>
             </thead>
-            <tbody id="gbMembersBody">
-                <% const members = Array.isArray(gb.members) ? gb.members : []; %>
-                <% if (members.length === 0) { %>
-                    <tr>
-                        <td colspan="3" style="text-align: center; padding: 20px; color: #64748b;">কোনো সদস্যের তথ্য পাওয়া যায়নি।</td>
-                    </tr>
-                <% } else { %>
-                    <% members.forEach(function(member, idx) { %>
-                        <tr>
-                            <td align="center"><%= toBn(member.order || (idx + 1)) %></td>
-                            <td>
-                                <%= member.name %>
-                                <% if (member.mobile) { %>
-                                    <span class="gb-mobile-sub">মোবাইল: <%= member.mobile %></span>
-                                <% } %>
-                            </td>
-                            <td><%= member.designation %></td>
-                        </tr>
-                    <% }); %>
-                <% } %>
+            <tbody>
+                <tr><td align="center">১</td><td>আলহাজ্ব মোঃ রফিকুল ইসলাম</td><td>সভাপতি (ভাইস চ্যান্সেলর মহোদয় কর্তৃক মনোনীত)</td></tr>
+                <tr><td align="center">২</td><td>জনাব মোঃ নজরুল ইসলাম</td><td>সহ-সভাপতি</td></tr>
+                <tr><td align="center">৩</td><td>জনাব মোঃ নজরুল ইসলাম</td><td>বিদ্যোৎসাহী প্রতিনিধি (ভাইস চ্যান্সেলর মহোদয় কর্তৃক মনোনীত)</td></tr>
+                <tr><td align="center">৪</td><td>আলহাজ্ব এ, এফ, এম শামছুল হক</td><td>বিদ্যোৎসাহী প্রতিনিধি (বাংলাদেশ মাদ্রাসা শিক্ষা বোর্ড কর্তৃক মনোনীত)</td></tr>
+                <tr><td align="center">৫</td><td>আলহাজ্ব মোঃ ইউনুস</td><td>বিদ্যোৎসাহী প্রতিনিধি (ডি.জি. কর্তৃক মনোনীত)</td></tr>
+                <tr><td align="center">৬</td><td>জনাব মোঃ রমজান আলী</td><td>সদস্য (অভিভাবক প্রতিনিধি)</td></tr>
+                <tr><td align="center">৭</td><td>জনাব মোঃ হাবিবুর রহমান</td><td>সদস্য (অভিভাবক প্রতিনিধি)</td></tr>
+                <tr><td align="center">৮</td><td>জনাব মোঃ আব্দুর রাজ্জাক</td><td>সদস্য (অভিভাবক প্রতিনিধি)</td></tr>
+                <tr><td align="center">৯</td><td>আলহাজ মো: সাইদুর রহমান</td><td>প্রতিষ্ঠাতা সদস্য</td></tr>
+                <tr><td align="center">১০</td><td>আলহাজ্ব মো: আব্দুর রাজ্জাক</td><td>দাতা সদস্য</td></tr>
+                <tr><td align="center">১১</td><td>জনাব মো: ইলিয়াস হোসেন</td><td>সদস্য (শিক্ষক প্রতিনিধি)</td></tr>
+                <tr><td align="center">১২</td><td>জনাব শুভ্র রেজা</td><td>সদস্য (শিক্ষক প্রতিনিধি)</td></tr>
+                <tr><td align="center">১৩</td><td>জনাব মোঃ মারুফ হোসেন</td><td>সদস্য (শিক্ষক প্রতিনিধি)</td></tr>
+                <tr><td align="center">১৪</td><td>জনাব ডাঃ মোঃ হাবিবুর রহমান</td><td>সদস্য (চিকিৎসক)</td></tr>
+                <tr><td align="center">১৫</td><td>অধ্যক্ষ, নলতা আহছানিয়া দারুল উলূম ফাযিল মাদরাসা</td><td>সদস্য সচিব (পদাধিকারবলে)</td></tr>
             </tbody>
         </table>
     </section>
 </main>
-
-<script>
-    (function () {
-        function bnNum(v) {
-            var d = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
-            return String(v == null ? '' : v).replace(/[0-9]/g, function (c) { return d[Number(c)]; });
-        }
-        function esc(s) {
-            return String(s || '').replace(/[&<>"']/g, function (m) {
-                return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
-            });
-        }
-        function applyGoverningBody(gb) {
-            if (!gb || typeof gb !== 'object') return;
-            var instEl = document.getElementById('gbInstitutionName');
-            var tenureEl = document.getElementById('gbTenure');
-            var tbody = document.getElementById('gbMembersBody');
-            if (instEl && gb.institutionName) instEl.textContent = gb.institutionName;
-            if (tenureEl && gb.tenure) tenureEl.textContent = gb.tenure;
-            if (!tbody || !Array.isArray(gb.members)) return;
-            if (!gb.members.length) {
-                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px; color:#64748b;">কোনো সদস্যের তথ্য পাওয়া যায়নি।</td></tr>';
-                return;
-            }
-            tbody.innerHTML = gb.members.map(function (m, idx) {
-                var mob = m.mobile ? '<span class="gb-mobile-sub">মোবাইল: ' + esc(m.mobile) + '</span>' : '';
-                return '<tr>' +
-                    '<td align="center">' + esc(bnNum(m.order || (idx + 1))) + '</td>' +
-                    '<td>' + esc(m.name) + mob + '</td>' +
-                    '<td>' + esc(m.designation) + '</td>' +
-                '</tr>';
-            }).join('');
-        }
-        async function hydrateOfflineGoverning() {
-            if (!window.NadufmOffline) return;
-            var queue = await window.NadufmOffline.getQueue();
-            var hasPending = queue.some(function (q) { return q.url && q.url.indexOf('/api/portal/governing') !== -1; });
-            if (!navigator.onLine || hasPending) {
-                var snap = await window.NadufmOffline.getSnapshot('bootstrap');
-                if (snap && snap.governingBody) {
-                    applyGoverningBody(snap.governingBody);
-                }
-            }
-        }
-        document.addEventListener('DOMContentLoaded', hydrateOfflineGoverning);
-        window.addEventListener('nadufm:sync-status', function (ev) {
-            if (ev && ev.detail && ev.detail.type === 'BOOTSTRAP_REFRESHED') {
-                hydrateOfflineGoverning();
-            }
-        });
-    })();
-</script>
 
 <%- include('partials/footer') %>
