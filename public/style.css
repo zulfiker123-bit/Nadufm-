@@ -1459,6 +1459,261 @@ main > #notice-section {
     border-radius: 8px;
 }
 
+.admin-login-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    background: rgba(15, 23, 42, 0.14);
+    backdrop-filter: blur(2.5px);
+    -webkit-backdrop-filter: blur(2.5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    opacity: 0;
+    transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.admin-modal-open > *:not(#adminLoginModalBackdrop):not(script) {
+    filter: blur(2px);
+    transition: filter 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+}
+
+.admin-login-backdrop.open {
+    opacity: 1;
+}
+
+.admin-login-backdrop[hidden] {
+    display: none;
+}
+
+.admin-login-dialog {
+    width: 100%;
+    max-width: 420px;
+    background: #ffffff;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    border-radius: 20px;
+    box-shadow: 0 24px 50px -10px rgba(15, 23, 42, 0.32);
+    overflow: hidden;
+    transform: translateY(10px) scale(0.97);
+    opacity: 0;
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.admin-login-backdrop.open .admin-login-dialog {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+}
+
+.admin-login-head {
+    position: relative;
+    background: linear-gradient(145deg, #14532d 0%, #15803d 65%, #166534 100%);
+    color: #ffffff;
+    padding: 24px 22px 20px 22px;
+    text-align: center;
+}
+
+.admin-login-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.14);
+    color: #ffffff;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.14s ease, transform 0.14s ease;
+}
+
+.admin-login-close:hover {
+    background: rgba(255, 255, 255, 0.24);
+}
+
+.admin-login-close:active {
+    transform: scale(0.95);
+}
+
+.admin-login-logo {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    background: #ffffff;
+    margin: 0 auto 10px auto;
+    display: block;
+}
+
+.admin-login-head h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0 0 3px 0;
+    color: #ffffff;
+}
+
+.admin-login-head p {
+    font-size: 0.86rem;
+    opacity: 0.92;
+    margin: 0;
+    line-height: 1.35;
+}
+
+.admin-login-body {
+    padding: 22px;
+}
+
+.admin-login-alert {
+    padding: 10px 13px;
+    border-radius: 10px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-login-alert[hidden] {
+    display: none;
+}
+
+.admin-login-field {
+    margin-bottom: 16px;
+}
+
+.admin-login-field label {
+    display: block;
+    font-size: 0.94rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 6px;
+}
+
+.admin-pw-wrap {
+    position: relative;
+}
+
+.admin-pw-input {
+    width: 100%;
+    height: 46px;
+    padding: 0 44px 0 14px;
+    border: 1px solid rgba(15, 23, 42, 0.16);
+    border-radius: 11px;
+    background: #f8faf9;
+    color: #0f172a;
+    font-family: inherit;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.admin-pw-input:focus {
+    border-color: #15803d;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.14);
+}
+
+.admin-pw-toggle {
+    position: absolute;
+    top: 50%;
+    right: 7px;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #475569;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.admin-pw-toggle:hover {
+    background: rgba(15, 23, 42, 0.06);
+    color: #0f172a;
+}
+
+.admin-login-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.admin-login-submit {
+    width: 100%;
+    min-height: 46px;
+    border: 1px solid #146c34;
+    border-radius: 11px;
+    background: linear-gradient(180deg, #1ea34d 0%, #15803d 100%);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 3.5px 0 #0e5427, 0 6px 14px -3px rgba(21, 128, 61, 0.32);
+    transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.14s ease, filter 0.14s ease;
+}
+
+.admin-login-submit:hover:not(:disabled) {
+    transform: translateY(-1px);
+    filter: brightness(1.04);
+}
+
+.admin-login-submit:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #0e5427;
+}
+
+.admin-login-submit:disabled {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+.admin-login-back {
+    width: 100%;
+    min-height: 42px;
+    border-radius: 11px;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    background: linear-gradient(180deg, #ffffff 0%, #f1f5f3 100%);
+    color: #334155;
+    font-family: inherit;
+    font-size: 0.94rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    box-shadow: inset 0 1px 0 #ffffff, 0 2.5px 0 rgba(15, 23, 42, 0.08);
+    transition: transform 0.13s ease, box-shadow 0.13s ease, color 0.13s ease, border-color 0.13s ease;
+}
+
+.admin-login-back:hover {
+    transform: translateY(-1px);
+    color: #14532d;
+    border-color: rgba(21, 128, 61, 0.28);
+}
+
+.admin-login-back:active {
+    transform: translateY(1.5px);
+    box-shadow: 0 1px 0 rgba(15, 23, 42, 0.08);
+}
+
 .is-in-workspace .app-topbar,
 .is-in-workspace .app-footer,
 .is-in-workspace .mobile-bottom-nav,
@@ -1850,7 +2105,11 @@ main > #notice-section {
     .carousel-all-link,
     .footer-icon-link,
     .app-drawer-item,
-    .mobile-tab {
+    .mobile-tab,
+    .admin-login-backdrop,
+    .admin-login-dialog,
+    .admin-login-submit,
+    .admin-login-back {
         transition: none !important;
     }
 }

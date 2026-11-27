@@ -1,12 +1,12 @@
-const CACHE_VERSION = 'nadufm-pwa-v9';
+const CACHE_VERSION = 'nadufm-pwa-v11';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PAGE_CACHE = `${CACHE_VERSION}-pages`;
 
 const PRECACHE_URLS = [
   '/',
   '/fonts.css',
-  '/style.css',
-  '/script.js',
+  '/style.css?v=11',
+  '/script.js?v=11',
   '/student-picker.js',
   '/pwa.js',
   '/manifest.webmanifest',

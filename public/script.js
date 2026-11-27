@@ -29,6 +29,87 @@ function toggleMenu() {
   openAppDrawer();
 }
 
+function showAdminLoginError(msg) {
+  var errBox = document.getElementById('adminLoginError');
+  var errText = document.getElementById('adminLoginErrorText');
+  if (!errBox || !errText) return;
+  errText.textContent = msg || 'লগইন করা সম্ভব হয়নি। আবার চেষ্টা করুন।';
+  errBox.hidden = false;
+}
+
+function clearAdminLoginError() {
+  var errBox = document.getElementById('adminLoginError');
+  var errText = document.getElementById('adminLoginErrorText');
+  if (errBox) errBox.hidden = true;
+  if (errText) errText.textContent = '';
+}
+
+function openAdminLoginModal(nextUrl) {
+  var backdrop = document.getElementById('adminLoginModalBackdrop');
+  var nextInput = document.getElementById('adminLoginNextUrl');
+  var pwInput = document.getElementById('popupAdminPassword');
+  var eyeOpen = document.getElementById('popupPwEyeOpen');
+  var eyeClosed = document.getElementById('popupPwEyeClosed');
+  if (!backdrop) return false;
+
+  if (nextInput) {
+    nextInput.value = nextUrl || '/dashboard.php';
+  }
+  clearAdminLoginError();
+  if (pwInput) {
+    pwInput.value = '';
+    pwInput.type = 'password';
+  }
+  if (eyeOpen) eyeOpen.hidden = false;
+  if (eyeClosed) eyeClosed.hidden = true;
+
+  if (backdrop.parentElement !== document.body) {
+    document.body.appendChild(backdrop);
+  }
+
+  closeAppDrawer();
+  document.body.classList.add('admin-modal-open');
+  backdrop.hidden = false;
+  requestAnimationFrame(function () {
+    backdrop.classList.add('open');
+  });
+  document.body.style.overflow = 'hidden';
+  setTimeout(function () {
+    if (pwInput) pwInput.focus();
+  }, 60);
+  return true;
+}
+
+function closeAdminLoginModal() {
+  var backdrop = document.getElementById('adminLoginModalBackdrop');
+  if (!backdrop || backdrop.hidden) return;
+  backdrop.classList.remove('open');
+  document.body.classList.remove('admin-modal-open');
+  document.body.style.overflow = '';
+  clearAdminLoginError();
+  setTimeout(function () {
+    if (!backdrop.classList.contains('open')) {
+      backdrop.hidden = true;
+    }
+  }, 190);
+}
+
+function togglePopupAdminPassword() {
+  var pwInput = document.getElementById('popupAdminPassword');
+  var eyeOpen = document.getElementById('popupPwEyeOpen');
+  var eyeClosed = document.getElementById('popupPwEyeClosed');
+  if (!pwInput) return;
+  if (pwInput.type === 'password') {
+    pwInput.type = 'text';
+    if (eyeOpen) eyeOpen.hidden = true;
+    if (eyeClosed) eyeClosed.hidden = false;
+  } else {
+    pwInput.type = 'password';
+    if (eyeOpen) eyeOpen.hidden = false;
+    if (eyeClosed) eyeClosed.hidden = true;
+  }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   var path = window.location.pathname.toLowerCase();
   var navItems = document.querySelectorAll('[data-nav-match]');
@@ -46,9 +127,85 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+  // Intercept Admin Panel clicks to show popup login instead of navigating away when not signed in
+  document.addEventListener('click', function (e) {
+    var trigger = e.target && e.target.closest
+      ? e.target.closest('[data-admin-login-trigger], a[href="/dashboard.php"], a[href="/dashboard"], a[href="/admin"], a[href="/admin.php"], a[href="/admin-panel"], a[href="/admin-panel.php"]')
+      : null;
+    if (!trigger) return;
+    var backdrop = document.getElementById('adminLoginModalBackdrop');
+    if (!backdrop || backdrop.getAttribute('data-is-admin') === '1') return;
+    e.preventDefault();
+    var targetHref = trigger.getAttribute('href') || '/dashboard.php';
+    openAdminLoginModal(targetHref);
+  });
+
+  var loginForm = document.getElementById('adminLoginModalForm');
+  if (loginForm) {
+    loginForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      clearAdminLoginError();
+      var pwInput = document.getElementById('popupAdminPassword');
+      var nextInput = document.getElementById('adminLoginNextUrl');
+      var submitBtn = document.getElementById('adminLoginSubmitBtn');
+      var submitLabel = document.getElementById('adminLoginSubmitLabel');
+      var password = pwInput ? pwInput.value : '';
+      var nextUrl = nextInput ? nextInput.value : '/dashboard.php';
+
+      if (!password) {
+        showAdminLoginError('অ্যাডমিন পাসওয়ার্ড লিখুন।');
+        if (pwInput) pwInput.focus();
+        return;
+      }
+
+      if (submitBtn) submitBtn.disabled = true;
+      if (submitLabel) submitLabel.textContent = 'যাচাই করা হচ্ছে...';
+
+      fetch('/admin-login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin',
+        body: new URLSearchParams({
+          password: password,
+          next: nextUrl
+        }).toString()
+      })
+        .then(function (res) {
+          return res.json().then(function (data) {
+            return { ok: res.ok, data: data };
+          }).catch(function () {
+            return { ok: res.ok, data: {} };
+          });
+        })
+        .then(function (result) {
+          if (result.ok && result.data && result.data.ok) {
+            window.location.href = result.data.redirectTo || nextUrl || '/dashboard.php';
+            return;
+          }
+          showAdminLoginError((result.data && result.data.error) || 'ভুল পাসওয়ার্ড! সঠিক অ্যাডমিন পাসওয়ার্ড দিন।');
+          if (pwInput) {
+            pwInput.focus();
+            pwInput.select();
+          }
+        })
+        .catch(function () {
+          showAdminLoginError('সার্ভারের সাথে সংযোগ ব্যর্থ হয়েছে। আবার চেষ্টা করুন।');
+        })
+        .finally(function () {
+          if (submitBtn) submitBtn.disabled = false;
+          if (submitLabel) submitLabel.textContent = 'প্রবেশ করুন';
+        });
+    });
+  }
+
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
       closeAppDrawer();
+      closeAdminLoginModal();
     }
   });
 

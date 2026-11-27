@@ -75,7 +75,7 @@
                 <a href="/presidentspeech.php" class="app-drawer-item"><span class="app-drawer-item-ico tone-cyan"><%- iconSvg('tie-user', 'app-svg-icon', 17) %></span><span>সভাপতির বাণী</span></a>
                 <a href="/principalspeech.php" class="app-drawer-item"><span class="app-drawer-item-ico tone-violet"><%- iconSvg('mic', 'app-svg-icon', 17) %></span><span>অধ্যক্ষের বাণী</span></a>
                 <a href="/contact.php" class="app-drawer-item"><span class="app-drawer-item-ico tone-rose"><%- iconSvg('phone-wave', 'app-svg-icon', 17) %></span><span>যোগাযোগ</span></a>
-                <a href="/dashboard.php" class="app-drawer-item"><span class="app-drawer-item-ico tone-slate"><%- iconSvg('shield-user', 'app-svg-icon', 17) %></span><span>অ্যাডমিন ও ড্যাশবোর্ড</span></a>
+                <a href="/dashboard.php" class="app-drawer-item" data-admin-login-trigger><span class="app-drawer-item-ico tone-slate"><%- iconSvg('shield-user', 'app-svg-icon', 17) %></span><span>অ্যাডমিন প্যানেল</span></a>
             </div>
         </div>
     </div>
@@ -106,6 +106,58 @@
         </div>
     </div>
 </div>
+<div id="adminLoginModalBackdrop" class="admin-login-backdrop" data-is-admin="<%= (typeof isAdmin !== 'undefined' && isAdmin) ? '1' : '0' %>" onclick="closeAdminLoginModal()" hidden>
+    <div class="admin-login-dialog" role="dialog" aria-modal="true" aria-labelledby="adminLoginModalTitle" onclick="event.stopPropagation()">
+        <div class="admin-login-head">
+            <button type="button" class="admin-login-close" onclick="closeAdminLoginModal()" aria-label="পপআপ বন্ধ করুন">
+                <%- iconSvg('close', 'app-svg-icon', 18) %>
+            </button>
+            <img src="/logo.png" alt="মাদ্রাসার লোগো" class="admin-login-logo" referrerpolicy="no-referrer">
+            <h3 id="adminLoginModalTitle">অ্যাডমিন প্যানেল ও ড্যাশবোর্ড</h3>
+            <p>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</p>
+        </div>
+
+        <div class="admin-login-body">
+            <div id="adminLoginError" class="admin-login-alert" role="alert" hidden>
+                <%- iconSvg('alert-circle', 'app-svg-icon', 18) %>
+                <span id="adminLoginErrorText"></span>
+            </div>
+
+            <form id="adminLoginModalForm" method="POST" action="/admin-login" autocomplete="off">
+                <input type="hidden" id="adminLoginNextUrl" name="next" value="/dashboard.php">
+                <div class="admin-login-field">
+                    <label for="popupAdminPassword">অ্যাডমিন পাসওয়ার্ড</label>
+                    <div class="admin-pw-wrap">
+                        <input
+                            type="password"
+                            id="popupAdminPassword"
+                            name="password"
+                            class="admin-pw-input"
+                            placeholder="পাসওয়ার্ড লিখুন"
+                            required
+                        >
+                        <button type="button" id="popupPwToggleBtn" class="admin-pw-toggle" onclick="togglePopupAdminPassword()" aria-label="পাসওয়ার্ড দেখুন বা লুকান">
+                            <span id="popupPwEyeOpen"><%- iconSvg('eye', 'app-svg-icon', 18) %></span>
+                            <span id="popupPwEyeClosed" hidden><%- iconSvg('eye-off', 'app-svg-icon', 18) %></span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="admin-login-actions">
+                    <button type="submit" id="adminLoginSubmitBtn" class="admin-login-submit">
+                        <%- iconSvg('lock', 'app-svg-icon', 18) %>
+                        <span id="adminLoginSubmitLabel">প্রবেশ করুন</span>
+                    </button>
+                    <button type="button" class="admin-login-back" onclick="closeAdminLoginModal()">
+                        <%- iconSvg('chevron-left', 'app-svg-icon', 17) %>
+                        <span>পিছনে যান</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     function openHotlineModal() {
         var el = document.getElementById('hotlineModalBackdrop');
@@ -125,7 +177,7 @@
 </script>
 <% } %>
 
-<script src="/script.js"></script>
+<script src="/script.js?v=11"></script>
 <% if (!isEmbedded) { %><script src="/pwa.js" defer></script><% } %>
 </body>
 </html>

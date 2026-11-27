@@ -96,6 +96,7 @@ app.use((req, res, next) => {
   res.locals.isEmbedded = req.query.embed === '1' || req.body?.embed === '1';
   res.locals.iconSvg = iconSvg;
   res.locals.ICONS = ICONS;
+  res.locals.isAdmin = Boolean(getValidAdminSession(req));
   next();
 });
 
@@ -229,12 +230,18 @@ app.get('/admin-login', (req, res) => {
 app.post('/admin-login', verifySameOrigin, (req, res) => {
   const nextUrl = getSafeNextUrl(req.body?.next || req.query.next);
   const isEmbedded = req.query.embed === '1' || nextUrl.includes('embed=1');
+  const wantsJson = String(req.headers.accept || '').includes('application/json')
+    || String(req.headers['x-requested-with'] || '').toLowerCase() === 'xmlhttprequest';
   const clientKey = String(req.ip || 'unknown');
   const now = Date.now();
   const attemptInfo = loginAttempts.get(clientKey);
   if (attemptInfo && now < attemptInfo.resetAt && attemptInfo.count >= MAX_LOGIN_ATTEMPTS) {
+    const rateMsg = 'অতিরিক্ত ভুল চেষ্টার কারণে সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।';
+    if (wantsJson) {
+      return res.status(429).json({ ok: false, error: rateMsg });
+    }
     return res.status(429).render('admin-login', {
-      error: 'অতিরিক্ত ভুল চেষ্টার কারণে সাময়িকভাবে ব্লক করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।',
+      error: rateMsg,
       nextUrl,
       isEmbedded,
     });
@@ -247,8 +254,12 @@ app.post('/admin-login', verifySameOrigin, (req, res) => {
       count: nextCount,
       resetAt: (!attemptInfo || now >= attemptInfo.resetAt) ? now + LOGIN_WINDOW_MS : attemptInfo.resetAt,
     });
+    const wrongMsg = 'ভুল পাসওয়ার্ড! সঠিক অ্যাডমিন পাসওয়ার্ড দিন।';
+    if (wantsJson) {
+      return res.status(401).json({ ok: false, error: wrongMsg });
+    }
     return res.status(401).render('admin-login', {
-      error: 'ভুল পাসওয়ার্ড! সঠিক অ্যাডমিন পাসওয়ার্ড দিন।',
+      error: wrongMsg,
       nextUrl,
       isEmbedded,
     });
@@ -261,6 +272,9 @@ app.post('/admin-login', verifySameOrigin, (req, res) => {
     expiresAt: now + SESSION_TTL_MS,
   });
   res.setHeader('Set-Cookie', buildAdminCookieHeader(req, token, Math.floor(SESSION_TTL_MS / 1000)));
+  if (wantsJson) {
+    return res.status(200).json({ ok: true, redirectTo: nextUrl });
+  }
   return res.redirect(nextUrl);
 });
 

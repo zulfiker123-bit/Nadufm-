@@ -292,6 +292,24 @@ export const ICONS = {
     <ellipse cx="12" cy="12" rx="9" ry="3.8" transform="rotate(45 12 12)" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.7"/>
     <ellipse cx="12" cy="12" rx="9" ry="3.8" transform="rotate(-45 12 12)" stroke="currentColor" stroke-width="1.7"/>
     <circle cx="12" cy="12" r="2" fill="currentColor"/>
+  `,
+  'lock': `
+    <rect x="4.5" y="10.5" width="15" height="9.8" rx="2.6" fill="currentColor" fill-opacity="0.24" stroke="currentColor" stroke-width="1.85"/>
+    <path d="M8 10.5V7.8C8 5.5 9.8 3.8 12 3.8C14.2 3.8 16 5.5 16 7.8V10.5" stroke="currentColor" stroke-width="1.85" stroke-linecap="round"/>
+    <circle cx="12" cy="15.2" r="1.35" fill="currentColor"/>
+  `,
+  'eye': `
+    <path d="M2.6 12C4.5 7.9 8 5.6 12 5.6C16 5.6 19.5 7.9 21.4 12C19.5 16.1 16 18.4 12 18.4C8 18.4 4.5 16.1 2.6 12Z" fill="currentColor" fill-opacity="0.18" stroke="currentColor" stroke-width="1.85" stroke-linejoin="round"/>
+    <circle cx="12" cy="12" r="2.8" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="1.8"/>
+  `,
+  'eye-off': `
+    <path d="M3.2 12C5 8.2 8.2 6 12 6C13.6 6 15.1 6.4 16.5 7.2M20.8 12C19 15.8 15.8 18 12 18C10.3 18 8.7 17.5 7.3 16.7" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M4 4L20 20" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+  `,
+  'alert-circle': `
+    <circle cx="12" cy="12" r="8.8" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="1.85"/>
+    <path d="M12 7.8V13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="12" cy="16.2" r="1.1" fill="currentColor"/>
   `
 };
 

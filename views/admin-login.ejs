@@ -208,7 +208,7 @@
         <div class="login-body">
             <% if (error) { %>
                 <div class="login-alert" role="alert">
-                    <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                    <%- iconSvg('alert-circle', 'app-svg-icon', 18) %>
                     <span><%= error %></span>
                 </div>
             <% } %>
@@ -228,22 +228,23 @@
                             autofocus
                         >
                         <button type="button" class="pw-toggle" onclick="togglePw()" aria-label="পাসওয়ার্ড দেখুন বা লুকান">
-                            <i id="pwEye" class="fas fa-eye" aria-hidden="true"></i>
+                            <span id="pwEyeOpen"><%- iconSvg('eye', 'app-svg-icon', 18) %></span>
+                            <span id="pwEyeClosed" hidden><%- iconSvg('eye-off', 'app-svg-icon', 18) %></span>
                         </button>
                     </div>
                 </div>
 
                 <button type="submit" class="btn-login">
-                    <i class="fas fa-lock-open" aria-hidden="true"></i>
+                    <%- iconSvg('lock', 'app-svg-icon', 18) %>
                     <span>প্রবেশ করুন</span>
                 </button>
             </form>
 
             <% if (!isEmbedded) { %>
             <div class="login-footer">
-                <a href="/index.php" class="back-home">
-                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
-                    <span>মূল ওয়েবসাইটে ফিরে যান</span>
+                <a href="/index.php" class="back-home" onclick="goBackSafely(event)">
+                    <%- iconSvg('chevron-left', 'app-svg-icon', 17) %>
+                    <span>পিছনে যান</span>
                 </a>
             </div>
             <% } %>
@@ -253,15 +254,26 @@
     <script>
         function togglePw() {
             var inp = document.getElementById('adminPassword');
-            var eye = document.getElementById('pwEye');
-            if (!inp || !eye) return;
+            var openEl = document.getElementById('pwEyeOpen');
+            var closedEl = document.getElementById('pwEyeClosed');
+            if (!inp) return;
             if (inp.type === 'password') {
                 inp.type = 'text';
-                eye.className = 'fas fa-eye-slash';
+                if (openEl) openEl.hidden = true;
+                if (closedEl) closedEl.hidden = false;
             } else {
                 inp.type = 'password';
-                eye.className = 'fas fa-eye';
+                if (openEl) openEl.hidden = false;
+                if (closedEl) closedEl.hidden = true;
             }
+        }
+        function goBackSafely(e) {
+            try {
+                if (window.history.length > 1 && document.referrer && new URL(document.referrer).origin === window.location.origin) {
+                    e.preventDefault();
+                    window.history.back();
+                }
+            } catch (err) {}
         }
     </script>
 </body>
