@@ -566,16 +566,24 @@
             btnEl.textContent = 'তথ্য লোড হচ্ছে...';
 
             try {
-                const res = await fetch('/api/portal/student-record?class=' + encodeURIComponent(clsVal || '') + '&roll=' + encodeURIComponent(rollVal || ''));
-                const data = await res.json();
-                if (data.status === 'success' && data.student) {
+                let data = null;
+                if (typeof navigator === 'undefined' || navigator.onLine) {
+                    try {
+                        const res = await fetch('/api/portal/student-record?class=' + encodeURIComponent(clsVal || '') + '&roll=' + encodeURIComponent(rollVal || ''));
+                        if (res.ok) data = await res.json();
+                    } catch (_) {}
+                }
+                if ((!data || data.status !== 'success') && window.NadufmOffline) {
+                    data = await window.NadufmOffline.findStudents({ classParam: clsVal, rollParam: rollVal });
+                }
+                if (data && data.status === 'success' && data.student) {
                     renderIdCard(data.student, clsVal);
                 } else {
                     errEl.textContent = 'দুঃখিত! এই শ্রেণি ও রোলের কোনো শিক্ষার্থীর তথ্য পাওয়া যায়নি।';
                     errEl.style.display = 'block';
                 }
             } catch (e) {
-                errEl.textContent = 'সার্ভারের সাথে সংযোগ ব্যর্থ হয়েছে।';
+                errEl.textContent = 'তথ্য লোড করতে সমস্যা হয়েছে।';
                 errEl.style.display = 'block';
             } finally {
                 btnEl.disabled = false;

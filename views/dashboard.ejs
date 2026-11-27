@@ -10,8 +10,9 @@
     <link rel="manifest" href="/manifest.webmanifest">
     <meta name="theme-color" content="#14532d">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Nadu fm">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="NADUFM Admin">
+    <meta name="apple-mobile-web-app-title" content="Nadu fm">
     <link rel="stylesheet" href="/fonts.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
@@ -787,11 +788,12 @@
                     <span class="hide-sm">সব ফিচার</span>
                 </button>
             </span>
+            <div id="pwa-install-slot" class="pwa-install-slot"></div>
             <a href="/index.php" class="adm-top-btn" title="মূল ওয়েবসাইট দেখুন">
                 <%- iconSvg('external-link', 'app-svg-icon', 16) %>
                 <span class="hide-xs">ওয়েবসাইট</span>
             </a>
-            <form method="POST" action="/admin-logout" style="margin:0;">
+            <form method="POST" action="/admin-logout" style="margin:0;" onsubmit="if(window.NadufmOffline) window.NadufmOffline.clearAdminCache();">
                 <button type="submit" class="adm-top-btn adm-logout-btn" title="অ্যাডমিন প্যানেল থেকে লগআউট করুন">
                     <%- iconSvg('logout', 'app-svg-icon', 16) %>
                     <span class="hide-xs">লগআউট</span>
@@ -1112,6 +1114,7 @@
             }
         })();
     </script>
+    <script src="/offline-sync.js"></script>
     <script src="/pwa.js" defer></script>
 </body>
 </html>

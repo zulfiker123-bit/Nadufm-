@@ -283,11 +283,11 @@
             <p class="merit-subtitle"><%= selectedExamTitle || ('শ্রেণি ভিত্তিক মেধা তালিকা' + (selectedName ? ' · শ্রেণি: ' + selectedName : '')) %></p>
         </div>
 
-        <form method="GET" action="/merit-list.php" class="merit-form no-print">
+        <form method="GET" action="/merit-list.php" class="merit-form no-print" id="meritFilterForm">
             <% if (isEmbedded) { %><input type="hidden" name="embed" value="1"><% } %>
             <div class="merit-select-wrap">
                 <label for="meritClassSelect" class="merit-select-label">শ্রেণি নির্বাচন:</label>
-                <select id="meritClassSelect" name="class_id" required aria-label="শ্রেণি ভিত্তিক মেধা তালিকা নির্বাচন করুন" onchange="if (this.value) this.form.submit()">
+                <select id="meritClassSelect" name="class_id" required aria-label="শ্রেণি ভিত্তিক মেধা তালিকা নির্বাচন করুন" onchange="if (this.value) { if (!navigator.onLine && window.__renderOfflineMerit) { window.__renderOfflineMerit(this.value); } else { this.form.submit(); } }">
                     <option value="">শ্রেণি নির্বাচন করুন</option>
                     <% if (typeof uploadedExams !== 'undefined' && uploadedExams.length > 0) { %>
                         <optgroup label="শ্রেণি ভিত্তিক আপলোডকৃত মেধা তালিকা (Excel)">
@@ -501,12 +501,122 @@
             }
         </script>
         <% } else if (selectedClass !== '' || selectedExamId !== '') { %>
-            <p style="text-align: center; color: #b91c1c; font-weight: 600; padding: 24px;">নির্বাচিত শ্রেণির জন্য কোনো মেধা তালিকা পাওয়া যায়নি।</p>
+            <p id="meritOfflineMount" style="text-align: center; color: #b91c1c; font-weight: 600; padding: 24px;">নির্বাচিত শ্রেণির জন্য কোনো মেধা তালিকা পাওয়া যায়নি।</p>
         <% } else { %>
-            <p style="text-align: center; color: #475569; font-weight: 600; padding: 24px;">শ্রেণি ভিত্তিক মেধা তালিকা দেখতে উপরের ড্রপডাউন থেকে শ্রেণি নির্বাচন করুন।</p>
+            <p id="meritOfflineMount" style="text-align: center; color: #475569; font-weight: 600; padding: 24px;">শ্রেণি ভিত্তিক মেধা তালিকা দেখতে উপরের ড্রপডাউন থেকে শ্রেণি নির্বাচন করুন।</p>
         <% } %>
     </div>
 </div>
+
+<script>
+    (function () {
+        var form = document.getElementById('meritFilterForm');
+        var sel = document.getElementById('meritClassSelect');
+        var isEmb = <%= isEmbedded ? 'true' : 'false' %>;
+
+        function bn(v) {
+            return window.NadufmOffline ? window.NadufmOffline.bnNum(v) : String(v);
+        }
+        function esc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, function (m) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+            });
+        }
+
+        function buildSectionHtml(sec, selectedName, clsVal) {
+            var total = sec.rows.length;
+            var passed = sec.rows.filter(function (r) { return !r.absent && (r.fail === 0 || r.isPromoted); }).length;
+            var passPct = total > 0 ? Math.round((passed / total) * 1000) / 10 : 0;
+            var embQ = isEmb ? '&embed=1' : '';
+            var rank = 1;
+            var body = sec.rows.map(function (row) {
+                var dispName = row.displayName || (row.isScience ? (row.name + ' (বিজ্ঞান)') : row.name);
+                var statusBadge = '';
+                if (row.absent) statusBadge = '<span class="status-abs">Abs</span>';
+                else if (row.isPromoted) statusBadge = '<span class="status-promoted">' + esc(row.statusBn || 'প্রমোটেড') + ' (' + bn(row.fail) + 'টি)</span>';
+                else if (row.fail > 0) statusBadge = '<span class="status-fail">অকৃতকার্য (' + bn(row.fail) + 'টি)</span>';
+                else statusBadge = '<span class="status-pass">উত্তীর্ণ</span>';
+
+                return '<tr class="' + (row.absent ? 'absent-row' : '') + '">' +
+                    '<td class="rank-num">' + (row.absent ? '—' : bn(row.meritRank || rank++)) + '</td>' +
+                    '<td>' + bn(row.roll) + '</td>' +
+                    '<td style="text-align:left; font-weight:600;">' + esc(dispName) + '</td>' +
+                    '<td style="font-weight:700;">' + (row.absent ? 'Abs' : bn(row.total)) + '</td>' +
+                    '<td style="font-weight:700;">' + bn(Number(row.gpa || 0).toFixed(2)) + '</td>' +
+                    '<td>' + bn(Math.round(Number(row.pct || 0) * 100) / 100) + '%</td>' +
+                    '<td>' + statusBadge + '</td>' +
+                    '<td class="no-print"><div class="merit-doc-links">' +
+                        '<a href="/student-search.php?class=' + encodeURIComponent(clsVal) + '&roll=' + encodeURIComponent(row.roll || '') + '&doc=attestation' + embQ + '" class="merit-doc-link alt">সনদ ও তথ্য</a>' +
+                    '</div></td>' +
+                '</tr>';
+            }).join('');
+
+            return '<div class="merit-section-block" data-merit-group="' + sec.key + '">' +
+                (sec.title ? '<div class="merit-section-heading ' + (sec.isScienceSection ? 'science' : '') + '"><span>' + esc(sec.title) + '</span><span style="font-size:0.86rem;">মোট ' + bn(total) + ' জন</span></div>' : '') +
+                '<div class="merit-summary-bar">' +
+                    '<div class="merit-summary-item"><span class="merit-summary-lbl">' + (sec.isScienceSection ? 'বিভাগ' : 'শ্রেণি') + '</span><span class="merit-summary-val">' + esc(selectedName || 'নির্ধারিত শ্রেণি') + '</span></div>' +
+                    '<div class="merit-summary-item"><span class="merit-summary-lbl">মোট শিক্ষার্থী</span><span class="merit-summary-val">' + bn(total) + ' জন</span></div>' +
+                    '<div class="merit-summary-item"><span class="merit-summary-lbl">উত্তীর্ণ / প্রমোটেড</span><span class="merit-summary-val">' + bn(passed) + ' জন</span></div>' +
+                    '<div class="merit-summary-item"><span class="merit-summary-lbl">পাসের হার</span><span class="merit-summary-val">' + bn(passPct) + '%</span></div>' +
+                '</div>' +
+                '<div class="merit-table-wrap"><table class="merit-table"><thead><tr><th>মেধাক্রম</th><th>রোল</th><th style="text-align:left;">শিক্ষার্থীর নাম</th><th>প্রাপ্ত নম্বর</th><th>GPA</th><th>গড় (%)</th><th>ফলাফল</th><th class="no-print">ডকুমেন্ট</th></tr></thead><tbody>' + body + '</tbody></table></div>' +
+            '</div>';
+        }
+
+        window.__renderOfflineMerit = async function (clsVal) {
+            if (!window.NadufmOffline) return;
+            var entry = await window.NadufmOffline.getMeritList(clsVal);
+            var area = document.getElementById('meritPrintArea');
+            if (!area) return;
+
+            // Remove previous rendered sections/messages below form
+            Array.from(area.children).forEach(function (ch) {
+                if (!ch.classList.contains('merit-header') && !ch.classList.contains('merit-form')) {
+                    ch.remove();
+                }
+            });
+
+            var subEl = area.querySelector('.merit-subtitle');
+            if (!entry || (!entry.meritData || !entry.meritData.length)) {
+                if (subEl) subEl.textContent = 'শ্রেণি ভিত্তিক মেধা তালিকা';
+                var p = document.createElement('p');
+                p.style.cssText = 'text-align:center; color:#b91c1c; font-weight:600; padding:24px;';
+                p.textContent = 'অফলাইনে এই শ্রেণির জন্য সংরক্ষিত মেধা তালিকা পাওয়া যায়নি।';
+                area.appendChild(p);
+                return;
+            }
+
+            if (subEl) subEl.textContent = entry.selectedExamTitle || ('শ্রেণি ভিত্তিক মেধা তালিকা · ' + entry.selectedName);
+            var sci = entry.scienceMeritData || [];
+            var oth = entry.otherMeritData || [];
+            var sections = [];
+            if (sci.length && oth.length) {
+                sections.push({ key: 'other', title: 'সাধারণ / অন্যান্য বিভাগের মেধা তালিকা', isScienceSection: false, rows: oth });
+                sections.push({ key: 'science', title: 'বিজ্ঞান বিভাগের মেধা তালিকা', isScienceSection: true, rows: sci });
+            } else if (sci.length) {
+                sections.push({ key: 'science', title: 'বিজ্ঞান বিভাগের মেধা তালিকা', isScienceSection: true, rows: sci });
+            } else {
+                sections.push({ key: 'all', title: '', isScienceSection: false, rows: entry.meritData });
+            }
+
+            var wrap = document.createElement('div');
+            wrap.innerHTML = sections.map(function (s) { return buildSectionHtml(s, entry.selectedName, clsVal); }).join('') +
+                '<div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-top:20px;" class="no-print">' +
+                '<button type="button" onclick="window.print()" class="merit-btn"><span>সরাসরি প্রিন্ট (A4)</span></button>' +
+                '</div>';
+            area.appendChild(wrap);
+        };
+
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                if (!navigator.onLine && sel && sel.value) {
+                    e.preventDefault();
+                    window.__renderOfflineMerit(sel.value);
+                }
+            });
+        }
+    })();
+</script>
 
 <%- include('partials/footer') %>
 

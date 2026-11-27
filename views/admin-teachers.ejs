@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>শিক্ষক ও কর্মচারী ব্যবস্থাপনা</title>
+    <link rel="icon" href="/pwa-192x192.png" type="image/png" sizes="192x192">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#15803d">
     <link rel="stylesheet" href="/fonts.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
@@ -102,6 +106,7 @@
         </div>
     </div>
 
+    <script src="/offline-sync.js"></script>
     <script>
         let teachers = <%- JSON.stringify(teachers || []) %>;
 
@@ -118,7 +123,7 @@
             const el = document.getElementById('statusMsg');
             el.textContent = msg;
             el.style.display = 'block';
-            setTimeout(() => { el.style.display = 'none'; }, 3500);
+            setTimeout(() => { el.style.display = 'none'; }, 3800);
         }
 
         function renderTable() {
@@ -184,6 +189,37 @@
         }
 
         async function deleteTeacher(id) {
+            const nextList = teachers.filter(t => String(t.id) !== String(id));
+            if (window.NadufmOffline) {
+                const res = await window.NadufmOffline.saveMutationOrQueue({
+                    label: 'শিক্ষক তালিকা থেকে ডিলিট',
+                    url: '/api/portal/teachers/' + encodeURIComponent(id),
+                    method: 'DELETE',
+                    headers: {},
+                    optimisticUpdate: () => window.NadufmOffline.updateBootstrap(base => {
+                        base.teachers = nextList;
+                        return base;
+                    }),
+                    onOnlineSuccess: (data) => {
+                        if (data && data.teachers) {
+                            teachers = data.teachers;
+                            return window.NadufmOffline.updateBootstrap(base => {
+                                base.teachers = data.teachers;
+                                return base;
+                            });
+                        }
+                    },
+                });
+                if (res.queued) {
+                    teachers = nextList;
+                    renderTable();
+                    showStatus('অফলাইনে ডিলিট সংরক্ষিত হয়েছে — অনলাইনে অটো সিঙ্ক হবে।');
+                    return;
+                }
+                renderTable();
+                showStatus('তালিকা থেকে মুছে ফেলা হয়েছে।');
+                return;
+            }
             const res = await fetch('/api/portal/teachers/' + encodeURIComponent(id), { method: 'DELETE' });
             const data = await res.json();
             if (res.ok && data.teachers) {
@@ -195,8 +231,9 @@
 
         document.getElementById('teacherForm').addEventListener('submit', async function (e) {
             e.preventDefault();
+            const existingId = document.getElementById('teacherId').value;
             const payload = {
-                id: document.getElementById('teacherId').value || undefined,
+                id: existingId || undefined,
                 name: document.getElementById('tName').value.trim(),
                 designation: document.getElementById('tDesg').value.trim(),
                 subject: document.getElementById('tSubject').value.trim(),
@@ -205,6 +242,45 @@
                 mobile: document.getElementById('tMobile').value.trim(),
                 photo: document.getElementById('tPhoto').value.trim() || 'logo.png',
             };
+            const tempRecord = Object.assign({ id: existingId || ('t_local_' + Date.now()) }, payload);
+            const optimisticList = existingId
+                ? teachers.map(t => (String(t.id) === String(existingId) ? Object.assign({}, t, tempRecord) : t))
+                : [tempRecord].concat(teachers);
+
+            if (window.NadufmOffline) {
+                const res = await window.NadufmOffline.saveMutationOrQueue({
+                    label: 'শিক্ষক তথ্য সংরক্ষণ (' + payload.name + ')',
+                    url: '/api/portal/teachers',
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    optimisticUpdate: () => window.NadufmOffline.updateBootstrap(base => {
+                        base.teachers = optimisticList;
+                        return base;
+                    }),
+                    onOnlineSuccess: (data) => {
+                        if (data && data.teachers) {
+                            teachers = data.teachers;
+                            return window.NadufmOffline.updateBootstrap(base => {
+                                base.teachers = data.teachers;
+                                return base;
+                            });
+                        }
+                    },
+                });
+                if (res.queued) {
+                    teachers = optimisticList;
+                    resetForm();
+                    renderTable();
+                    showStatus('অফলাইনে সংরক্ষিত হয়েছে — অনলাইনে অটো সিঙ্ক হবে।');
+                    return;
+                }
+                resetForm();
+                renderTable();
+                showStatus('শিক্ষক তথ্য সফলভাবে সংরক্ষণ করা হয়েছে।');
+                return;
+            }
+
             const res = await fetch('/api/portal/teachers', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -219,7 +295,28 @@
             }
         });
 
+        async function hydrateOfflineTeachers() {
+            if (!window.NadufmOffline) return;
+            const queue = await window.NadufmOffline.getQueue();
+            const hasPending = queue.some(q => q.url && q.url.indexOf('/api/portal/teachers') !== -1);
+            if (!navigator.onLine || hasPending) {
+                const snap = await window.NadufmOffline.getSnapshot('bootstrap');
+                if (snap && Array.isArray(snap.teachers)) {
+                    teachers = snap.teachers;
+                    renderTable();
+                }
+            }
+        }
+
+        window.addEventListener('nadufm:sync-status', function (ev) {
+            if (ev && ev.detail && ev.detail.type === 'BOOTSTRAP_REFRESHED') {
+                hydrateOfflineTeachers();
+            }
+        });
+
         renderTable();
+        hydrateOfflineTeachers();
     </script>
+    <script src="/pwa.js" defer></script>
 </body>
 </html>

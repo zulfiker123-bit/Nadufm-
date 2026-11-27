@@ -449,18 +449,154 @@
     <script>
         (function () {
             if (!window.NadufmStudentPicker) return;
+            var picker = window.NadufmStudentPicker;
             var formEl = document.getElementById('resultSearchForm');
+            var classEl = document.getElementById('student_class');
+            var rollEl = document.getElementById('roll_number');
+            var isEmbeddedFlag = <%= isEmbedded ? 'true' : 'false' %>;
+
+            function esc(s) { return picker.escapeHtml(s); }
+            function bn(v) { return picker.bnNum(v); }
+
+            function showOfflineError(msg) {
+                var body = document.querySelector('.result-search-body');
+                if (!body) return;
+                var errBox = body.querySelector('.result-error');
+                if (!errBox) {
+                    errBox = document.createElement('div');
+                    errBox.className = 'result-error';
+                    body.insertBefore(errBox, body.firstChild);
+                }
+                errBox.textContent = msg;
+                errBox.style.display = 'block';
+            }
+
+            async function renderOfflineMarksheet(clsVal, rollVal) {
+                if (!window.NadufmOffline) {
+                    showOfflineError('অফলাইন ডেটা পাওয়া যায়নি। ইন্টারনেটে সংযুক্ত হয়ে একবার পাতাটি খুলুন।');
+                    return;
+                }
+                var res = await window.NadufmOffline.findStudents({ classParam: clsVal, rollParam: rollVal });
+                var st = res && res.student;
+                if (!st || !st.resultSummary || !Array.isArray(st.resultSummary.subjects) || !st.resultSummary.subjects.length) {
+                    showOfflineError('দুঃখিত! অফলাইন ডেটাবেজে এই শ্রেণি ও রোলের ফলাফল পাওয়া যায়নি।');
+                    return;
+                }
+                var rs = st.resultSummary;
+                var qCls = encodeURIComponent(clsVal || rs.classId || st.classKey || '');
+                var qRoll = encodeURIComponent(st.roll || rollVal || '');
+                var embedSuffix = isEmbeddedFlag ? '&embed=1' : '';
+                var failCount = Number(rs.failCount || 0);
+                var isPromoted = Boolean(rs.isPromoted);
+                var cssCls = isPromoted ? 'promoted-text' : (failCount > 0 ? 'failed-text' : 'passed-text');
+                var hasOpt = Boolean(rs.hasOptionalSubject);
+                var optBonus = Number(rs.optionalBonus || 0);
+
+                var rowsHtml = rs.subjects.map(function (s, idx) {
+                    var avg = s.averageMark != null ? s.averageMark : s.numericMark;
+                    var avgRounded = avg != null && !isNaN(avg) ? bn(Math.round(Number(avg) * 10) / 10) : '—';
+                    var gColor = s.grade === 'F' ? '#b91c1c' : '#166534';
+                    return '<tr style="' + (s.isOptional ? 'background:#fefce8;' : '') + '">' +
+                        '<td>' + bn(idx + 1) + '</td>' +
+                        '<td style="text-align:left; padding-left:10px; font-weight:600;">' + esc(s.name) + ' (' + bn(s.fm || s.fullMarks) + ')' +
+                            (s.isOptional ? '<span style="display:inline-block; margin-left:6px; padding:1px 6px; font-size:0.78em; font-weight:700; border-radius:4px; background:#fef08a; color:#854d0e; border:1px solid #facc15;">৪র্থ বিষয় (ঐচ্ছিক)</span>' : '') +
+                        '</td>' +
+                        '<td>' + bn(s.fm || s.fullMarks) + '</td>' +
+                        '<td style="font-weight:700;">' + esc(s.obtained) + '</td>' +
+                        '<td>' + avgRounded + '</td>' +
+                        '<td style="font-weight:700; color:' + gColor + ';">' + esc(s.grade) + '</td>' +
+                        '<td>' + bn(s.gp) + '</td>' +
+                    '</tr>';
+                }).join('');
+
+                var shell = document.querySelector('.result-shell');
+                shell.innerHTML =
+                    '<div class="marksheet-controls no-print">' +
+                        '<div class="marksheet-toolbar">' +
+                            '<button type="button" onclick="window.print()" class="r-btn r-btn-primary"><span>সরাসরি প্রিন্ট (A4)</span></button>' +
+                            '<button type="button" onclick="downloadOfflineResultPdf()" class="r-btn r-btn-rose"><span>PDF ডাউনলোড</span></button>' +
+                            '<button type="button" onclick="downloadOfflineResultWord()" class="r-btn r-btn-blue"><span>Word (.doc)</span></button>' +
+                            '<a href="/student-search.php?class=' + qCls + '&roll=' + qRoll + '&doc=profile' + embedSuffix + '" class="r-btn r-btn-secondary"><span>শিক্ষার্থী তথ্য</span></a>' +
+                            '<a href="/id-card.php?class=' + qCls + '&roll=' + qRoll + embedSuffix + '" class="r-btn r-btn-secondary"><span>আইডি কার্ড</span></a>' +
+                            '<a href="/admit.php?class=' + qCls + '&roll=' + qRoll + embedSuffix + '" class="r-btn r-btn-secondary"><span>এডমিট কার্ড</span></a>' +
+                            '<a href="/student-search.php?class=' + qCls + '&roll=' + qRoll + '&doc=attestation' + embedSuffix + '" class="r-btn r-btn-secondary"><span>প্রত্যায়ন পত্র</span></a>' +
+                            '<a href="/student-search.php?class=' + qCls + '&roll=' + qRoll + '&doc=testimonial' + embedSuffix + '" class="r-btn r-btn-secondary"><span>প্রশংসা পত্র</span></a>' +
+                            '<a href="/result.php' + (isEmbeddedFlag ? '?embed=1' : '') + '" class="r-btn r-btn-secondary"><span>নতুনভাবে খুঁজুন</span></a>' +
+                        '</div>' +
+                        '<div class="a4-style-bar">' +
+                            '<label class="a4-control-item"><span>ফন্ট সাইজ: <strong id="fontSizeVal">14px</strong></span><input type="range" id="msFontSize" min="11" max="20" value="14" oninput="updateOfflineMsLayout()"></label>' +
+                            '<label class="a4-control-item"><span>পেজ মার্জিন (A4): <strong id="marginVal">15mm</strong></span><input type="range" id="msMargin" min="6" max="28" value="15" oninput="updateOfflineMsLayout()"></label>' +
+                        '</div>' +
+                        '<div id="resultExportStatus" style="display:none; padding:9px 13px; border-radius:9px; font-size:0.88rem; font-weight:600; text-align:center;"></div>' +
+                    '</div>' +
+                    '<div class="a4-preview-scroll"><div class="marksheet" id="marksheetA4"><div class="marksheet-inner"><div>' +
+                        '<table class="header-table"><tr>' +
+                            '<td width="72"><img src="/logo.png" alt="Logo" style="width:62px;"></td>' +
+                            '<td style="text-align:center;"><h2 style="margin:0; color:#166534; font-size:1.35em;">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h2><p style="margin:2px 0; font-size:0.92em; font-weight:600;">নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা</p><p style="margin:2px 0; font-size:0.88em; color:#166534; font-weight:700;">' + esc(rs.examTitle || (rs.examName + ' (' + rs.year + ')')) + '</p></td>' +
+                            '<td width="92"><table class="grade-chart"><tr><th>LG</th><th>GP</th></tr><tr><td>A+</td><td>5.0</td></tr><tr><td>A</td><td>4.0</td></tr><tr><td>A-</td><td>3.5</td></tr><tr><td>B</td><td>3.0</td></tr><tr><td>C</td><td>2.0</td></tr><tr><td>D</td><td>1.0</td></tr><tr><td>F</td><td>0.0</td></tr></table></td>' +
+                        '</tr></table>' +
+                        '<div class="info-bar">' +
+                            '<span>নাম: ' + esc(rs.displayName || st.displayName || st.name_bn) + '</span>' +
+                            (st.father_bn ? '<span>পিতা: ' + esc(st.father_bn) + '</span>' : '') +
+                            (st.mother_bn ? '<span>মাতা: ' + esc(st.mother_bn) + '</span>' : '') +
+                            '<span>শ্রেণি: ' + esc(st.class_name || rs.className || '—') + '</span>' +
+                            '<span>রোল: ' + bn(st.roll || rollVal) + '</span>' +
+                            (st.id ? '<span>আইডি: ' + esc(st.id) + '</span>' : '') +
+                        '</div>' +
+                        '<table class="main-table"><thead><tr><th width="7%">নং</th><th width="39%">বিষয়ের নাম</th><th width="11%">পূর্ণমান</th><th width="16%">প্রাপ্ত নম্বর</th><th width="9%">গড়</th><th width="9%">গ্রেড</th><th width="9%">জিপি</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>' +
+                        '<div class="status-box" style="' + (hasOpt ? 'grid-template-columns: repeat(5, 1fr);' : '') + '">' +
+                            '<div>ফলাফল: <span class="' + cssCls + '">' + esc(rs.statusBn || (failCount === 0 ? 'উত্তীর্ণ' : 'অকৃতকার্য')) + '</span></div>' +
+                            '<div>মোট নম্বর: ' + bn(rs.totalObtained) + '</div>' +
+                            (hasOpt ? '<div>GPA (৪র্থ ছাড়া): ' + bn(Number(rs.gpaWithoutOptional != null ? rs.gpaWithoutOptional : rs.gpa || 0).toFixed(2)) + (optBonus > 0 && failCount === 0 ? '<div style="font-size:0.78em; font-weight:500; color:#475569; margin-top:2px;">বোনাস: +' + bn(optBonus.toFixed(2)) + '</div>' : '') + '</div>' : '') +
+                            '<div>' + (hasOpt ? 'চূড়ান্ত GPA' : 'GPA') + ': ' + bn(Number(rs.gpa || 0).toFixed(2)) + '</div>' +
+                            '<div>মেধাক্রম: ' + (rs.meritRank ? bn(rs.meritRank) + (rs.isScience ? ' (বিজ্ঞান)' : '') : '—') + '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="sign-row"><div><p>শ্রেণি শিক্ষকের স্বাক্ষর</p></div><div><p>অভিভাবকের স্বাক্ষর</p></div><div><p>অধ্যক্ষের স্বাক্ষর</p></div></div>' +
+                    '</div></div></div>';
+
+                window.updateOfflineMsLayout = function () {
+                    var fs = document.getElementById('msFontSize').value;
+                    var mg = document.getElementById('msMargin').value;
+                    document.getElementById('fontSizeVal').textContent = fs + 'px';
+                    document.getElementById('marginVal').textContent = mg + 'mm';
+                    var sheet = document.getElementById('marksheetA4');
+                    if (sheet) { sheet.style.fontSize = fs + 'px'; sheet.style.padding = mg + 'mm'; }
+                };
+                window.downloadOfflineResultPdf = function () {
+                    var el = document.getElementById('marksheetA4');
+                    if (el && window.NadufmExport) window.NadufmExport.exportElementToA4Pdf({ element: el, filename: 'marksheet-roll-' + encodeURIComponent(st.roll || '0') + '.pdf', marginMm: 0 });
+                };
+                window.downloadOfflineResultWord = function () {
+                    var el = document.getElementById('marksheetA4');
+                    if (el && window.NadufmExport) window.NadufmExport.exportElementToWord({ element: el, filename: 'marksheet-roll-' + encodeURIComponent(st.roll || '0') + '.doc', title: 'Marksheet' });
+                };
+            }
+
+            if (formEl) {
+                formEl.addEventListener('submit', function (e) {
+                    if (!navigator.onLine) {
+                        e.preventDefault();
+                        renderOfflineMarksheet(classEl ? classEl.value : '', rollEl ? rollEl.value.trim() : '');
+                    }
+                });
+            }
+
             window.NadufmStudentPicker.attachClassRollPicker({
-                classSelect: document.getElementById('student_class'),
-                rollInput: document.getElementById('roll_number'),
+                classSelect: classEl,
+                rollInput: rollEl,
                 rollAutoSelect: document.getElementById('resultRollAutoSelect'),
                 rollListWrap: document.getElementById('resultRollAutoWrap'),
                 rollChipsContainer: document.getElementById('resultRollChips'),
                 rollDatalist: document.getElementById('resultRollDatalist'),
                 rollCountBadge: document.getElementById('resultRollCountBadge'),
                 preserveExistingClassOptions: true,
-                onRollPicked: function () {
-                    if (formEl) formEl.submit();
+                onRollPicked: function (picked) {
+                    if (!navigator.onLine) {
+                        renderOfflineMarksheet(classEl ? classEl.value : '', (picked && picked.roll) || (rollEl ? rollEl.value.trim() : ''));
+                    } else if (formEl) {
+                        formEl.submit();
+                    }
                 }
             });
         })();

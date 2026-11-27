@@ -23,6 +23,7 @@ import {
 } from './data/excelStore.js';
 import { loadPortalStore, savePortalStore } from './data/portalStore.js';
 import {
+  getUnifiedStudents,
   getClassesAndRolls,
   findUnifiedStudents,
   normalizeClassInput,
@@ -430,6 +431,92 @@ app.get('/api/notices', (req, res) => {
   });
 });
 
+app.get('/api/offline/bootstrap', (req, res) => {
+  const excelStore = loadExcelStore();
+  const portal = loadPortalStore();
+  const isAdmin = Boolean(getValidAdminSession(req));
+  const uploadedExams = getUploadedExamsSummary(excelStore);
+  const students = getUnifiedStudents(excelStore, portal);
+  const classesAndRolls = getClassesAndRolls(excelStore, portal, '');
+
+  const mapMeritRow = (item) => ({
+    name: item.name || '—',
+    displayName: item.displayName || formatStudentNameWithGroup(item.name || '—', item.isScience),
+    isScience: Boolean(item.isScience),
+    groupLabel: item.groupLabel || (item.isScience ? 'বিজ্ঞান' : 'সাধারণ'),
+    roll: item.roll,
+    total: item.totalObtained,
+    fullMarks: item.totalFullMarks,
+    pct: item.percentage,
+    gpa: item.gpa,
+    gpaWithoutOptional: item.gpaWithoutOptional ?? item.gpa,
+    isBoardExam: Boolean(item.isBoardExam),
+    hasOptionalSubject: Boolean(item.hasOptionalSubject),
+    optionalBonus: item.optionalBonus || 0,
+    fail: item.failCount,
+    absent: item.allAbsent,
+    isPromoted: item.isPromoted,
+    status: item.status,
+    statusBn: item.statusBn,
+    meritRank: item.meritRank,
+  });
+
+  const meritByClass = {};
+  for (const ex of Object.values(excelStore.results?.exams || {})) {
+    if (!Array.isArray(ex.rows) || ex.rows.length === 0) continue;
+    const computed = computeResultSheet(ex);
+    const selectedName = formatClassLabel(ex.className, ex.classId);
+    const exName = String(ex.examName || 'বার্ষিক পরীক্ষা').trim();
+    const exYear = String(ex.year || '').trim();
+    const selectedExamTitle = `শ্রেণি: ${selectedName} · ${exName}${exYear ? ` (${exYear})` : ''}`;
+    const scienceMeritData = (computed.scienceMeritList || []).map(mapMeritRow);
+    const otherMeritData = (computed.otherMeritList || []).map(mapMeritRow);
+    const entry = {
+      examId: ex.id,
+      classId: String(ex.classId || ''),
+      selectedName,
+      selectedExamTitle,
+      scienceMeritData,
+      otherMeritData,
+      meritData: [...otherMeritData, ...scienceMeritData],
+    };
+    meritByClass[`excel:${ex.id}`] = entry;
+    if (ex.classId && !meritByClass[String(ex.classId)]) {
+      meritByClass[String(ex.classId)] = entry;
+    }
+  }
+
+  const payload = {
+    timestamp: new Date().toISOString(),
+    isAdmin,
+    classMap,
+    classesAndRolls,
+    students,
+    uploadedExams,
+    meritByClass,
+    notices: {
+      headlines: getHeadlines(),
+      notices: getNoticesForBoard(),
+    },
+    teachers: portal.teachers || [],
+    academic: {
+      routines: portal.routines || [],
+      syllabus: portal.syllabus || [],
+      fees: portal.fees || [],
+      registrations: portal.registrations || [],
+      studentStats: portal.studentStats || [],
+    },
+  };
+
+  if (isAdmin) {
+    payload.admissions = portal.admissions || [];
+    payload.excelState = serializeExcelState(excelStore);
+  }
+
+  res.setHeader('Cache-Control', 'no-store');
+  res.json(payload);
+});
+
 app.get(['/about', '/about.php'], (req, res) => {
   res.render('about', {
     pageTitle: 'আমাদের সম্পর্কে - নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা',
@@ -540,6 +627,16 @@ app.get(['/print-form', '/print-form.php'], (req, res) => {
 });
 
 app.get(['/view_notice', '/view_notice.php'], (req, res) => {
+  if (req.query.offline_shell === '1') {
+    return res.render('view_notice', {
+      noticeId: '',
+      subject: 'নোটিশ লোড হচ্ছে...',
+      date: '',
+      description: '',
+      missingOnServer: true,
+    });
+  }
+
   const noticeId = parseInt(String(req.query.id || '0'), 10);
   if (!noticeId) {
     return res.redirect('/index.php');
@@ -548,7 +645,13 @@ app.get(['/view_notice', '/view_notice.php'], (req, res) => {
   const portal = loadPortalStore();
   const row = (portal.notices || []).find((n) => n.id === noticeId);
   if (!row) {
-    return res.status(404).send(`Error: নোটিশটি ডাটাবেজে পাওয়া যায়নি। আইডি: ${noticeId}`);
+    return res.render('view_notice', {
+      noticeId,
+      subject: 'নোটিশ পাওয়া যায়নি',
+      date: '',
+      description: `নোটিশটি পাওয়া যায়নি। আইডি: ${noticeId}`,
+      missingOnServer: true,
+    });
   }
 
   const extLink = String(row.link || '').trim();
@@ -561,6 +664,7 @@ app.get(['/view_notice', '/view_notice.php'], (req, res) => {
     subject: row.subject,
     date: row.notice_date,
     description: row.description || 'এই নোটিশটির কোনো বিস্তারিত বর্ণনা পাওয়া যায়নি।',
+    missingOnServer: false,
   });
 });
 
@@ -1489,6 +1593,104 @@ app.all(['/add_notice', '/add_notice.php'], requireAdminPage, verifySameOrigin, 
     editData,
     notices,
     currentHeadline: headlines[0] || null,
+  });
+});
+
+app.post('/api/portal/notices', requireAdminApi, verifySameOrigin, (req, res) => {
+  const portal = loadPortalStore();
+  let noticesList = portal.notices || [];
+  const nextNoticeId = noticesList.reduce((max, n) => Math.max(max, Number(n.id) || 0), 0) + 1;
+  const body = req.body || {};
+  const date = String(body.notice_date || '').trim();
+  const subject = String(body.subject || '').trim();
+  const description = String(body.description || '').trim();
+  const link = String(body.link || '').trim();
+  const isNew = body.is_new === true || body.is_new === 'yes' || body.is_new === 'on' || body.is_new === '1' ? 'yes' : 'no';
+  const updateId = parseInt(String(body.update_id || ''), 10);
+
+  if (!date || !subject) {
+    return res.status(400).json({ error: 'তারিখ ও বিষয় আবশ্যক।' });
+  }
+
+  let savedId = updateId || nextNoticeId;
+  if (updateId) {
+    const idx = noticesList.findIndex((n) => n.id === updateId);
+    if (idx !== -1) {
+      noticesList[idx] = {
+        ...noticesList[idx],
+        notice_date: date,
+        subject,
+        description,
+        link,
+        is_new: isNew,
+      };
+    } else {
+      noticesList.push({
+        id: nextNoticeId,
+        type: 'notice',
+        notice_date: date,
+        subject,
+        description,
+        link,
+        is_new: isNew,
+      });
+      savedId = nextNoticeId;
+    }
+  } else {
+    noticesList.push({
+      id: nextNoticeId,
+      type: 'notice',
+      notice_date: date,
+      subject,
+      description,
+      link,
+      is_new: isNew,
+    });
+  }
+  portal.notices = noticesList;
+  savePortalStore(portal);
+  res.json({
+    ok: true,
+    id: savedId,
+    notices: noticesList.filter((n) => n.type === 'notice').sort((a, b) => b.id - a.id),
+  });
+});
+
+app.delete('/api/portal/notices/:id', requireAdminApi, verifySameOrigin, (req, res) => {
+  const id = parseInt(String(req.params.id || '0'), 10);
+  const portal = loadPortalStore();
+  portal.notices = (portal.notices || []).filter((n) => n.id !== id);
+  savePortalStore(portal);
+  res.json({
+    ok: true,
+    notices: (portal.notices || []).filter((n) => n.type === 'notice').sort((a, b) => b.id - a.id),
+  });
+});
+
+app.post('/api/portal/headline', requireAdminApi, verifySameOrigin, (req, res) => {
+  const headlineText = String(req.body?.headline_text || '').trim();
+  if (!headlineText) {
+    return res.status(400).json({ error: 'ঘোষণার লেখা আবশ্যক।' });
+  }
+  const portal = loadPortalStore();
+  const noticesList = portal.notices || [];
+  const nextNoticeId = noticesList.reduce((max, n) => Math.max(max, Number(n.id) || 0), 0) + 1;
+  const newHeadline = {
+    id: nextNoticeId,
+    type: 'headline',
+    notice_date: new Date().toISOString().slice(0, 10),
+    subject: headlineText,
+    description: '',
+    link: '',
+    is_new: 'no',
+  };
+  noticesList.push(newHeadline);
+  portal.notices = noticesList;
+  savePortalStore(portal);
+  res.json({
+    ok: true,
+    currentHeadline: newHeadline,
+    headlines: getHeadlines(),
   });
 });
 

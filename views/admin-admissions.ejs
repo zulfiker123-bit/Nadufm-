@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ভর্তি ও এডমিট কার্ড ব্যবস্থাপনা</title>
+    <link rel="icon" href="/pwa-192x192.png" type="image/png" sizes="192x192">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#15803d">
     <link rel="stylesheet" href="/fonts.css">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -64,6 +68,7 @@
         </section>
     </div>
 
+    <script src="/offline-sync.js"></script>
     <script>
         let admissions = <%- JSON.stringify(admissions || []) %>;
 
@@ -110,6 +115,35 @@
         }
 
         async function deleteAdmission(id) {
+            const nextList = admissions.filter(a => String(a.id) !== String(id));
+            if (window.NadufmOffline) {
+                const res = await window.NadufmOffline.saveMutationOrQueue({
+                    label: 'ভর্তি আবেদন ডিলিট',
+                    url: '/api/portal/admissions/' + encodeURIComponent(id),
+                    method: 'DELETE',
+                    headers: {},
+                    optimisticUpdate: () => window.NadufmOffline.updateBootstrap(base => {
+                        base.admissions = nextList;
+                        return base;
+                    }),
+                    onOnlineSuccess: (data) => {
+                        if (data && data.admissions) {
+                            admissions = data.admissions;
+                            return window.NadufmOffline.updateBootstrap(base => {
+                                base.admissions = data.admissions;
+                                return base;
+                            });
+                        }
+                    },
+                });
+                if (res.queued) {
+                    admissions = nextList;
+                    renderAdmissions();
+                    return;
+                }
+                renderAdmissions();
+                return;
+            }
             const res = await fetch('/api/portal/admissions/' + encodeURIComponent(id), { method: 'DELETE' });
             const data = await res.json();
             if (res.ok && data.admissions) {
@@ -118,7 +152,29 @@
             }
         }
 
+        async function hydrateOfflineAdmissions() {
+            if (!window.NadufmOffline) return;
+            const queue = await window.NadufmOffline.getQueue();
+            const hasPending = queue.some(q => q.url && q.url.indexOf('/api/portal/admissions') !== -1);
+            if (!navigator.onLine || hasPending) {
+                const snap = await window.NadufmOffline.getSnapshot('bootstrap');
+                if (snap && Array.isArray(snap.admissions)) {
+                    admissions = snap.admissions;
+                    renderAdmissions();
+                }
+            }
+        }
+
+        window.addEventListener('nadufm:sync-status', function (ev) {
+            const t = ev && ev.detail && ev.detail.type;
+            if (t === 'BOOTSTRAP_REFRESHED' || t === 'QUEUE_UPDATED') {
+                hydrateOfflineAdmissions();
+            }
+        });
+
         renderAdmissions();
+        hydrateOfflineAdmissions();
     </script>
+    <script src="/pwa.js" defer></script>
 </body>
 </html>

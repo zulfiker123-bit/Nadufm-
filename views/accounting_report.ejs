@@ -42,6 +42,7 @@
         <h2 class="report-title">মাদ্রাসার আয়-ব্যয় সারসংক্ষেপ</h2>
 
         <div id="loader" class="loading">হিসাবের তথ্য সংগ্রহ করা হচ্ছে...</div>
+        <div id="offlineReportNote" style="display:none; margin-bottom:14px; padding:10px 14px; border-radius:10px; background:#fef3c7; border:1px solid #fcd34d; color:#92400e; font-size:0.9rem; font-weight:600; text-align:center;"></div>
 
         <div class="stat-grid" id="stats-area" style="display:none;">
             <div class="box box-income">
@@ -76,70 +77,135 @@
         </div>
     </div>
 
+    <script src="/offline-sync.js"></script>
     <script>
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR3FdKRAA46EvP4MBCPiqwJ0tVAaxkbCBJbExtNePmOk781BwSQm_gf1xa7xE-YqNj_-XlEYrMpx6TL/pub?output=csv';
 
-        async function loadReport() {
-            try {
-                const response = await fetch(csvUrl);
-                const data = await response.text();
-                const rows = data.split('\n').slice(1);
+        function renderReportData(csvText, pendingList, isOfflineMode) {
+            const rows = String(csvText || '').split('\n').slice(1);
+            let totalIncome = 0;
+            let totalExpense = 0;
+            let monthlySummary = {};
 
-                let totalIncome = 0;
-                let totalExpense = 0;
-                let monthlySummary = {};
+            const now = new Date();
+            const currentMonthYear = now.toLocaleString('bn-BD', { month: 'long', year: 'numeric' });
 
-                const now = new Date();
-                const currentMonthYear = now.toLocaleString('bn-BD', { month: 'long', year: 'numeric' });
+            rows.forEach(row => {
+                const cols = row.split(',');
+                if (cols.length < 5) return;
 
-                rows.forEach(row => {
-                    const cols = row.split(',');
-                    if (cols.length < 5) return;
+                const dateStr = cols[0].trim();
+                const income = parseFloat(cols[2]) || 0;
+                const expense = parseFloat(cols[4]) || 0;
 
-                    const dateStr = cols[0].trim();
-                    const income = parseFloat(cols[2]) || 0;
-                    const expense = parseFloat(cols[4]) || 0;
+                const dateObj = new Date(dateStr);
+                if (!isNaN(dateObj)) {
+                    const monthKey = dateObj.toLocaleString('bn-BD', { month: 'long', year: 'numeric' });
+                    totalIncome += income;
+                    totalExpense += expense;
 
-                    const dateObj = new Date(dateStr);
-                    if (!isNaN(dateObj)) {
-                        const monthKey = dateObj.toLocaleString('bn-BD', { month: 'long', year: 'numeric' });
-                        totalIncome += income;
-                        totalExpense += expense;
-
-                        if (!monthlySummary[monthKey]) {
-                            monthlySummary[monthKey] = { income: 0, expense: 0 };
-                        }
-                        monthlySummary[monthKey].income += income;
-                        monthlySummary[monthKey].expense += expense;
+                    if (!monthlySummary[monthKey]) {
+                        monthlySummary[monthKey] = { income: 0, expense: 0 };
                     }
-                });
-
-                const currentStats = monthlySummary[currentMonthYear] || { income: 0, expense: 0 };
-                document.getElementById('monthly-income').innerText = '৳ ' + currentStats.income.toLocaleString('bn-BD');
-                document.getElementById('monthly-expense').innerText = '৳ ' + currentStats.expense.toLocaleString('bn-BD');
-                document.getElementById('total-balance').innerText = '৳ ' + (totalIncome - totalExpense).toLocaleString('bn-BD');
-
-                let tableHTML = '';
-                for (let month in monthlySummary) {
-                    const balance = monthlySummary[month].income - monthlySummary[month].expense;
-                    tableHTML += `<tr>
-                        <td>${month}</td>
-                        <td style="color:#15803d; font-weight:700;">৳ ${monthlySummary[month].income.toLocaleString('bn-BD')}</td>
-                        <td style="color:#b91c1c; font-weight:700;">৳ ${monthlySummary[month].expense.toLocaleString('bn-BD')}</td>
-                        <td style="color:#1d4ed8; font-weight:700;">৳ ${balance.toLocaleString('bn-BD')}</td>
-                    </tr>`;
+                    monthlySummary[monthKey].income += income;
+                    monthlySummary[monthKey].expense += expense;
                 }
+            });
 
-                document.getElementById('report-table-body').innerHTML = tableHTML;
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('stats-area').style.display = 'grid';
-                document.getElementById('table-area').style.display = 'block';
+            if (Array.isArray(pendingList) && pendingList.length > 0) {
+                pendingList.forEach(item => {
+                    const dateObj = new Date(item.date || Date.now());
+                    if (isNaN(dateObj)) return;
+                    const monthKey = dateObj.toLocaleString('bn-BD', { month: 'long', year: 'numeric' });
+                    const inc = parseFloat(item.income_amount) || 0;
+                    const exp = parseFloat(item.expense_amount) || 0;
+                    totalIncome += inc;
+                    totalExpense += exp;
+                    if (!monthlySummary[monthKey]) {
+                        monthlySummary[monthKey] = { income: 0, expense: 0 };
+                    }
+                    monthlySummary[monthKey].income += inc;
+                    monthlySummary[monthKey].expense += exp;
+                });
+            }
+
+            const currentStats = monthlySummary[currentMonthYear] || { income: 0, expense: 0 };
+            document.getElementById('monthly-income').innerText = '৳ ' + currentStats.income.toLocaleString('bn-BD');
+            document.getElementById('monthly-expense').innerText = '৳ ' + currentStats.expense.toLocaleString('bn-BD');
+            document.getElementById('total-balance').innerText = '৳ ' + (totalIncome - totalExpense).toLocaleString('bn-BD');
+
+            let tableHTML = '';
+            for (let month in monthlySummary) {
+                const balance = monthlySummary[month].income - monthlySummary[month].expense;
+                tableHTML += `<tr>
+                    <td>${month}</td>
+                    <td style="color:#15803d; font-weight:700;">৳ ${monthlySummary[month].income.toLocaleString('bn-BD')}</td>
+                    <td style="color:#b91c1c; font-weight:700;">৳ ${monthlySummary[month].expense.toLocaleString('bn-BD')}</td>
+                    <td style="color:#1d4ed8; font-weight:700;">৳ ${balance.toLocaleString('bn-BD')}</td>
+                </tr>`;
+            }
+
+            const noteEl = document.getElementById('offlineReportNote');
+            if (isOfflineMode || (pendingList && pendingList.length > 0)) {
+                noteEl.style.display = 'block';
+                noteEl.textContent = isOfflineMode
+                    ? 'অফলাইন সংরক্ষিত তথ্য প্রদর্শিত হচ্ছে' + (pendingList && pendingList.length ? ' (অপেক্ষমাণ এন্ট্রিসহ)' : '') + '।'
+                    : 'অফলাইনে করা ' + pendingList.length + 'টি অপেক্ষমাণ এন্ট্রি যোগ করে প্রদর্শিত হচ্ছে।';
+            } else {
+                noteEl.style.display = 'none';
+            }
+
+            document.getElementById('report-table-body').innerHTML = tableHTML;
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('stats-area').style.display = 'grid';
+            document.getElementById('table-area').style.display = 'block';
+        }
+
+        async function loadReport() {
+            let pending = [];
+            if (window.NadufmOffline) {
+                const queue = await window.NadufmOffline.getQueue();
+                const hasAccountingQueue = queue.some(q => q.url && q.url.indexOf('script.google.com') !== -1 && q.body && q.body._formType === 'formdata');
+                if (!hasAccountingQueue) {
+                    await window.NadufmOffline.setSnapshot('accountingPending', []);
+                } else {
+                    pending = (await window.NadufmOffline.getSnapshot('accountingPending')) || [];
+                }
+            }
+
+            try {
+                if (!navigator.onLine) throw new Error('offline');
+                const response = await fetch(csvUrl);
+                if (!response.ok) throw new Error('http');
+                const data = await response.text();
+                if (window.NadufmOffline) {
+                    await window.NadufmOffline.setSnapshot('accountingReport', { csv: data, fetchedAt: new Date().toISOString() });
+                }
+                renderReportData(data, pending, false);
             } catch (error) {
-                document.getElementById('loader').innerHTML = '<span style="color:#b91c1c;">তথ্য লোড করা যায়নি। অনুগ্রহ করে পরে আবার চেষ্টা করুন।</span>';
+                if (window.NadufmOffline) {
+                    const cached = await window.NadufmOffline.getSnapshot('accountingReport');
+                    if (cached && cached.csv) {
+                        renderReportData(cached.csv, pending, true);
+                        return;
+                    }
+                    if (pending && pending.length > 0) {
+                        renderReportData('', pending, true);
+                        return;
+                    }
+                }
+                document.getElementById('loader').innerHTML = '<span style="color:#b91c1c;">তথ্য লোড করা যায়নি। একবার অনলাইনে এই পেজটি খুললে অফলাইনেও দেখা যাবে।</span>';
             }
         }
 
+        window.addEventListener('nadufm:sync-status', function (ev) {
+            if (ev && ev.detail && ev.detail.type === 'SYNC_COMPLETED') {
+                loadReport();
+            }
+        });
+
         loadReport();
     </script>
+    <script src="/pwa.js" defer></script>
 </body>
 </html>

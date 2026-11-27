@@ -127,6 +127,7 @@
         </form>
     </div>
 
+    <script src="/offline-sync.js"></script>
     <script>
         document.getElementById('date-input').valueAsDate = new Date();
         const scriptURL = 'https://script.google.com/macros/s/AKfycbx3otv2ll9TfSrGJStOCPSK98FcvUyhkG_Ry00nu_hwO2gAWC9g7diWUZ_5MwVqqqnS/exec';
@@ -134,7 +135,7 @@
         const status = document.getElementById('status');
         const btn = document.getElementById('submit-btn');
 
-        form.addEventListener('submit', e => {
+        form.addEventListener('submit', async e => {
             e.preventDefault();
             btn.disabled = true;
             btn.innerText = "তথ্য পাঠানো হচ্ছে...";
@@ -147,26 +148,60 @@
             if (!formData.get('income_amount')) formData.set('income_amount', '0');
             if (!formData.get('expense_amount')) formData.set('expense_amount', '0');
 
-            fetch(scriptURL, { method: 'POST', body: formData })
-                .then(() => {
-                    btn.disabled = false;
-                    btn.innerText = "হিসাব সংরক্ষণ করুন";
+            const formObj = Object.fromEntries(formData.entries());
+
+            try {
+                let queuedOffline = false;
+                if (window.NadufmOffline) {
+                    const result = await window.NadufmOffline.saveMutationOrQueue({
+                        label: 'দৈনিক আয়-ব্যয় এন্ট্রি (' + (formObj.date || '') + ')',
+                        url: scriptURL,
+                        method: 'POST',
+                        headers: {},
+                        formObject: formObj,
+                        isNoCors: true,
+                        optimisticUpdate: async () => {
+                            const pending = (await window.NadufmOffline.getSnapshot('accountingPending')) || [];
+                            pending.push({
+                                date: formObj.date,
+                                income_source: formObj.income_source || '',
+                                income_amount: parseFloat(formObj.income_amount) || 0,
+                                expense_sector: formObj.expense_sector || '',
+                                expense_amount: parseFloat(formObj.expense_amount) || 0,
+                                createdAt: new Date().toISOString(),
+                            });
+                            await window.NadufmOffline.setSnapshot('accountingPending', pending);
+                        },
+                    });
+                    queuedOffline = Boolean(result && result.queued);
+                } else {
+                    await fetch(scriptURL, { method: 'POST', body: formData });
+                }
+
+                btn.disabled = false;
+                btn.innerText = "হিসাব সংরক্ষণ করুন";
+                if (queuedOffline) {
+                    status.style.background = "#fef3c7";
+                    status.style.color = "#92400e";
+                    status.innerText = "অফলাইনে সংরক্ষিত হয়েছে — অনলাইনে এলে অটো সিঙ্ক হবে।";
+                } else {
                     status.style.background = "#dcfce7";
                     status.style.color = "#166534";
                     status.innerText = "সফলভাবে সংরক্ষণ করা হয়েছে।";
-                    form.reset();
-                    document.getElementById('date-input').valueAsDate = new Date();
-                    setTimeout(() => { status.style.display = "none"; }, 5000);
-                })
-                .catch(error => {
-                    btn.disabled = false;
-                    btn.innerText = "আবার চেষ্টা করুন";
-                    status.style.background = "#fee2e2";
-                    status.style.color = "#b91c1c";
-                    status.innerText = "সংযোগ ত্রুটি হয়েছে। অনুগ্রহ করে পরে আবার চেষ্টা করুন।";
-                    console.error('Error!', error.message);
-                });
+                }
+                form.reset();
+                document.getElementById('date-input').valueAsDate = new Date();
+                setTimeout(() => { status.style.display = "none"; }, 5000);
+            } catch (error) {
+                btn.disabled = false;
+                btn.innerText = "আবার চেষ্টা করুন";
+                status.style.background = "#fee2e2";
+                status.style.color = "#b91c1c";
+                status.innerText = "সংযোগ ত্রুটি হয়েছে। অনুগ্রহ করে পরে আবার চেষ্টা করুন।";
+                console.error('Error!', error && error.message ? error.message : error);
+            }
         });
     </script>
+    <script src="/pwa.js" defer></script>
 </body>
 </html>

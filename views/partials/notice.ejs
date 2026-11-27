@@ -1,7 +1,10 @@
 <section id="notice-section" class="app-card">
     <div class="app-card-header">
         <div>
-            <h3>নোটিশ বোর্ড</h3>
+            <div class="notice-card-title-row">
+                <h3>নোটিশ বোর্ড</h3>
+                <span class="notice-count-badge" data-notice-badge="pill" hidden></span>
+            </div>
             <p class="app-card-sub">সর্বশেষ প্রাতিষ্ঠানিক বিজ্ঞপ্তি ও ঘোষণা</p>
         </div>
         <div class="notice-search-box">
@@ -28,6 +31,7 @@
 
 <script>
     const allData = <%- JSON.stringify(notices || []) %>;
+    window.__nadufmInitialNotices = allData;
 
     const itemsPerPage = 5;
     let currentPage = 1;
@@ -64,32 +68,49 @@
             return;
         }
 
+        const readSet = new Set(window.NadufmOffline ? window.NadufmOffline.getReadNoticeIds() : []);
+        let unreadOrder = 0;
+
         pagedItems.forEach((item, index) => {
             const isNew = item.isNew && item.isNew.toString().trim().toLowerCase() === 'yes';
+            const isUnreadNew = isNew && !readSet.has(String(item.id));
+            if (isUnreadNew) unreadOrder++;
             const iconKey = noticeIconKeys[index % noticeIconKeys.length];
             const iconHtml = noticeSvgMap[iconKey] || noticeSvgMap.bell;
             const targetLink = (item.link && item.link !== "#" && item.link.trim() !== "")
                                ? item.link
                                : `/view_notice.php?id=${item.id}`;
             const isExternal = /^https?:\/\//i.test(targetLink);
+            const bnIdx = window.NadufmOffline ? window.NadufmOffline.bnNum(unreadOrder) : String(unreadOrder);
 
             const li = document.createElement('li');
             li.className = 'notice-item';
             li.innerHTML = `
-                <a href="${escapeHtml(targetLink)}" ${isExternal ? 'target="_blank" rel="noopener"' : ''} class="notice-link">
+                <a href="${escapeHtml(targetLink)}" data-notice-id="${escapeHtml(item.id)}" ${isExternal ? 'target="_blank" rel="noopener"' : ''} class="notice-link">
                     <span class="notice-icon" aria-hidden="true">${iconHtml}</span>
                     <span class="notice-body">
                         <span class="notice-subject">${escapeHtml(item.subject)}</span>
                         <span class="notice-meta">
                             <span>${escapeHtml(item.date)}</span>
-                            ${isNew ? '<span aria-hidden="true">·</span><span class="notice-new-label">নতুন</span>' : ''}
+                            ${isUnreadNew ? `<span aria-hidden="true">·</span><span class="notice-index-badge">${escapeHtml(bnIdx)}</span><span class="notice-new-label">নতুন</span>` : (isNew ? '<span aria-hidden="true">·</span><span class="notice-new-label">নতুন</span>' : '')}
                         </span>
                     </span>
                     <span class="notice-chevron" aria-hidden="true">${noticeSvgMap.chevron}</span>
                 </a>`;
+            const anchor = li.querySelector('.notice-link');
+            if (anchor) {
+                anchor.addEventListener('click', function () {
+                    if (window.NadufmOffline) {
+                        window.NadufmOffline.markNoticeRead(item.id);
+                    }
+                });
+            }
             container.appendChild(li);
         });
 
+        if (window.NadufmOffline) {
+            window.NadufmOffline.updateNoticeBadge(allData);
+        }
         setupPagination();
     }
 
@@ -120,6 +141,25 @@
         renderNotices();
     }
 
+    function refreshNoticesFromOffline() {
+        if (!window.NadufmOffline) return;
+        window.NadufmOffline.getSnapshot('bootstrap').then(function (snap) {
+            if (!snap || !snap.notices || !Array.isArray(snap.notices.notices)) return;
+            allData.length = 0;
+            snap.notices.notices.forEach(function (n) { allData.push(n); });
+            const searchInput = document.getElementById('noticeSearchInput');
+            const q = searchInput ? searchInput.value.trim().toLowerCase() : '';
+            filteredData = !q
+                ? allData.slice()
+                : allData.filter(n =>
+                    String(n.subject || '').toLowerCase().includes(q) ||
+                    String(n.date || '').toLowerCase().includes(q)
+                );
+            currentPage = 1;
+            renderNotices();
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         const searchInput = document.getElementById('noticeSearchInput');
         if (searchInput) {
@@ -136,5 +176,13 @@
             });
         }
         renderNotices();
+        refreshNoticesFromOffline();
+    });
+
+    window.addEventListener('nadufm:sync-status', function (ev) {
+        const t = ev && ev.detail && ev.detail.type;
+        if (t === 'QUEUE_UPDATED' || t === 'SYNC_COMPLETED' || t === 'BOOTSTRAP_REFRESHED') {
+            refreshNoticesFromOffline();
+        }
     });
 </script>

@@ -1,15 +1,17 @@
 {
   "id": "/",
-  "name": "নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা",
-  "short_name": "NADUFM",
-  "description": "নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসার অফিসিয়াল ওয়েব অ্যাপ, নোটিশ বোর্ড, ফলাফল ও শিক্ষার্থী কর্ণার।",
+  "name": "Nadu fm",
+  "short_name": "Nadu fm",
+  "description": "নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসার অফিসিয়াল ওয়েব অ্যাপ — Nadu fm।",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait-primary",
-  "theme_color": "#28a745",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "theme_color": "#15803d",
   "background_color": "#f8f9fa",
   "lang": "bn",
+  "categories": ["education", "productivity"],
   "icons": [
     {
       "src": "/pwa-192x192.png",
@@ -28,6 +30,32 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "শিক্ষার্থী ও ডকুমেন্ট সার্চ",
+      "short_name": "সার্চ পোর্টাল",
+      "url": "/student-search.php",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "অনলাইন ফলাফল ও মার্কশিট",
+      "short_name": "ফলাফল",
+      "url": "/result.php",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "ভর্তি আবেদন ফরম",
+      "short_name": "ভর্তি আবেদন",
+      "url": "/admission.php",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "অ্যাডমিন ড্যাশবোর্ড",
+      "short_name": "অ্যাডমিন",
+      "url": "/dashboard.php",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
     }
   ]
 }

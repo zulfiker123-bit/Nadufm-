@@ -8,8 +8,9 @@
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="manifest" href="/manifest.webmanifest">
     <meta name="theme-color" content="#28a745">
+    <meta name="application-name" content="Nadu fm">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="NADUFM">
+    <meta name="apple-mobile-web-app-title" content="Nadu fm">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/fonts.css">
     <style>
@@ -39,15 +40,15 @@
         </div>
 
         <div class="flex justify-between mb-10 text-gray-700 font-bold">
-            <p>স্মারক: NADUFM/<%= new Date().getFullYear() %>/<%= noticeId %></p>
-            <p>তারিখ: <%= date %></p>
+            <p>স্মারক: <span id="noticeMemo">NADUFM/<%= new Date().getFullYear() %>/<%= noticeId %></span></p>
+            <p>তারিখ: <span id="noticeDate"><%= date %></span></p>
         </div>
 
         <div class="text-center mb-10">
-            <h2 class="text-xl font-bold border-b-2 border-black inline-block pb-1">বিষয়: <%= subject %></h2>
+            <h2 class="text-xl font-bold border-b-2 border-black inline-block pb-1" id="noticeSubject">বিষয়: <%= subject %></h2>
         </div>
 
-        <div class="details"><%= description %></div>
+        <div class="details" id="noticeDetails"><%= description %></div>
 
         <div class="mt-40 text-right">
             <div class="inline-block text-center">
@@ -57,6 +58,31 @@
             </div>
         </div>
     </div>
+    <script src="/offline-sync.js"></script>
+    <script>
+        (function () {
+            const params = new URLSearchParams(window.location.search);
+            const idStr = params.get('id');
+            if (!idStr || !window.NadufmOffline) return;
+            window.NadufmOffline.markNoticeRead(idStr);
+            window.NadufmOffline.getSnapshot('bootstrap').then(function (snap) {
+                if (!snap || !snap.notices || !Array.isArray(snap.notices.notices)) return;
+                const found = snap.notices.notices.find(function (n) {
+                    return String(n.id) === String(idStr);
+                });
+                if (!found) return;
+                document.title = found.subject || 'নোটিশ';
+                const memoEl = document.getElementById('noticeMemo');
+                const dateEl = document.getElementById('noticeDate');
+                const subjEl = document.getElementById('noticeSubject');
+                const detEl = document.getElementById('noticeDetails');
+                if (memoEl) memoEl.textContent = 'NADUFM/' + new Date().getFullYear() + '/' + found.id;
+                if (dateEl) dateEl.textContent = found.date || '';
+                if (subjEl) subjEl.textContent = 'বিষয়: ' + (found.subject || '');
+                if (detEl) detEl.textContent = found.description || 'এই নোটিশটির কোনো বিস্তারিত বর্ণনা পাওয়া যায়নি।';
+            });
+        })();
+    </script>
     <script src="/pwa.js" defer></script>
 </body>
 </html>

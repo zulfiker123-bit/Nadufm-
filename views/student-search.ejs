@@ -354,12 +354,235 @@
     .signature-area { margin-top: 44px; display: flex; justify-content: space-between; }
     .sig-box { border-top: 1.5px solid #333; width: 155px; text-align: center; font-size: 12.5px; padding-top: 4px; font-weight: 700; }
 
-    /* Certificate / Attestation / Testimonial Frame */
-    .cert-frame { border: 3px double #14532d; padding: 20px 24px; min-height: 266mm; display: flex; flex-direction: column; justify-content: space-between; }
-    .cert-inst-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #166534; padding-bottom: 12px; margin-bottom: 16px; text-align: center; }
-    .cert-doc-badge { text-align: center; font-size: 19px; font-weight: 700; color: #14532d; text-decoration: underline; margin: 16px 0 22px 0; }
-    .cert-memo-row { display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; margin-bottom: 10px; }
-    .cert-body-text { font-size: 16px; line-height: 2; text-align: justify; }
+    /* Certificate / Attestation / Testimonial Frame (Traditional Ornate Design) */
+    .cert-frame {
+        position: relative;
+        padding: 16px;
+        min-height: 266mm;
+        background: #ffffff;
+        color: #111827;
+        border: 2px solid #1f2937;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+    }
+    .trad-cert-ornate-edge {
+        position: relative;
+        flex: 1;
+        border: 1.5px solid #1f2937;
+        padding: 18px 24px 20px 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background-color: #ffffff;
+    }
+    .trad-cert-border-svg {
+        position: absolute;
+        pointer-events: none;
+        z-index: 1;
+        display: block;
+    }
+    .trad-cert-border-svg.is-top { top: -14px; left: -14px; width: calc(100% + 28px); height: 14px; }
+    .trad-cert-border-svg.is-bottom { bottom: -14px; left: -14px; width: calc(100% + 28px); height: 14px; }
+    .trad-cert-border-svg.is-left { top: 0; left: -14px; width: 14px; height: 100%; }
+    .trad-cert-border-svg.is-right { top: 0; right: -14px; width: 14px; height: 100%; }
+    .trad-cert-inner {
+        position: relative;
+        z-index: 2;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .trad-bismillah {
+        text-align: center;
+        font-size: 16px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 4px;
+        letter-spacing: 0.3px;
+    }
+    .trad-inst-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+    .trad-inst-logo {
+        width: 78px;
+        height: 78px;
+        object-fit: contain;
+        flex-shrink: 0;
+    }
+    .trad-inst-title-wrap {
+        flex: 1;
+        text-align: center;
+    }
+    .trad-inst-title-wrap h2 {
+        margin: 0 0 3px 0;
+        font-size: 22px;
+        font-weight: 800;
+        color: #111827;
+        line-height: 1.2;
+    }
+    .trad-inst-title-wrap p {
+        margin: 2px 0;
+        font-size: 13.5px;
+        font-weight: 600;
+        color: #1f2937;
+        line-height: 1.35;
+    }
+    .trad-title-ribbon-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin: 10px 0 18px 0;
+    }
+    .trad-memo-cell {
+        font-size: 14px;
+        font-weight: 700;
+        color: #111827;
+        min-width: 148px;
+        display: flex;
+        align-items: baseline;
+        gap: 4px;
+    }
+    .trad-memo-cell.is-right {
+        justify-content: flex-end;
+    }
+    .trad-ribbon-wrap {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+        flex-shrink: 0;
+    }
+    .trad-ribbon-wing {
+        width: 34px;
+        height: 28px;
+        color: #111827;
+        flex-shrink: 0;
+    }
+    .trad-ribbon-plaque {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px 26px;
+        border-radius: 999px;
+        background: #111827;
+        color: #ffffff;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        line-height: 1.25;
+        border: 1.5px solid #111827;
+    }
+    .trad-body-stage {
+        position: relative;
+        flex: 1;
+        padding: 4px 2px;
+    }
+    .trad-watermark {
+        position: absolute;
+        left: 50%;
+        top: 48%;
+        transform: translate(-50%, -50%);
+        width: 285px;
+        height: 285px;
+        object-fit: contain;
+        opacity: 0.085;
+        filter: grayscale(100%);
+        pointer-events: none;
+        z-index: 0;
+    }
+    .trad-lines {
+        position: relative;
+        z-index: 1;
+        font-size: 15.5px;
+        line-height: 2.15;
+        color: #111827;
+    }
+    .trad-line-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 4px 10px;
+        margin-bottom: 3px;
+    }
+    .trad-lbl {
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .trad-fill {
+        flex: 1 1 90px;
+        min-width: 72px;
+        border-bottom: 1.4px dotted #1f2937;
+        padding: 0 6px 1px 6px;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1.35;
+        outline: none;
+    }
+    .trad-fill.sm { flex: 0.55 1 60px; min-width: 54px; }
+    .trad-fill.md { flex: 0.85 1 95px; min-width: 82px; }
+    .trad-fill.lg { flex: 1.5 1 180px; }
+    .trad-fill-inline {
+        display: inline-block;
+        min-width: 82px;
+        border-bottom: 1.4px dotted #1f2937;
+        padding: 0 5px 1px 5px;
+        font-weight: 700;
+        line-height: 1.25;
+        outline: none;
+    }
+    .trad-para {
+        margin-top: 16px;
+        font-size: 15.2px;
+        line-height: 1.85;
+        text-align: justify;
+    }
+    .trad-para-wish {
+        margin-top: 10px;
+        font-size: 15.2px;
+        line-height: 1.8;
+    }
+    .trad-sign-footer {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        margin-top: 42px;
+        padding-top: 8px;
+        font-size: 14.5px;
+        font-weight: 600;
+        color: #111827;
+    }
+    .trad-sign-left {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-width: 230px;
+    }
+    .trad-sign-line-row {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+    }
+    .trad-sign-right {
+        text-align: center;
+        min-width: 205px;
+    }
+    .trad-sign-rule {
+        border-top: 1.4px dotted #1f2937;
+        padding-top: 5px;
+        font-weight: 700;
+    }
+    @media print {
+        .trad-fill:focus, .trad-fill-inline:focus { outline: none !important; }
+    }
 
     /* Marksheet Table */
     .ms-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13.5px; }
@@ -620,14 +843,37 @@
         document.getElementById('print-preview-section').style.display = 'none';
 
         try {
-            const url = '/api/portal/student-record?class=' + encodeURIComponent(clsVal) +
-                '&roll=' + encodeURIComponent(rollVal) +
-                '&q=' + encodeURIComponent(qVal);
-            const res = await fetch(url);
-            if (res.ok) {
-                const localData = await res.json();
-                if (localData.status === 'success' && Array.isArray(localData.matches) && localData.matches.length > 0) {
-                    allMatches = localData.matches.map(normalizeRecord);
+            if (typeof navigator === 'undefined' || navigator.onLine) {
+                try {
+                    const url = '/api/portal/student-record?class=' + encodeURIComponent(clsVal) +
+                        '&roll=' + encodeURIComponent(rollVal) +
+                        '&q=' + encodeURIComponent(qVal);
+                    const res = await fetch(url);
+                    if (res.ok) {
+                        const localData = await res.json();
+                        if (localData.status === 'success' && Array.isArray(localData.matches) && localData.matches.length > 0) {
+                            allMatches = localData.matches.map(normalizeRecord);
+                            if (allMatches.length === 1 || rollVal) {
+                                displayProfile(0);
+                            } else {
+                                showMultipleMatches(allMatches);
+                            }
+                            return;
+                        }
+                    }
+                } catch (_) {
+                    // Fall back to offline IndexedDB snapshot below
+                }
+            }
+
+            if (window.NadufmOffline) {
+                const offData = await window.NadufmOffline.findStudents({
+                    classParam: clsVal,
+                    rollParam: rollVal,
+                    query: qVal,
+                });
+                if (offData && offData.status === 'success' && Array.isArray(offData.matches) && offData.matches.length > 0) {
+                    allMatches = offData.matches.map(normalizeRecord);
                     if (allMatches.length === 1 || rollVal) {
                         displayProfile(0);
                     } else {
@@ -637,9 +883,9 @@
                 }
             }
 
-            // Fallback to external Google Apps Script if searching by query text
+            // Fallback to external Google Apps Script if online and searching by query text
             const fallbackQ = qVal || rollVal;
-            if (fallbackQ) {
+            if (fallbackQ && (typeof navigator === 'undefined' || navigator.onLine)) {
                 const scriptURL = 'https://script.google.com/macros/s/AKfycbze9QMzRJcCadXzDKcU0W12nigMYg0fOKk_4zY5JFWwo7R10L3PYx0YnjVNZXiWtA_npg/exec';
                 const extRes = await fetch(`${scriptURL}?query=${encodeURIComponent(fallbackQ)}`);
                 const extData = await extRes.json();
@@ -657,7 +903,7 @@
             searchMsg.textContent = "দুঃখিত, কোনো শিক্ষার্থীর তথ্য পাওয়া যায়নি।";
             searchMsg.style.display = 'block';
         } catch (err) {
-            searchMsg.textContent = "সার্ভারের সাথে সংযোগ করতে সমস্যা হয়েছে।";
+            searchMsg.textContent = "অফলাইন ডেটাবেজ বা সার্ভার থেকে তথ্য খুঁজে পাওয়া যায়নি।";
             searchMsg.style.display = 'block';
         } finally {
             document.getElementById('loading').style.display = 'none';
@@ -989,41 +1235,220 @@
             return;
         }
 
-        // Attestation or Testimonial
+        // Attestation or Testimonial (Traditional Ornate Certificate Design)
         const isTestimonial = activeDocTab === 'testimonial';
-        const certTitle = isTestimonial
-            ? 'প্রশংসা পত্র (TESTIMONIAL)'
-            : 'প্রত্যায়ন পত্র (ATTESTATION CERTIFICATE)';
-        const bodyParagraph = isTestimonial
-            ? `এই মর্মে প্রত্যয়ন ও প্রশংসা করা যাচ্ছে যে, <strong>${esc(st.name_bn)}</strong>, পিতা: <strong>${esc(st.father_bn || '---')}</strong>, মাতা: <strong>${esc(st.mother_bn || '---')}</strong>, ঠিকানা: ${esc(st.address || 'নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা')} — অত্র <strong>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</strong>-এর একজন নিয়মিত শিক্ষার্থী ছিল। সে অত্র প্রতিষ্ঠান থেকে <strong>${esc(st.class_name || '---')}</strong> শ্রেণির পরীক্ষায় (শিক্ষাবর্ষ: ${esc(sessionStr)}, রোল নং: <strong>${esc(st.rollBn || '---')}</strong>, রেজিস্ট্রেশন/আইডি নং: ${esc(st.reg_no || st.id || '---')}) অংশগ্রহণ করে <strong>GPA ${esc(gpaStr)}</strong> অর্জনপূর্বক উত্তীর্ণ হয়েছে। নথিপত্র অনুযায়ী তার জন্ম তারিখ <strong>${esc(st.dob || '---')}</strong>।<br><br>${esc(remarkStr)}<br><br>আমি তার জীবনের সার্বিক মঙ্গল ও উজ্জ্বল ভবিষ্যৎ কামনা করি।`
-            : `এই মর্মে প্রত্যয়ন করা যাচ্ছে যে, <strong>${esc(st.name_bn)}</strong>, পিতা: <strong>${esc(st.father_bn || '---')}</strong>, মাতা: <strong>${esc(st.mother_bn || '---')}</strong>, গ্রাম/ঠিকানা: ${esc(st.address || 'নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা')} — অত্র <strong>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</strong>-এর <strong>${esc(st.class_name || '---')}</strong> শ্রেণির (শিক্ষাবর্ষ: ${esc(sessionStr)}) একজন নিয়মিত শিক্ষার্থী। তার শ্রেণি রোল নম্বর <strong>${esc(st.rollBn || '---')}</strong> এবং রেজিস্ট্রেশন/আইডি নং <strong>${esc(st.reg_no || st.id || '---')}</strong>। প্রতিষ্ঠানের ভর্তি রেজিস্টার অনুযায়ী তার জন্ম তারিখ <strong>${esc(st.dob || '---')}</strong>।<br><br>${esc(remarkStr)}<br><br>উক্ত শিক্ষার্থীর চরিত্র ও নৈতিকতা সম্পর্কে আমাদের জানা মতে কোনো বিরূপ তথ্য নেই। আমি তার সর্বাঙ্গীণ উন্নতি কামনা করি।`;
+        const certTitleText = isTestimonial ? 'প্রশংসা পত্র' : 'প্রত্যায়ন পত্র';
+        const addrRaw = String(st.address || '').trim();
+        const addrParts = addrRaw ? addrRaw.split(/[,،]+/).map(s => s.trim()).filter(Boolean) : [];
+        const villageVal = addrParts[0] || addrRaw || 'নলতা মোবারকনগর';
+        const postVal = addrParts[1] || 'নলতা শরীফ';
+        const upazilaVal = st.upazila || 'কালিগঞ্জ';
+        const districtVal = st.district || 'সাতক্ষীরা';
+        const sessionYearMatch = String(sessionStr || '').match(/(\d{4}|[০-৯]{4})/);
+        const passYear = sessionYearMatch ? bnNum(sessionYearMatch[1]) : bnNum(String(new Date().getFullYear()));
+        const gpaClean = String(gpaStr || '').trim();
+        const gpaNum = parseFloat(String(gpaClean).replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d)));
+        let letterGrade = '—';
+        if (!Number.isNaN(gpaNum)) {
+            if (gpaNum >= 5) letterGrade = 'A+';
+            else if (gpaNum >= 4) letterGrade = 'A';
+            else if (gpaNum >= 3.5) letterGrade = 'A-';
+            else if (gpaNum >= 3) letterGrade = 'B';
+            else if (gpaNum >= 2) letterGrade = 'C';
+            else if (gpaNum >= 1) letterGrade = 'D';
+            else letterGrade = 'F';
+        }
+        const defaultRemark = 'আমার জানামতে সে একজন উত্তম চরিত্রের অধিকারী এবং মাদ্রাসার নিয়ম-শৃঙ্খলা মেনে চলে।';
+        const customRemarkHtml = (remarkStr && remarkStr.trim() !== defaultRemark)
+            ? `<div class="trad-para" style="margin-top:10px;">${esc(remarkStr)}</div>`
+            : '';
+
+        const mainBodyLines = isTestimonial ? `
+            <div class="trad-line-row">
+                <span class="trad-lbl">এতদ্বারা প্রত্যয়ন করা যাইতেছে যে,</span>
+                <span class="trad-fill lg" contenteditable="true" title="প্রয়োজনে সরাসরি সম্পাদনা করুন">${esc(st.name_bn || '---')}</span>
+            </div>
+            <div class="trad-line-row">
+                <span class="trad-lbl">পিতা :</span>
+                <span class="trad-fill" contenteditable="true">${esc(st.father_bn || '---')}</span>
+                <span class="trad-lbl">মাতা :</span>
+                <span class="trad-fill" contenteditable="true">${esc(st.mother_bn || '---')}</span>
+            </div>
+            <div class="trad-line-row">
+                <span class="trad-lbl">গ্রাম :</span>
+                <span class="trad-fill md" contenteditable="true">${esc(villageVal)}</span>
+                <span class="trad-lbl">ডাকঘর :</span>
+                <span class="trad-fill md" contenteditable="true">${esc(postVal)}</span>
+                <span class="trad-lbl">উপজেলা :</span>
+                <span class="trad-fill sm" contenteditable="true">${esc(upazilaVal)}</span>
+                <span class="trad-lbl">জেলা :</span>
+                <span class="trad-fill sm" contenteditable="true">${esc(districtVal)}</span>
+            </div>
+            <div class="trad-line-row">
+                <span class="trad-lbl">সে</span>
+                <span class="trad-fill sm" contenteditable="true">${esc(passYear)}</span>
+                <span class="trad-lbl">সালে</span>
+                <span class="trad-fill md" contenteditable="true">${esc(st.class_name || '---')}</span>
+                <span class="trad-lbl">শ্রেণিতে অনুষ্ঠিত অত্র মাদ্রাসা / বাংলাদেশ মাদ্রাসা শিক্ষা বোর্ড / ইসলামি আরবি বিশ্ববিদ্যালয় এর</span>
+            </div>
+            <div class="trad-line-row">
+                <span class="trad-lbl">অধীনে পরীক্ষায় অংশগ্রহণ করিয়া এবং</span>
+                <span class="trad-fill sm" contenteditable="true">${esc(letterGrade)}</span>
+                <span class="trad-lbl">গ্রেডে উত্তীর্ণ হইয়াছে। তাহার প্রাপ্ত GPA</span>
+                <span class="trad-fill sm" contenteditable="true">${esc(gpaClean || '—')}</span>
+                <span class="trad-lbl">।</span>
+            </div>
+            <div class="trad-line-row">
+                <span class="trad-lbl">পরীক্ষায় তাহার রোল নং</span>
+                <span class="trad-fill sm" contenteditable="true">${esc(st.rollBn || '---')}</span>
+                <span class="trad-lbl">রেজিস্ট্রেশন নং</span>
+                <span class="trad-fill md" contenteditable="true">${esc(st.reg_no || st.id || '---')}</span>
+                <span class="trad-lbl">শিক্ষাবর্ষ</span>
+                <span class="trad-fill sm" contenteditable="true">${esc(sessionStr)}</span>
+            </div>
+            <div class="trad-line-row">
+                <span class="trad-lbl">মাদ্রাসার রেকর্ড অনুযায়ী তাহার জন্ম তারিখ</span>
+                <span class="trad-fill md" contenteditable="true">${esc(st.dob ? bnNum(st.dob) : '---')}</span>
+                <span class="trad-lbl">কথায় :</span>
+                <span class="trad-fill lg" contenteditable="true" title="কথায় জন্ম তারিখ লিখুন"></span>
+            </div>
+        ` : `
+            <div class="trad-line-row">
+                <span class="trad-lbl">এতদ্বারা প্রত্যয়ন করা যাইতেছে যে,</span>
+                <span class="trad-fill lg" contenteditable="true" title="প্রয়োজনে সরাসরি সম্পাদনা করুন">${esc(st.name_bn || '---')}</span>
+            </div>
+            <div class="trad-line-row">
+                <span class="trad-lbl">পিতা :</span>
+                <span class="trad-fill" contenteditable="true">${esc(st.father_bn || '---')}</span>
+                <span class="trad-lbl">মাতা :</span>
+                <span class="trad-fill" contenteditable="true">${esc(st.mother_bn || '---')}</span>
+            </div>
+            <div class="trad-line-row">
+                <span class="trad-lbl">গ্রাম :</span>
+                <span class="trad-fill md" contenteditable="true">${esc(villageVal)}</span>
+                <span class="trad-lbl">ডাকঘর :</span>
+                <span class="trad-fill md" contenteditable="true">${esc(postVal)}</span>
+                <span class="trad-lbl">উপজেলা :</span>
+                <span class="trad-fill sm" contenteditable="true">${esc(upazilaVal)}</span>
+                <span class="trad-lbl">জেলা :</span>
+                <span class="trad-fill sm" contenteditable="true">${esc(districtVal)}</span>
+            </div>
+            <div class="trad-line-row">
+                <span class="trad-lbl">সে অত্র নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসার</span>
+                <span class="trad-fill md" contenteditable="true">${esc(st.class_name || '---')}</span>
+                <span class="trad-lbl">শ্রেণির (শিক্ষাবর্ষ :</span>
+                <span class="trad-fill sm" contenteditable="true">${esc(sessionStr)}</span>
+                <span class="trad-lbl">) একজন নিয়মিত শিক্ষার্থী।</span>
+            </div>
+            <div class="trad-line-row">
+                <span class="trad-lbl">তাহার শ্রেণি রোল নং</span>
+                <span class="trad-fill sm" contenteditable="true">${esc(st.rollBn || '---')}</span>
+                <span class="trad-lbl">রেজিস্ট্রেশন / আইডি নং</span>
+                <span class="trad-fill md" contenteditable="true">${esc(st.reg_no || st.id || '---')}</span>
+                <span class="trad-lbl">প্রাপ্ত GPA (প্রযোজ্য ক্ষেত্রে)</span>
+                <span class="trad-fill sm" contenteditable="true">${esc(gpaClean || '—')}</span>
+            </div>
+            <div class="trad-line-row">
+                <span class="trad-lbl">মাদ্রাসার ভর্তি রেজিস্টার অনুযায়ী তাহার জন্ম তারিখ</span>
+                <span class="trad-fill md" contenteditable="true">${esc(st.dob ? bnNum(st.dob) : '---')}</span>
+                <span class="trad-lbl">কথায় :</span>
+                <span class="trad-fill lg" contenteditable="true" title="কথায় জন্ম তারিখ লিখুন"></span>
+            </div>
+        `;
+
+        const ornateBorderSvg = `
+            <svg width="0" height="0" style="position:absolute;" aria-hidden="true">
+                <defs>
+                    <pattern id="tradFloralTile" width="22" height="14" patternUnits="userSpaceOnUse">
+                        <rect width="22" height="14" fill="#ffffff"/>
+                        <path d="M11 1 C14 4 17 4 21 1 C18 4.5 18 7 21 10 C17 7.5 14 7.5 11 13 C8 7.5 5 7.5 1 10 C4 7 4 4.5 1 1 C5 4 8 4 11 1 Z" fill="#1f2937" fill-opacity="0.9"/>
+                        <circle cx="11" cy="7" r="2" fill="#ffffff" stroke="#1f2937" stroke-width="0.9"/>
+                    </pattern>
+                    <pattern id="tradFloralTileVert" width="14" height="22" patternUnits="userSpaceOnUse">
+                        <rect width="14" height="22" fill="#ffffff"/>
+                        <path d="M1 11 C4 8 4 5 1 1 C4.5 4 7 4 10 1 C7.5 5 7.5 8 13 11 C7.5 14 7.5 17 10 21 C7 18 4.5 18 1 21 C4 17 4 14 1 11 Z" fill="#1f2937" fill-opacity="0.9"/>
+                        <circle cx="7" cy="11" r="2" fill="#ffffff" stroke="#1f2937" stroke-width="0.9"/>
+                    </pattern>
+                </defs>
+            </svg>
+            <svg class="trad-cert-border-svg is-top" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="0" y="0" width="100%" height="100%" fill="url(#tradFloralTile)"/></svg>
+            <svg class="trad-cert-border-svg is-bottom" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="0" y="0" width="100%" height="100%" fill="url(#tradFloralTile)"/></svg>
+            <svg class="trad-cert-border-svg is-left" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="0" y="0" width="100%" height="100%" fill="url(#tradFloralTileVert)"/></svg>
+            <svg class="trad-cert-border-svg is-right" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="0" y="0" width="100%" height="100%" fill="url(#tradFloralTileVert)"/></svg>
+        `;
 
         canvas.innerHTML = `
             <div class="cert-frame">
-                <div>
-                    <div class="cert-inst-header">
-                        <img src="/logo.png" style="width:68px;" alt="Logo">
-                        <div style="flex:1;">
-                            <h2 style="margin:0; color:#14532d; font-size:21px;">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h2>
-                            <p style="margin:2px 0; font-size:13px;">ডাকঘর: নলতা শরীফ, উপজেলা: কালিগঞ্জ, জেলা: সাতক্ষীরা</p>
-                            <p style="margin:2px 0; font-size:12.5px;">স্থাপিত: ১৯৮০ খ্রি. · EIIN: ১১৮৭৭৮ · ওয়েবসাইট: nadufm.edu.bd</p>
+                <div class="trad-cert-ornate-edge">
+                    ${ornateBorderSvg}
+                    <div class="trad-cert-inner">
+                        <div>
+                            <div class="trad-bismillah">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</div>
+
+                            <div class="trad-inst-head">
+                                <img src="/logo.png" class="trad-inst-logo" alt="Logo">
+                                <div class="trad-inst-title-wrap">
+                                    <h2>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h2>
+                                    <p>ডাক : নলতা মোবারকনগর, উপজেলা : কালিগঞ্জ, জেলা : সাতক্ষীরা ।</p>
+                                    <p>মাদ্রাসার কোড নং-১৫৭০৪ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; EIIN No.118778</p>
+                                    <p>স্থাপিত : ১৯৮০ ইং</p>
+                                </div>
+                                <div style="width:46px; flex-shrink:0;"></div>
+                            </div>
+
+                            <div class="trad-title-ribbon-row">
+                                <div class="trad-memo-cell">
+                                    <span>ক্রমিক নং :</span>
+                                    <span class="trad-fill-inline" contenteditable="true">${esc(memo)}</span>
+                                </div>
+                                <div class="trad-ribbon-wrap">
+                                    <svg class="trad-ribbon-wing" viewBox="0 0 36 28" fill="none" aria-hidden="true">
+                                        <path d="M35 14C25 14 19 8 10 3C14 8 15 11 15 14C15 17 14 20 10 25C19 20 25 14 35 14Z" fill="currentColor"/>
+                                        <path d="M32 14C22 12 13 10 3 6C9 10 11 12 11 14C11 16 9 18 3 22C13 18 22 16 32 14Z" stroke="currentColor" stroke-width="1.2"/>
+                                    </svg>
+                                    <span class="trad-ribbon-plaque">${certTitleText}</span>
+                                    <svg class="trad-ribbon-wing" viewBox="0 0 36 28" fill="none" aria-hidden="true">
+                                        <path d="M1 14C11 14 17 8 26 3C22 8 21 11 21 14C21 17 22 20 26 25C17 20 11 14 1 14Z" fill="currentColor"/>
+                                        <path d="M4 14C14 12 23 10 33 6C27 10 25 12 25 14C25 16 27 18 33 22C23 18 14 16 4 14Z" stroke="currentColor" stroke-width="1.2"/>
+                                    </svg>
+                                </div>
+                                <div class="trad-memo-cell is-right">
+                                    <span>তারিখ :</span>
+                                    <span class="trad-fill-inline" contenteditable="true">${esc(dateStr)}</span>
+                                </div>
+                            </div>
+
+                            <div class="trad-body-stage">
+                                <img src="/logo.png" class="trad-watermark" alt="" aria-hidden="true">
+                                <div class="trad-lines">
+                                    ${mainBodyLines}
+                                    <div class="trad-para">
+                                        অত্র মাদ্রাসায় অধ্যয়নকালে সে অনিয়মতান্ত্রিক/রাষ্ট্রবিরোধী অথবা নাশকতামূলক কোন কার্যকলাপে অংশগ্রহণ করে নাই। তাহার আচরণ ও চরিত্র সন্তোষজনক।
+                                    </div>
+                                    ${customRemarkHtml}
+                                    <div class="trad-para-wish">
+                                        আমি তাহার জীবনের সর্বাঙ্গীন উন্নতি ও খায়েরিয়াত কামনা করি।
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div style="width:68px;"></div>
+
+                        <div class="trad-sign-footer">
+                            <div class="trad-sign-left">
+                                <div class="trad-sign-line-row">
+                                    <span>লেখক</span>
+                                    <span class="trad-fill-inline" style="min-width:165px;" contenteditable="true"></span>
+                                </div>
+                                <div class="trad-sign-line-row">
+                                    <span>তারিখ :</span>
+                                    <span class="trad-fill-inline" style="min-width:155px;" contenteditable="true">${esc(dateStr)}</span>
+                                </div>
+                            </div>
+                            <div class="trad-sign-right">
+                                <div class="trad-sign-rule">অধ্যক্ষের স্বাক্ষর</div>
+                            </div>
+                        </div>
                     </div>
-
-                    <div class="cert-memo-row">
-                        <span>স্মারক নং: ${esc(memo)}</span>
-                        <span>তারিখ: ${esc(dateStr)}</span>
-                    </div>
-
-                    <div class="cert-doc-badge">${certTitle}</div>
-
-                    <div class="cert-body-text">${bodyParagraph}</div>
-                </div>
-
-                <div class="signature-area" style="margin-top:64px;">
-                    <div class="sig-box">প্রস্তুতকারীর স্বাক্ষর</div>
-                    <div class="sig-box" style="width:210px;">অধ্যক্ষ<br>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</div>
                 </div>
             </div>
         `;
@@ -1115,7 +1540,7 @@
         }
         if (initRoll) {
             rollInputEl.value = initRoll;
-            if (!classSelectEl.value && initCls) {
+            if (!classSelectEl.value && initCls && navigator.onLine) {
                 // Temporarily use initCls via direct fetch if option wasn't in dropdown
                 const url = '/api/portal/student-record?class=' + encodeURIComponent(initCls) + '&roll=' + encodeURIComponent(initRoll);
                 fetch(url).then((r) => r.json()).then((localData) => {
@@ -1126,6 +1551,15 @@
                         searchStudent();
                     }
                 }).catch(() => searchStudent());
+            } else if (!classSelectEl.value && initCls && window.NadufmOffline) {
+                window.NadufmOffline.findStudents({ classParam: initCls, rollParam: initRoll }).then((offData) => {
+                    if (offData && offData.status === 'success' && Array.isArray(offData.matches) && offData.matches.length > 0) {
+                        allMatches = offData.matches.map(normalizeRecord);
+                        displayProfile(0);
+                    } else {
+                        searchStudent();
+                    }
+                });
             } else {
                 searchStudent();
             }

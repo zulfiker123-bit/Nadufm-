@@ -1,7 +1,7 @@
 <div class="news-ticker-container">
     <div class="fixed-title">ঘোষণা</div>
     <div class="marquee-wrapper">
-        <marquee behavior="scroll" direction="left" scrollamount="4" onmouseover="this.stop();" onmouseout="this.start();">
+        <marquee id="homeNewsMarquee" behavior="scroll" direction="left" scrollamount="4" onmouseover="this.stop();" onmouseout="this.start();">
             <% if (headlines && headlines.length > 0) { %>
                 <%- headlines.map(h => h.announcement).join(' &nbsp;&nbsp;&nbsp;&nbsp; · &nbsp;&nbsp;&nbsp;&nbsp; ') %>
             <% } else { %>
@@ -10,3 +10,23 @@
         </marquee>
     </div>
 </div>
+<script>
+    (function () {
+        function refreshMarqueeFromOffline() {
+            if (!window.NadufmOffline) return;
+            window.NadufmOffline.getSnapshot('bootstrap').then(function (snap) {
+                var mq = document.getElementById('homeNewsMarquee');
+                if (!mq || !snap || !snap.notices || !Array.isArray(snap.notices.headlines)) return;
+                if (!snap.notices.headlines.length) return;
+                mq.textContent = snap.notices.headlines.map(function (h) { return h.announcement || ''; }).filter(Boolean).join('     ·     ');
+            });
+        }
+        document.addEventListener('DOMContentLoaded', refreshMarqueeFromOffline);
+        window.addEventListener('nadufm:sync-status', function (ev) {
+            var t = ev && ev.detail && ev.detail.type;
+            if (t === 'QUEUE_UPDATED' || t === 'SYNC_COMPLETED' || t === 'BOOTSTRAP_REFRESHED') {
+                refreshMarqueeFromOffline();
+            }
+        });
+    })();
+</script>

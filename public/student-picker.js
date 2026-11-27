@@ -61,21 +61,36 @@
 
         if (!opts.preserveExistingClassOptions) {
             try {
-                const res = await fetch('/api/portal/classes-and-rolls');
-                if (res.ok) {
-                    const data = await res.json();
-                    if (Array.isArray(data.classes) && data.classes.length) {
+                let data = null;
+                if (typeof navigator !== 'undefined' && navigator.onLine) {
+                    const res = await fetch('/api/portal/classes-and-rolls');
+                    if (res.ok) data = await res.json();
+                }
+                if (!data && window.NadufmOffline) {
+                    data = await window.NadufmOffline.getClassesAndRolls('');
+                }
+                if (data && Array.isArray(data.classes) && data.classes.length) {
+                    const prevVal = classSelect.value;
+                    const placeholder = classSelect.querySelector('option[value=""]')?.outerHTML || '<option value="">-- শ্রেণি নির্বাচন করুন --</option>';
+                    classSelect.innerHTML = placeholder + data.classes.map(function (c) {
+                        const countText = c.count > 0 ? ' (' + bnNum(c.count) + ' জন)' : '';
+                        return '<option value="' + escapeHtml(c.value) + '">' + escapeHtml(c.label + countText) + '</option>';
+                    }).join('');
+                    if (prevVal) classSelect.value = prevVal;
+                }
+            } catch (_) {
+                if (window.NadufmOffline) {
+                    const offData = await window.NadufmOffline.getClassesAndRolls('').catch(function () { return null; });
+                    if (offData && Array.isArray(offData.classes) && offData.classes.length) {
                         const prevVal = classSelect.value;
                         const placeholder = classSelect.querySelector('option[value=""]')?.outerHTML || '<option value="">-- শ্রেণি নির্বাচন করুন --</option>';
-                        classSelect.innerHTML = placeholder + data.classes.map(function (c) {
+                        classSelect.innerHTML = placeholder + offData.classes.map(function (c) {
                             const countText = c.count > 0 ? ' (' + bnNum(c.count) + ' জন)' : '';
                             return '<option value="' + escapeHtml(c.value) + '">' + escapeHtml(c.label + countText) + '</option>';
                         }).join('');
                         if (prevVal) classSelect.value = prevVal;
                     }
                 }
-            } catch (_) {
-                // Keep server-rendered class options on error
             }
         }
 
@@ -147,14 +162,25 @@
                 return [];
             }
             try {
-                const res = await fetch('/api/portal/classes-and-rolls?class=' + encodeURIComponent(val));
-                if (res.ok) {
-                    const data = await res.json();
-                    renderRolls(data.rolls || [], true);
-                    return data.rolls || [];
+                if (typeof navigator === 'undefined' || navigator.onLine) {
+                    const res = await fetch('/api/portal/classes-and-rolls?class=' + encodeURIComponent(val));
+                    if (res.ok) {
+                        const data = await res.json();
+                        renderRolls(data.rolls || [], true);
+                        return data.rolls || [];
+                    }
                 }
             } catch (_) {
-                // Ignore network failure gracefully
+                // Fall back to offline snapshot below
+            }
+            if (window.NadufmOffline) {
+                try {
+                    const offData = await window.NadufmOffline.getClassesAndRolls(val);
+                    if (offData && Array.isArray(offData.rolls)) {
+                        renderRolls(offData.rolls, true);
+                        return offData.rolls;
+                    }
+                } catch (_) {}
             }
             renderRolls([], true);
             return [];

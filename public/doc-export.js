@@ -192,15 +192,20 @@
         .toPdf();
 
       const pdf = await worker.get('pdf');
-      const dataUri = pdf.output('datauristring');
-      if (dataUri && dataUri.length < 18 * 1024 * 1024) {
-        postDownloadForm('/api/export/pdf-relay', {
-          data: dataUri,
-          filename,
-        });
-      } else {
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
         const blob = pdf.output('blob');
         triggerBlobDownload(blob, filename);
+      } else {
+        const dataUri = pdf.output('datauristring');
+        if (dataUri && dataUri.length < 18 * 1024 * 1024) {
+          postDownloadForm('/api/export/pdf-relay', {
+            data: dataUri,
+            filename,
+          });
+        } else {
+          const blob = pdf.output('blob');
+          triggerBlobDownload(blob, filename);
+        }
       }
 
       if (typeof onStatus === 'function') {
@@ -236,10 +241,15 @@
       '<body><div class="Section1">' + clone.innerHTML + '</div></body></html>',
     ].join('');
 
-    postDownloadForm('/api/export/word', {
-      html: fullHtml,
-      filename,
-    });
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      const blob = new Blob(['\ufeff' + fullHtml], { type: 'application/msword;charset=utf-8' });
+      triggerBlobDownload(blob, filename);
+    } else {
+      postDownloadForm('/api/export/word', {
+        html: fullHtml,
+        filename,
+      });
+    }
 
     if (typeof onStatus === 'function') {
       onStatus('Word (.doc) ফাইল ডাউনলোড শুরু হয়েছে।', false);

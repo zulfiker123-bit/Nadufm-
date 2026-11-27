@@ -253,6 +253,9 @@
                 <span>নতুন আবেদন করুন</span>
             </button>
         </div>
+        <div id="admissionOfflineNotice" class="no-print" style="display:none; max-width:210mm; margin:0 auto 12px auto; padding:10px 14px; border-radius:10px; background:#fef3c7; border:1px solid #fcd34d; color:#92400e; font-size:0.9rem; font-weight:600; text-align:center;">
+            অফলাইনে আবেদনটি সংরক্ষিত হয়েছে। ইন্টারনেট সংযোগ ফিরলে অটো সিঙ্ক হবে।
+        </div>
 
         <div class="print-scroll-wrap">
             <div class="print-container">
@@ -338,19 +341,12 @@
         document.getElementById('submitBtn').disabled = true;
         document.getElementById('submitBtn').innerText = "সাবমিট হচ্ছে...";
 
-        const finishSubmit = (base64) => {
+        const finishSubmit = async (base64) => {
             const formData = new FormData(form);
             const obj = Object.fromEntries(formData);
             obj.base64 = base64 || '';
 
-            Promise.allSettled([
-                fetch('/api/portal/admissions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(obj),
-                }),
-                fetch(scriptURL, { method: "POST", mode: "no-cors", body: JSON.stringify(obj) }),
-            ]).then(() => {
+            const showPreview = (queuedOffline) => {
                 document.getElementById('v-roll').innerText = obj.roll_no || '';
                 document.getElementById('v-id').innerText = obj.id_no || '';
                 document.getElementById('v-name-bn').innerText = obj.name_bn || '';
@@ -377,11 +373,74 @@
                 document.getElementById('v-prev-reg').innerText = obj.prev_reg || '';
                 document.getElementById('v-date').innerText = new Date().toLocaleDateString('bn-BD');
                 document.getElementById('p-photo').innerHTML = base64 ? `<img src="${base64}" alt="ছবি">` : 'ছবি';
+                const noteEl = document.getElementById('admissionOfflineNotice');
+                if (noteEl) noteEl.style.display = queuedOffline ? 'block' : 'none';
 
                 document.getElementById('admission-form-section').style.display = 'none';
                 document.getElementById('print-preview-section').style.display = 'block';
                 window.scrollTo(0, 0);
-            });
+            };
+
+            if (window.NadufmOffline) {
+                const results = await Promise.allSettled([
+                    window.NadufmOffline.saveMutationOrQueue({
+                        label: 'নতুন ভর্তি আবেদন (' + (obj.name_bn || obj.name_en || '') + ')',
+                        url: '/api/portal/admissions',
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(obj),
+                        optimisticUpdate: () => window.NadufmOffline.updateBootstrap((base) => {
+                            const localAdm = Object.assign({}, obj, {
+                                id: 'adm_local_' + Date.now(),
+                                createdAt: new Date().toISOString(),
+                            });
+                            base.admissions = [localAdm].concat(Array.isArray(base.admissions) ? base.admissions : []);
+                            const cls = window.NadufmOffline.normalizeClassInput(obj.student_class || '');
+                            const rollStr = String(obj.roll_no || '').trim();
+                            const stuObj = {
+                                roll: rollStr,
+                                rollBn: window.NadufmOffline.bnNum(rollStr),
+                                id: String(obj.id_no || '').trim(),
+                                reg_no: String(obj.birth_reg || obj.id_no || '').trim(),
+                                name_bn: obj.name_bn || '',
+                                name_en: obj.name_en || '',
+                                classKey: cls.key || '',
+                                class_name: cls.label || obj.student_class || '',
+                                father_bn: obj.father_bn || '',
+                                mother_bn: obj.mother_bn || '',
+                                dob: obj.dob || '',
+                                mobile: obj.mobile || '',
+                                blood_group: obj.blood_group || '',
+                                address: (obj.village || '') + (obj.union ? ', ' + obj.union : ''),
+                                photo: obj.base64 || '/logo.png',
+                                source: 'admissions',
+                            };
+                            base.students = [stuObj].concat(Array.isArray(base.students) ? base.students : []);
+                            return base;
+                        }),
+                    }),
+                    window.NadufmOffline.saveMutationOrQueue({
+                        label: 'ভর্তি আবেদন ব্যাকআপ',
+                        url: scriptURL,
+                        method: 'POST',
+                        headers: {},
+                        body: JSON.stringify(obj),
+                        isNoCors: true,
+                    }),
+                ]);
+                const mainRes = results[0].status === 'fulfilled' ? results[0].value : null;
+                showPreview(Boolean(mainRes && mainRes.queued));
+                return;
+            }
+
+            Promise.allSettled([
+                fetch('/api/portal/admissions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(obj),
+                }),
+                fetch(scriptURL, { method: "POST", mode: "no-cors", body: JSON.stringify(obj) }),
+            ]).then(() => showPreview(false));
         };
 
         const file = document.getElementById('photoFile').files[0];

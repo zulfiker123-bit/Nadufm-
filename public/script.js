@@ -180,7 +180,14 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .then(function (result) {
           if (result.ok && result.data && result.data.ok) {
-            window.location.href = result.data.redirectTo || nextUrl || '/dashboard.php';
+            var finishRedirect = function () {
+              window.location.href = result.data.redirectTo || nextUrl || '/dashboard.php';
+            };
+            if (window.NadufmOffline && typeof window.NadufmOffline.flushSyncQueue === 'function') {
+              Promise.resolve(window.NadufmOffline.flushSyncQueue()).catch(function () {}).finally(finishRedirect);
+            } else {
+              finishRedirect();
+            }
             return;
           }
           showAdminLoginError((result.data && result.data.error) || 'ভুল পাসওয়ার্ড! সঠিক অ্যাডমিন পাসওয়ার্ড দিন।');
@@ -198,6 +205,15 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
   }
+
+  document.addEventListener('submit', function (e) {
+    var form = e.target;
+    if (form && form.action && form.action.indexOf('/admin-logout') !== -1) {
+      if (window.NadufmOffline && typeof window.NadufmOffline.clearAdminCache === 'function') {
+        window.NadufmOffline.clearAdminCache();
+      }
+    }
+  });
 
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {

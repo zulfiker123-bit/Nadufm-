@@ -52,7 +52,8 @@
         <div>
             <div class="panel">
                 <h2>স্ক্রলিং হেডলাইন আপডেট</h2>
-                <form action="/add_notice.php" method="POST">
+                <div id="headlineAlert" class="alert alert-blue" style="display:none;"></div>
+                <form id="headlineForm" action="/add_notice.php" method="POST">
                     <div class="field">
                         <label for="headline_text">চলমান ঘোষণা</label>
                         <input id="headline_text" type="text" name="headline_text" value="<%= currentHeadline ? currentHeadline.subject : '' %>" placeholder="চলমান ঘোষণাটি লিখুন..." required>
@@ -62,12 +63,10 @@
             </div>
 
             <div class="panel">
-                <h2><%= editData.id ? "নোটিশ এডিট করুন" : "নতুন নোটিশ যোগ করুন" %></h2>
-                <% if (message) { %>
-                    <div class="alert <%= messageType === 'red' ? 'alert-red' : (messageType === 'blue' ? 'alert-blue' : 'alert-green') %>"><%= message %></div>
-                <% } %>
-                <form action="/add_notice.php" method="POST">
-                    <input type="hidden" name="update_id" value="<%= editData.id %>">
+                <h2 id="noticeFormHeading"><%= editData.id ? "নোটিশ এডিট করুন" : "নতুন নোটিশ যোগ করুন" %></h2>
+                <div id="noticeAlert" class="alert <%= messageType === 'red' ? 'alert-red' : (messageType === 'blue' ? 'alert-blue' : 'alert-green') %>" style="<%= message ? '' : 'display:none;' %>"><%= message || '' %></div>
+                <form id="noticeForm" action="/add_notice.php" method="POST">
+                    <input type="hidden" id="update_id" name="update_id" value="<%= editData.id %>">
                     <div class="field">
                         <label for="notice_date">তারিখ</label>
                         <input id="notice_date" type="text" name="notice_date" placeholder="যেমন: ২০ জানুয়ারি ২০২৬" value="<%= editData.date %>" required>
@@ -85,15 +84,13 @@
                         <input id="link" type="text" name="link" value="<%= editData.link %>">
                     </div>
                     <label class="check-row">
-                        <input type="checkbox" name="is_new" <%= editData.isNew === 'yes' ? 'checked' : '' %>>
+                        <input type="checkbox" id="is_new" name="is_new" <%= (!editData.id || editData.isNew === 'yes') ? 'checked' : '' %>>
                         <span>নতুন (NEW) হিসেবে চিহ্নিত করুন</span>
                     </label>
-                    <button type="submit" name="notice_submit" value="1" class="btn btn-green">
+                    <button type="submit" id="noticeSubmitBtn" name="notice_submit" value="1" class="btn btn-green">
                         <%= editData.id ? "নোটিশ আপডেট করুন" : "নোটিশ প্রকাশ করুন" %>
                     </button>
-                    <% if (editData.id) { %>
-                        <a href="/add_notice.php" class="cancel-link">পরিবর্তন বাতিল করুন</a>
-                    <% } %>
+                    <a href="/add_notice.php" id="cancelNoticeEdit" class="cancel-link" style="<%= editData.id ? '' : 'display:none;' %>">পরিবর্তন বাতিল করুন</a>
                 </form>
             </div>
         </div>
@@ -109,27 +106,319 @@
                             <th style="text-align:right;">অ্যাকশন</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <% if (notices && notices.length > 0) { %>
-                            <% notices.forEach(function(row) { %>
-                            <tr>
-                                <td style="white-space:nowrap; font-weight:600;"><%= row.notice_date %></td>
-                                <td><%= row.subject %></td>
-                                <td>
-                                    <div class="action-row">
-                                        <a href="/add_notice.php?edit=<%= row.id %>" class="act-btn act-edit">এডিট</a>
-                                        <a href="/add_notice.php?delete=<%= row.id %>" class="act-btn act-del">ডিলিট</a>
-                                    </div>
-                                </td>
-                            </tr>
-                            <% }); %>
-                        <% } else { %>
-                            <tr><td colspan="3" style="text-align:center; padding:32px; color:#64748b;">কোনো নোটিশ পাওয়া যায়নি।</td></tr>
-                        <% } %>
-                    </tbody>
+                    <tbody id="noticesTableBody"></tbody>
                 </table>
             </div>
         </div>
     </div>
+
+    <script src="/offline-sync.js"></script>
+    <script>
+        let noticesList = <%- JSON.stringify(notices || []) %>;
+
+        function esc(s) {
+            return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+        }
+
+        function showNoticeAlert(elId, msg, typeClass) {
+            const el = document.getElementById(elId);
+            if (!el) return;
+            el.className = 'alert ' + (typeClass || 'alert-green');
+            el.textContent = msg;
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 4500);
+        }
+
+        function normalizePublicNoticeList(list) {
+            return (list || []).map(n => ({
+                id: n.id,
+                date: n.notice_date || n.date || '',
+                subject: n.subject || '',
+                link: n.link || '',
+                isNew: n.is_new || n.isNew || 'no',
+                description: n.description || '',
+            }));
+        }
+
+        function renderNoticesTable() {
+            const tbody = document.getElementById('noticesTableBody');
+            if (!tbody) return;
+            if (!noticesList.length) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:32px; color:#64748b;">কোনো নোটিশ পাওয়া যায়নি।</td></tr>';
+                return;
+            }
+            tbody.innerHTML = noticesList.map(row => `
+                <tr>
+                    <td style="white-space:nowrap; font-weight:600;">${esc(row.notice_date || row.date || '')}</td>
+                    <td>${esc(row.subject || '')}</td>
+                    <td>
+                        <div class="action-row">
+                            <button type="button" class="act-btn act-edit" onclick="startEditNotice('${esc(row.id)}')">এডিট</button>
+                            <button type="button" class="act-btn act-del" onclick="deleteNotice('${esc(row.id)}')">ডিলিট</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function startEditNotice(id) {
+            const item = noticesList.find(n => String(n.id) === String(id));
+            if (!item) return;
+            document.getElementById('update_id').value = item.id;
+            document.getElementById('notice_date').value = item.notice_date || item.date || '';
+            document.getElementById('subject').value = item.subject || '';
+            document.getElementById('description').value = item.description || '';
+            document.getElementById('link').value = item.link || '';
+            document.getElementById('is_new').checked = String(item.is_new || item.isNew || '').toLowerCase() === 'yes';
+            document.getElementById('noticeFormHeading').textContent = 'নোটিশ এডিট করুন';
+            document.getElementById('noticeSubmitBtn').textContent = 'নোটিশ আপডেট করুন';
+            document.getElementById('cancelNoticeEdit').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetNoticeForm() {
+            document.getElementById('noticeForm').reset();
+            document.getElementById('update_id').value = '';
+            document.getElementById('is_new').checked = true;
+            document.getElementById('noticeFormHeading').textContent = 'নতুন নোটিশ যোগ করুন';
+            document.getElementById('noticeSubmitBtn').textContent = 'নোটিশ প্রকাশ করুন';
+            document.getElementById('cancelNoticeEdit').style.display = 'none';
+        }
+
+        document.getElementById('cancelNoticeEdit').addEventListener('click', function (e) {
+            e.preventDefault();
+            resetNoticeForm();
+        });
+
+        async function deleteNotice(id) {
+            const strId = String(id);
+            const applyDelete = (baseNotices) => (baseNotices || []).filter(n => String(n.id) !== strId);
+
+            try {
+                if (window.NadufmOffline) {
+                    const res = await window.NadufmOffline.saveMutationOrQueue({
+                        label: 'নোটিশ মুছে ফেলা',
+                        url: '/api/portal/notices/' + encodeURIComponent(strId),
+                        method: 'DELETE',
+                        headers: {},
+                        optimisticUpdate: () => window.NadufmOffline.updateBootstrap(base => {
+                            base.notices = base.notices || { headlines: [], notices: [] };
+                            base.notices.notices = applyDelete(base.notices.notices);
+                            return base;
+                        }),
+                        onOnlineSuccess: (data) => {
+                            if (data && Array.isArray(data.notices)) {
+                                noticesList = data.notices;
+                                return window.NadufmOffline.updateBootstrap(base => {
+                                    base.notices = base.notices || { headlines: [], notices: [] };
+                                    base.notices.notices = normalizePublicNoticeList(data.notices);
+                                    return base;
+                                });
+                            }
+                        },
+                    });
+                    if (res.queued) {
+                        noticesList = applyDelete(noticesList);
+                        renderNoticesTable();
+                        showNoticeAlert('noticeAlert', 'অফলাইনে নোটিশ ডিলিট সংরক্ষিত — অনলাইনে অটো সিঙ্ক হবে।', 'alert-blue');
+                        return;
+                    }
+                    renderNoticesTable();
+                    showNoticeAlert('noticeAlert', 'নোটিশ সফলভাবে মুছে ফেলা হয়েছে।', 'alert-green');
+                    return;
+                }
+                const resp = await fetch('/api/portal/notices/' + encodeURIComponent(strId), { method: 'DELETE' });
+                const data = await resp.json();
+                if (resp.ok && data.notices) {
+                    noticesList = data.notices;
+                    renderNoticesTable();
+                    showNoticeAlert('noticeAlert', 'নোটিশ সফলভাবে মুছে ফেলা হয়েছে।', 'alert-green');
+                }
+            } catch (err) {
+                showNoticeAlert('noticeAlert', err.message || 'নোটিশ মুছে ফেলা যায়নি।', 'alert-red');
+            }
+        }
+
+        document.getElementById('headlineForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const text = document.getElementById('headline_text').value.trim();
+            if (!text) return;
+
+            try {
+                if (window.NadufmOffline) {
+                    const res = await window.NadufmOffline.saveMutationOrQueue({
+                        label: 'স্ক্রলিং হেডলাইন আপডেট',
+                        url: '/api/portal/headline',
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ headline_text: text }),
+                        optimisticUpdate: () => window.NadufmOffline.updateBootstrap(base => {
+                            base.notices = base.notices || { headlines: [], notices: [] };
+                            base.notices.headlines = [{ id: Date.now(), subject: text, link: '' }].concat(base.notices.headlines || []);
+                            return base;
+                        }),
+                        onOnlineSuccess: (data) => window.NadufmOffline.updateBootstrap(base => {
+                            base.notices = base.notices || { headlines: [], notices: [] };
+                            if (Array.isArray(data.headlines)) base.notices.headlines = data.headlines;
+                            return base;
+                        }),
+                    });
+                    if (res.queued) {
+                        showNoticeAlert('headlineAlert', 'অফলাইনে হেডলাইন সংরক্ষিত হয়েছে — অনলাইনে অটো সিঙ্ক হবে।', 'alert-blue');
+                        return;
+                    }
+                    showNoticeAlert('headlineAlert', 'স্ক্রলিং হেডলাইন সফলভাবে আপডেট করা হয়েছে!', 'alert-green');
+                    return;
+                }
+                const resp = await fetch('/api/portal/headline', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ headline_text: text }),
+                });
+                if (!resp.ok) throw new Error('আপডেট ব্যর্থ হয়েছে');
+                showNoticeAlert('headlineAlert', 'স্ক্রলিং হেডলাইন সফলভাবে আপডেট করা হয়েছে!', 'alert-green');
+            } catch (err) {
+                showNoticeAlert('headlineAlert', err.message || 'হেডলাইন আপডেট করা যায়নি।', 'alert-red');
+            }
+        });
+
+        document.getElementById('noticeForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const updateId = document.getElementById('update_id').value.trim();
+            const payload = {
+                update_id: updateId || '',
+                notice_date: document.getElementById('notice_date').value.trim(),
+                subject: document.getElementById('subject').value.trim(),
+                description: document.getElementById('description').value.trim(),
+                link: document.getElementById('link').value.trim(),
+                is_new: document.getElementById('is_new').checked ? 'yes' : 'no',
+            };
+            if (!payload.notice_date || !payload.subject) return;
+
+            const tempItem = {
+                id: updateId ? Number(updateId) || updateId : Date.now(),
+                type: 'notice',
+                notice_date: payload.notice_date,
+                subject: payload.subject,
+                description: payload.description,
+                link: payload.link,
+                is_new: payload.is_new,
+            };
+
+            const applyOptimistic = (arr) => {
+                const list = Array.isArray(arr) ? arr.slice() : [];
+                if (updateId) {
+                    const idx = list.findIndex(n => String(n.id) === String(updateId));
+                    if (idx !== -1) {
+                        list[idx] = Object.assign({}, list[idx], tempItem);
+                        return list;
+                    }
+                }
+                return [tempItem].concat(list);
+            };
+
+            try {
+                if (window.NadufmOffline) {
+                    const res = await window.NadufmOffline.saveMutationOrQueue({
+                        label: updateId ? 'নোটিশ আপডেট' : 'নতুন নোটিশ প্রকাশ',
+                        url: '/api/portal/notices',
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                        optimisticUpdate: () => window.NadufmOffline.updateBootstrap(base => {
+                            base.notices = base.notices || { headlines: [], notices: [] };
+                            const pubItem = {
+                                id: tempItem.id,
+                                date: tempItem.notice_date,
+                                subject: tempItem.subject,
+                                link: tempItem.link,
+                                isNew: tempItem.is_new,
+                                description: tempItem.description,
+                            };
+                            const existing = Array.isArray(base.notices.notices) ? base.notices.notices.slice() : [];
+                            if (updateId) {
+                                const idx = existing.findIndex(n => String(n.id) === String(updateId));
+                                if (idx !== -1) existing[idx] = Object.assign({}, existing[idx], pubItem);
+                                else existing.unshift(pubItem);
+                            } else {
+                                existing.unshift(pubItem);
+                            }
+                            base.notices.notices = existing;
+                            return base;
+                        }),
+                        onOnlineSuccess: (data) => {
+                            if (data && Array.isArray(data.notices)) {
+                                noticesList = data.notices;
+                                return window.NadufmOffline.updateBootstrap(base => {
+                                    base.notices = base.notices || { headlines: [], notices: [] };
+                                    base.notices.notices = normalizePublicNoticeList(data.notices);
+                                    return base;
+                                });
+                            }
+                        },
+                    });
+                    if (res.queued) {
+                        noticesList = applyOptimistic(noticesList);
+                        resetNoticeForm();
+                        renderNoticesTable();
+                        showNoticeAlert('noticeAlert', 'অফলাইনে সংরক্ষিত হয়েছে — অনলাইনে এলে অটো সিঙ্ক হবে।', 'alert-blue');
+                        return;
+                    }
+                    resetNoticeForm();
+                    renderNoticesTable();
+                    showNoticeAlert('noticeAlert', updateId ? 'নোটিশ সফলভাবে আপডেট করা হয়েছে!' : 'নতুন নোটিশ সফলভাবে যুক্ত হয়েছে!', 'alert-green');
+                    return;
+                }
+
+                const resp = await fetch('/api/portal/notices', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data.error || 'সংরক্ষণ ব্যর্থ হয়েছে');
+                if (data.notices) noticesList = data.notices;
+                resetNoticeForm();
+                renderNoticesTable();
+                showNoticeAlert('noticeAlert', updateId ? 'নোটিশ সফলভাবে আপডেট করা হয়েছে!' : 'নতুন নোটিশ সফলভাবে যুক্ত হয়েছে!', 'alert-green');
+            } catch (err) {
+                showNoticeAlert('noticeAlert', err.message || 'সংরক্ষণ ব্যর্থ হয়েছে।', 'alert-red');
+            }
+        });
+
+        async function hydrateOfflineNotices() {
+            if (!window.NadufmOffline) return;
+            const queue = await window.NadufmOffline.getQueue();
+            const hasPendingNotice = queue.some(q => q.url && (q.url.indexOf('/api/portal/notices') !== -1 || q.url.indexOf('/api/portal/headline') !== -1));
+            if (!navigator.onLine || hasPendingNotice) {
+                const snap = await window.NadufmOffline.getSnapshot('bootstrap');
+                if (snap && snap.notices && Array.isArray(snap.notices.notices)) {
+                    noticesList = snap.notices.notices.map(n => ({
+                        id: n.id,
+                        notice_date: n.date || n.notice_date || '',
+                        subject: n.subject || '',
+                        description: n.description || '',
+                        link: n.link || '',
+                        is_new: n.isNew || n.is_new || 'no',
+                    }));
+                    renderNoticesTable();
+                }
+                if (snap && snap.notices && Array.isArray(snap.notices.headlines) && snap.notices.headlines[0]) {
+                    const hlInput = document.getElementById('headline_text');
+                    if (hlInput && !hlInput.value) hlInput.value = snap.notices.headlines[0].subject || '';
+                }
+            }
+        }
+
+        window.addEventListener('nadufm:sync-status', function (ev) {
+            if (ev && ev.detail && ev.detail.type === 'BOOTSTRAP_REFRESHED') {
+                hydrateOfflineNotices();
+            }
+        });
+
+        renderNoticesTable();
+        hydrateOfflineNotices();
+    </script>
+    <script src="/pwa.js" defer></script>
 </body>
 </html>

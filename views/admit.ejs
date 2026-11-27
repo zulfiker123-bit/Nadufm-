@@ -390,24 +390,49 @@
         errorMsg.style.display = "none";
 
         try {
-            const localRes = await fetch('/api/portal/admit-lookup?roll=' + encodeURIComponent(roll) + '&class=' + encodeURIComponent(sClass || ''));
-            if (localRes.ok) {
-                const localData = await localRes.json();
-                if (localData && localData.status === 'success') {
-                    showAdmitData(localData, sClass);
+            if (typeof navigator === 'undefined' || navigator.onLine) {
+                try {
+                    const localRes = await fetch('/api/portal/admit-lookup?roll=' + encodeURIComponent(roll) + '&class=' + encodeURIComponent(sClass || ''));
+                    if (localRes.ok) {
+                        const localData = await localRes.json();
+                        if (localData && localData.status === 'success') {
+                            showAdmitData(localData, sClass);
+                            return;
+                        }
+                    }
+                } catch (_) {}
+            }
+            if (window.NadufmOffline) {
+                const offRes = await window.NadufmOffline.findStudents({ classParam: sClass, rollParam: roll });
+                if (offRes && offRes.status === 'success' && offRes.student) {
+                    const st = offRes.student;
+                    showAdmitData({
+                        status: 'success',
+                        name: st.name_bn || st.name_en || '—',
+                        father: st.father_bn || '',
+                        mother: st.mother_bn || '',
+                        class: st.class_name || sClass || '',
+                        classKey: st.classKey || '',
+                        roll: st.roll || roll,
+                        id: st.id || st.reg_no || '',
+                        session: st.session || '',
+                        photo: st.photo || '/logo.png',
+                    }, sClass);
                     return;
                 }
             }
-            const response = await fetch(`${scriptURL}?action=getStudent&roll=${encodeURIComponent(roll)}&class=${encodeURIComponent(sClass)}`);
-            const data = await response.json();
-            if (data.status === "success") {
-                showAdmitData(data, sClass);
-            } else {
-                errorMsg.innerText = "দুঃখিত! কোনো তথ্য পাওয়া যায়নি।";
-                errorMsg.style.display = "block";
+            if (typeof navigator === 'undefined' || navigator.onLine) {
+                const response = await fetch(`${scriptURL}?action=getStudent&roll=${encodeURIComponent(roll)}&class=${encodeURIComponent(sClass)}`);
+                const data = await response.json();
+                if (data.status === "success") {
+                    showAdmitData(data, sClass);
+                    return;
+                }
             }
+            errorMsg.innerText = "দুঃখিত! কোনো তথ্য পাওয়া যায়নি।";
+            errorMsg.style.display = "block";
         } catch (err) {
-            errorMsg.innerText = "দুঃখিত! তথ্য খুঁজে পাওয়া যায়নি বা সার্ভার সমস্যা হয়েছে।";
+            errorMsg.innerText = "দুঃখিত! তথ্য খুঁজে পাওয়া যায়নি বা সংযোগ সমস্যা হয়েছে।";
             errorMsg.style.display = "block";
         } finally {
             btn.disabled = false;

@@ -1,4 +1,11 @@
 (function () {
+  var isInIframe = false;
+  try {
+    isInIframe = window.self !== window.top;
+  } catch (_) {
+    isInIframe = true;
+  }
+
   // 1. Register Service Worker
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
@@ -10,7 +17,7 @@
     });
   }
 
-  // 2. PWA Install Prompt & Standalone Detection
+  // 2. PWA Install Prompt & Standalone Detection (Top window only)
   var deferredPrompt = null;
   var isStandalone =
     window.matchMedia('(display-mode: standalone)').matches ||
@@ -27,9 +34,9 @@
       '.pwa-install-btn {' +
       '  display: inline-flex; align-items: center; gap: 6px;' +
       '  background: #f0fdf4; color: #15803d; border: 1px solid rgba(21,128,61,0.35);' +
-      '  min-height: 38px; padding: 0 12px; border-radius: 10px; font-size: 13px; font-weight: 600;' +
+      '  min-height: 36px; padding: 0 12px; border-radius: 10px; font-size: 13px; font-weight: 600;' +
       '  cursor: pointer; transition: background 0.16s ease, transform 0.12s ease;' +
-      '  white-space: nowrap;' +
+      '  white-space: nowrap; font-family: inherit;' +
       '}' +
       '.pwa-install-btn:hover { background: #dcfce7; }' +
       '.pwa-install-fab {' +
@@ -37,17 +44,20 @@
       '  display: inline-flex; align-items: center; gap: 8px;' +
       '  background: #15803d; color: #ffffff; border: 1px solid rgba(255,255,255,0.3);' +
       '  padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600;' +
-      '  cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,0.2);' +
+      '  cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,0.2); font-family: inherit;' +
       '}' +
       '.pwa-offline-banner {' +
       '  position: fixed; bottom: 70px; left: 14px; z-index: 9999;' +
       '  display: none; align-items: center; gap: 8px;' +
-      '  background: #d97706; color: #ffffff; padding: 8px 14px;' +
+      '  background: #b45309; color: #ffffff; padding: 8px 14px;' +
       '  border-radius: 10px; font-size: 13px; font-weight: 600;' +
-      '  box-shadow: 0 4px 12px rgba(0,0,0,0.2);' +
+      '  box-shadow: 0 6px 18px rgba(0,0,0,0.2); border: none; cursor: pointer; font-family: inherit;' +
       '}' +
+      '.pwa-offline-banner.is-syncing { background: #0369a1; }' +
+      '.pwa-offline-banner.is-auth { background: #b91c1c; }' +
+      '@media (min-width: 769px) { .pwa-offline-banner { bottom: 18px; left: 18px; } .pwa-install-fab { bottom: 18px; right: 18px; } }' +
       '.pwa-offline-dot {' +
-      '  width: 8px; height: 8px; border-radius: 50%; background: #fff; display: inline-block;' +
+      '  width: 8px; height: 8px; border-radius: 50%; background: #fff; display: inline-block; flex-shrink: 0;' +
       '}' +
       '.pwa-ios-modal {' +
       '  position: fixed; inset: 0; z-index: 10000; display: none;' +
@@ -65,11 +75,12 @@
       '  background: #28a745; color: #fff; font-weight: 700; cursor: pointer; font-size: 15px;' +
       '}' +
       '.pwa-toast {' +
-      '  position: fixed; bottom: 20px; right: 20px; z-index: 10001;' +
-      '  background: #1b5e20; color: #fff; padding: 10px 18px; border-radius: 8px;' +
-      '  font-size: 14px; font-weight: 700; box-shadow: 0 6px 16px rgba(0,0,0,0.2);' +
+      '  position: fixed; bottom: 72px; right: 18px; z-index: 10001;' +
+      '  background: #15803d; color: #fff; padding: 10px 18px; border-radius: 10px;' +
+      '  font-size: 13.5px; font-weight: 700; box-shadow: 0 8px 20px rgba(0,0,0,0.22);' +
       '}' +
-      '@media print { .pwa-install-btn, .pwa-install-fab, .pwa-offline-banner, .pwa-ios-modal { display: none !important; } }';
+      '@media (min-width: 769px) { .pwa-toast { bottom: 20px; right: 20px; } }' +
+      '@media print { .pwa-install-btn, .pwa-install-fab, .pwa-offline-banner, .pwa-ios-modal, .pwa-toast { display: none !important; } }';
     document.head.appendChild(style);
   }
 
@@ -98,16 +109,26 @@
   }
 
   function showToast(msg) {
+    injectStyles();
+    var prev = document.getElementById('pwa-active-toast');
+    if (prev) prev.remove();
     var t = document.createElement('div');
+    t.id = 'pwa-active-toast';
     t.className = 'pwa-toast';
     t.textContent = msg;
     document.body.appendChild(t);
     setTimeout(function () {
-      t.remove();
-    }, 3500);
+      if (t.parentNode) t.remove();
+    }, 4000);
+  }
+
+  function bnCount(n) {
+    var d = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    return String(n).replace(/[0-9]/g, function (c) { return d[Number(c)]; });
   }
 
   function renderInstallButton() {
+    if (isInIframe) return;
     if (isStandalone) {
       var existingSlot = document.getElementById('pwa-install-slot');
       if (existingSlot) existingSlot.innerHTML = '';
@@ -138,7 +159,7 @@
       '<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">' +
       '  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>' +
       '</svg>' +
-      '<span>' + (isIOS && !deferredPrompt ? 'হোম স্ক্রিনে যোগ করুন' : 'অ্যাপ ইনস্টল করুন') + '</span>';
+      '<span>' + (isIOS && !deferredPrompt ? 'হোম স্ক্রিনে যোগ করুন' : 'Nadu fm ইনস্টল') + '</span>';
 
     btn.addEventListener('click', async function () {
       if (deferredPrompt) {
@@ -174,27 +195,104 @@
     showToast('অ্যাপটি সফলভাবে ইনস্টল হয়েছে!');
   });
 
-  // 3. Offline State & Connectivity Indicator
+  // 3. Offline State & Auto-Sync Status Indicator (Top window only)
   function setupOfflineBanner() {
+    if (isInIframe) return;
     injectStyles();
     var banner = document.getElementById('pwa-offline-banner');
     if (!banner) {
-      banner = document.createElement('div');
+      banner = document.createElement('button');
+      banner.type = 'button';
       banner.id = 'pwa-offline-banner';
       banner.className = 'pwa-offline-banner';
-      banner.innerHTML =
-        '<span class="pwa-offline-dot"></span>' +
-        '<span>অফলাইন মোড — সংরক্ষিত তথ্য দেখানো হচ্ছে</span>';
       document.body.appendChild(banner);
     }
 
-    function updateStatus() {
-      banner.style.display = navigator.onLine ? 'none' : 'inline-flex';
+    var state = {
+      online: navigator.onLine,
+      pendingCount: 0,
+      authRequired: false,
+      syncing: false,
+    };
+
+    function renderBanner() {
+      banner.classList.remove('is-syncing', 'is-auth');
+      if (!state.online) {
+        banner.style.display = 'inline-flex';
+        var extra = state.pendingCount > 0 ? ' · ' + bnCount(state.pendingCount) + 'টি সিঙ্কের অপেক্ষায়' : ' · সংরক্ষিত তথ্য চালু আছে';
+        banner.innerHTML = '<span class="pwa-offline-dot"></span><span>অফলাইন মোড' + extra + '</span>';
+        return;
+      }
+
+      if (state.syncing) {
+        banner.classList.add('is-syncing');
+        banner.style.display = 'inline-flex';
+        banner.innerHTML = '<span class="pwa-offline-dot"></span><span>অটো সিঙ্ক হচ্ছে (' + bnCount(state.pendingCount) + 'টি)...</span>';
+        return;
+      }
+
+      if (state.authRequired && state.pendingCount > 0) {
+        banner.classList.add('is-auth');
+        banner.style.display = 'inline-flex';
+        banner.innerHTML = '<span class="pwa-offline-dot"></span><span>' + bnCount(state.pendingCount) + 'টি তথ্য সিঙ্ক করতে অ্যাডমিন লগইন করুন</span>';
+        return;
+      }
+
+      if (state.pendingCount > 0) {
+        banner.classList.add('is-syncing');
+        banner.style.display = 'inline-flex';
+        banner.innerHTML = '<span class="pwa-offline-dot"></span><span>সিঙ্ক হচ্ছে (' + bnCount(state.pendingCount) + 'টি পেন্ডিং)...</span>';
+        return;
+      }
+
+      banner.style.display = 'none';
     }
 
-    window.addEventListener('online', updateStatus);
-    window.addEventListener('offline', updateStatus);
-    updateStatus();
+    banner.addEventListener('click', function () {
+      if (!navigator.onLine) return;
+      if (state.authRequired && typeof window.openAdminLoginModal === 'function') {
+        window.openAdminLoginModal(window.location.pathname || '/dashboard.php');
+        return;
+      }
+      if (window.NadufmOffline) {
+        window.NadufmOffline.flushSyncQueue();
+      }
+    });
+
+    window.addEventListener('online', function () {
+      state.online = true;
+      renderBanner();
+    });
+    window.addEventListener('offline', function () {
+      state.online = false;
+      state.syncing = false;
+      renderBanner();
+    });
+
+    window.addEventListener('nadufm:sync-status', function (ev) {
+      var d = (ev && ev.detail) || {};
+      if (typeof d.online === 'boolean') state.online = d.online;
+      if (typeof d.pendingCount === 'number') state.pendingCount = d.pendingCount;
+      if (typeof d.authRequired === 'boolean') state.authRequired = d.authRequired;
+      if (d.type === 'SYNC_STARTED') state.syncing = true;
+      if (d.type === 'SYNC_COMPLETED' || d.type === 'SYNC_FINISHED' || d.type === 'SYNC_IDLE' || d.type === 'AUTH_REQUIRED') {
+        state.syncing = false;
+      }
+      if (d.type === 'SYNC_COMPLETED' && d.syncedCount > 0) {
+        showToast('অফলাইনের ' + bnCount(d.syncedCount) + 'টি তথ্য অটো সিঙ্ক সম্পন্ন হয়েছে!');
+      }
+      renderBanner();
+    });
+
+    if (window.NadufmOffline) {
+      window.NadufmOffline.getQueue().then(function (items) {
+        state.pendingCount = items.length;
+        state.authRequired = items.some(function (x) { return x.status === 'auth_required'; });
+        renderBanner();
+      });
+    } else {
+      renderBanner();
+    }
   }
 
   document.addEventListener('DOMContentLoaded', function () {

@@ -26,7 +26,10 @@
         <span>হোম</span>
     </a>
     <a href="/#notice-section" class="mobile-tab" data-nav-match="#notice">
-        <%- iconSvg('bell', 'app-svg-icon', 20) %>
+        <span class="mobile-tab-ico-wrap">
+            <%- iconSvg('bell', 'app-svg-icon', 20) %>
+            <span class="mobile-count-badge" data-notice-badge="num" hidden></span>
+        </span>
         <span>নোটিশ</span>
     </a>
     <a href="/student.php" class="mobile-tab" data-nav-match="/student">
@@ -177,7 +180,7 @@
 </script>
 <% } %>
 
-<script src="/script.js?v=13"></script>
-<% if (!isEmbedded) { %><script src="/pwa.js" defer></script><% } %>
+<script src="/script.js?v=15"></script>
+<script src="/pwa.js" defer></script>
 </body>
 </html>
