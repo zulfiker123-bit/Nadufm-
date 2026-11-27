@@ -90,7 +90,13 @@ app.get('/sw.js', (req, res) => {
 app.use('/vendor/html2pdf.bundle.min.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'node_modules', 'html2pdf.js', 'dist', 'html2pdf.bundle.min.js'));
 });
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+  setHeaders: (res, filePath) => {
+    if (/\.(css|js|html)$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    }
+  },
+}));
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 app.use(express.json({ limit: '25mb' }));
 app.use((req, res, next) => {
