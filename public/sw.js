@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'nadufm-pwa-v17';
+const CACHE_VERSION = 'nadufm-pwa-v16';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PAGE_CACHE = `${CACHE_VERSION}-pages`;
 const ADMIN_PAGE_CACHE = `${CACHE_VERSION}-admin-pages`;
@@ -7,8 +7,8 @@ const API_CACHE = `${CACHE_VERSION}-api`;
 const PRECACHE_URLS = [
   '/',
   '/fonts.css',
-  '/style.css?v=17',
-  '/script.js?v=17',
+  '/style.css?v=15',
+  '/script.js?v=15',
   '/student-picker.js',
   '/doc-export.js',
   '/offline-sync.js',
@@ -325,30 +325,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Mutable CSS/JS/manifest assets: network-first so new deployments appear immediately
-  const isMutableAsset =
-    /\.(css|js|webmanifest)$/i.test(url.pathname) &&
-    !url.pathname.startsWith('/vendor/');
-
-  if (isMutableAsset) {
-    event.respondWith(
-      fetch(req)
-        .then((res) => {
-          if (res && res.status === 200) {
-            const copy = res.clone();
-            caches.open(STATIC_CACHE).then((cache) => cache.put(req, copy));
-          }
-          return res;
-        })
-        .catch(async () => {
-          const cached = await caches.match(req);
-          return cached || Response.error();
-        })
-    );
-    return;
-  }
-
-  // Immutable/heavy static assets (fonts, images, vendor bundles): cache-first with background revalidation
+  // Static assets: cache-first with background revalidation
   event.respondWith(
     caches.match(req).then((cached) => {
       const networkFetch = fetch(req)

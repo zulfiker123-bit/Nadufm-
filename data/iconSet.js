@@ -310,11 +310,6 @@ export const ICONS = {
     <circle cx="12" cy="12" r="8.8" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="1.85"/>
     <path d="M12 7.8V13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
     <circle cx="12" cy="16.2" r="1.1" fill="currentColor"/>
-  `,
-  'camera': `
-    <path d="M4.2 7.5H7.2L8.8 5H15.2L16.8 7.5H19.8C20.6 7.5 21.2 8.1 21.2 8.9V18.2C21.2 19 20.6 19.6 19.8 19.6H4.2C3.4 19.6 2.8 19 2.8 18.2V8.9C2.8 8.1 3.4 7.5 4.2 7.5Z" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="1.85" stroke-linejoin="round"/>
-    <circle cx="12" cy="13.2" r="3.4" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="1.8"/>
-    <circle cx="17.6" cy="10.2" r="0.9" fill="currentColor"/>
   `
 };
 

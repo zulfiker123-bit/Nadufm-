@@ -6,23 +6,11 @@
     isInIframe = true;
   }
 
-  // 1. Register Service Worker & ensure fresh updates
+  // 1. Register Service Worker
   if ('serviceWorker' in navigator) {
-    var hadController = Boolean(navigator.serviceWorker.controller);
-    var swRefreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', function () {
-      if (!hadController || swRefreshing) return;
-      swRefreshing = true;
-      window.location.reload();
-    });
     window.addEventListener('load', function () {
       navigator.serviceWorker
-        .register('/sw.js', { scope: '/', updateViaCache: 'none' })
-        .then(function (reg) {
-          if (reg && typeof reg.update === 'function') {
-            reg.update().catch(function () {});
-          }
-        })
+        .register('/sw.js', { scope: '/' })
         .catch(function (err) {
           console.warn('SW registration failed:', err);
         });
