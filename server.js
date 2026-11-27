@@ -506,7 +506,6 @@ app.get('/api/offline/bootstrap', (req, res) => {
       notices: getNoticesForBoard(),
     },
     teachers: portal.teachers || [],
-    governingBody: portal.governingBody,
     academic: {
       routines: portal.routines || [],
       syllabus: portal.syllabus || [],
@@ -552,11 +551,8 @@ app.get(['/student', '/student.php'], (req, res) => {
 });
 
 app.get(['/governingbody', '/governingbody.php'], (req, res) => {
-  const portal = loadPortalStore();
   res.render('governingbody', {
     pageTitle: 'গভর্নিং বডি- নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা',
-    governingBody: portal.governingBody,
-    convertToBengali,
   });
 });
 
@@ -797,7 +793,6 @@ app.all(['/dashboard', '/dashboard.php', '/admin', '/admin.php', '/admin-panel',
   const excelExamsCount = Object.values(store.results?.exams || {}).filter((e) => (e.rows || []).length > 0).length;
   const excelDocsCount = (store.documents?.rows || []).length;
   const teachersCount = (portal.teachers || []).length;
-  const governingBodyCount = (portal.governingBody?.members || []).length;
   const admissionsCount = (portal.admissions || []).length;
   const routinesCount = (portal.routines || []).length;
   const syllabusCount = (portal.syllabus || []).length;
@@ -911,15 +906,6 @@ app.all(['/dashboard', '/dashboard.php', '/admin', '/admin.php', '/admin-panel',
       icon: 'chalkboard',
       tone: 'ic-teal',
       src: '/admin-teachers.php?embed=1',
-    },
-    {
-      id: 'governing-body',
-      category: 'academic',
-      label: 'গভর্নিং বডি',
-      meta: `${convertToBengali(governingBodyCount)} জন সদস্য`,
-      icon: 'users',
-      tone: 'ic-indigo',
-      src: '/admin-governingbody.php?embed=1',
     },
     {
       id: 'routine',
@@ -1053,90 +1039,6 @@ app.delete('/api/portal/teachers/:id', requireAdminApi, verifySameOrigin, (req, 
   portal.teachers = (portal.teachers || []).filter((t) => t.id !== String(req.params.id));
   savePortalStore(portal);
   res.json({ ok: true, teachers: portal.teachers });
-});
-
-app.get(['/admin-governingbody', '/admin-governingbody.php'], requireAdminPage, (req, res) => {
-  const portal = loadPortalStore();
-  res.render('admin-governingbody', {
-    governingBody: portal.governingBody,
-  });
-});
-
-app.post('/api/portal/governingbody/meta', requireAdminApi, verifySameOrigin, (req, res) => {
-  const portal = loadPortalStore();
-  const body = req.body || {};
-  const institutionName = String(body.institutionName || '').trim();
-  const term = String(body.term || '').trim();
-  if (!institutionName || !term) {
-    return res.status(400).json({ error: 'মাদ্রাসার নাম ও কার্যকাল আবশ্যক।' });
-  }
-  portal.governingBody = {
-    ...(portal.governingBody || { members: [] }),
-    institutionName,
-    term,
-  };
-  savePortalStore(portal);
-  res.json({ ok: true, governingBody: portal.governingBody });
-});
-
-app.post('/api/portal/governingbody/members', requireAdminApi, verifySameOrigin, (req, res) => {
-  const portal = loadPortalStore();
-  const body = req.body || {};
-  const id = body.id ? String(body.id) : `gb_${Date.now()}`;
-  const name = String(body.name || '').trim();
-  const designation = String(body.designation || '').trim();
-  if (!name || !designation) {
-    return res.status(400).json({ error: 'সদস্যের নাম ও পদবী আবশ্যক।' });
-  }
-  const members = Array.isArray(portal.governingBody?.members) ? portal.governingBody.members.slice() : [];
-  const idx = members.findIndex((m) => String(m.id) === id);
-  const item = { id, name, designation };
-  if (idx !== -1) {
-    members[idx] = item;
-  } else {
-    members.push(item);
-  }
-  portal.governingBody = {
-    ...(portal.governingBody || {}),
-    members,
-  };
-  savePortalStore(portal);
-  res.json({ ok: true, governingBody: portal.governingBody });
-});
-
-app.post('/api/portal/governingbody/members/move', requireAdminApi, verifySameOrigin, (req, res) => {
-  const portal = loadPortalStore();
-  const body = req.body || {};
-  const id = String(body.id || '');
-  const direction = body.direction === 'up' ? 'up' : (body.direction === 'down' ? 'down' : '');
-  const members = Array.isArray(portal.governingBody?.members) ? portal.governingBody.members.slice() : [];
-  const idx = members.findIndex((m) => String(m.id) === id);
-  if (idx === -1 || !direction) {
-    return res.status(400).json({ error: 'সঠিক সদস্য ও দিকনির্দেশনা দিন।' });
-  }
-  const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
-  if (targetIdx >= 0 && targetIdx < members.length) {
-    const tmp = members[idx];
-    members[idx] = members[targetIdx];
-    members[targetIdx] = tmp;
-    portal.governingBody = {
-      ...(portal.governingBody || {}),
-      members,
-    };
-    savePortalStore(portal);
-  }
-  res.json({ ok: true, governingBody: portal.governingBody });
-});
-
-app.delete('/api/portal/governingbody/members/:id', requireAdminApi, verifySameOrigin, (req, res) => {
-  const portal = loadPortalStore();
-  const members = (portal.governingBody?.members || []).filter((m) => String(m.id) !== String(req.params.id));
-  portal.governingBody = {
-    ...(portal.governingBody || {}),
-    members,
-  };
-  savePortalStore(portal);
-  res.json({ ok: true, governingBody: portal.governingBody });
 });
 
 app.get(['/admin-academic', '/admin-academic.php'], requireAdminPage, (req, res) => {

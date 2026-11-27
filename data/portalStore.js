@@ -50,27 +50,6 @@ function createDefaultPortalStore() {
       { id: 'st_4', className: 'আলিম (১ম ও ২য় বর্ষ)', boys: 84, girls: 76 },
       { id: 'st_5', className: 'ফাজিল (স্নাতক)', boys: 62, girls: 48 },
     ],
-    governingBody: {
-      institutionName: 'নলতা আহ্ছানিয়া দারুল উলূম ফাযিল মাদ্রাসা, সাতক্ষীরা।',
-      term: '২৫.০৪.২০২৫ হতে ২৪.০৪.২০২৮ খ্রি: পর্যন্ত (০৩ বছর)।',
-      members: [
-        { id: 'gb_1', name: 'আলহাজ্ব মোঃ রফিকুল ইসলাম', designation: 'সভাপতি (ভাইস চ্যান্সেলর মহোদয় কর্তৃক মনোনীত)' },
-        { id: 'gb_2', name: 'জনাব মোঃ নজরুল ইসলাম', designation: 'সহ-সভাপতি' },
-        { id: 'gb_3', name: 'জনাব মোঃ নজরুল ইসলাম', designation: 'বিদ্যোৎসাহী প্রতিনিধি (ভাইস চ্যান্সেলর মহোদয় কর্তৃক মনোনীত)' },
-        { id: 'gb_4', name: 'আলহাজ্ব এ, এফ, এম শামছুল হক', designation: 'বিদ্যোৎসাহী প্রতিনিধি (বাংলাদেশ মাদ্রাসা শিক্ষা বোর্ড কর্তৃক মনোনীত)' },
-        { id: 'gb_5', name: 'আলহাজ্ব মোঃ ইউনুস', designation: 'বিদ্যোৎসাহী প্রতিনিধি (ডি.জি. কর্তৃক মনোনীত)' },
-        { id: 'gb_6', name: 'জনাব মোঃ রমজান আলী', designation: 'সদস্য (অভিভাবক প্রতিনিধি)' },
-        { id: 'gb_7', name: 'জনাব মোঃ হাবিবুর রহমান', designation: 'সদস্য (অভিভাবক প্রতিনিধি)' },
-        { id: 'gb_8', name: 'জনাব মোঃ আব্দুর রাজ্জাক', designation: 'সদস্য (অভিভাবক প্রতিনিধি)' },
-        { id: 'gb_9', name: 'আলহাজ মো: সাইদুর রহমান', designation: 'প্রতিষ্ঠাতা সদস্য' },
-        { id: 'gb_10', name: 'আলহাজ্ব মো: আব্দুর রাজ্জাক', designation: 'দাতা সদস্য' },
-        { id: 'gb_11', name: 'জনাব মো: ইলিয়াস হোসেন', designation: 'সদস্য (শিক্ষক প্রতিনিধি)' },
-        { id: 'gb_12', name: 'জনাব শুভ্র রেজা', designation: 'সদস্য (শিক্ষক প্রতিনিধি)' },
-        { id: 'gb_13', name: 'জনাব মোঃ মারুফ হোসেন', designation: 'সদস্য (শিক্ষক প্রতিনিধি)' },
-        { id: 'gb_14', name: 'জনাব ডাঃ মোঃ হাবিবুর রহমান', designation: 'সদস্য (চিকিৎসক)' },
-        { id: 'gb_15', name: 'অধ্যক্ষ, নলতা আহছানিয়া দারুল উলূম ফাযিল মাদরাসা', designation: 'সদস্য সচিব (পদাধিকারবলে)' },
-      ],
-    },
   };
 }
 
@@ -84,7 +63,6 @@ export function loadPortalStore() {
     const raw = fs.readFileSync(STORE_PATH, 'utf8');
     const parsed = JSON.parse(raw);
     const defaults = createDefaultPortalStore();
-    const gb = parsed.governingBody && typeof parsed.governingBody === 'object' ? parsed.governingBody : {};
     return {
       notices: Array.isArray(parsed.notices) ? parsed.notices : defaults.notices,
       teachers: Array.isArray(parsed.teachers) ? parsed.teachers : defaults.teachers,
@@ -94,15 +72,6 @@ export function loadPortalStore() {
       fees: Array.isArray(parsed.fees) ? parsed.fees : defaults.fees,
       registrations: Array.isArray(parsed.registrations) ? parsed.registrations : defaults.registrations,
       studentStats: Array.isArray(parsed.studentStats) ? parsed.studentStats : defaults.studentStats,
-      governingBody: {
-        institutionName: typeof gb.institutionName === 'string' && gb.institutionName.trim()
-          ? gb.institutionName
-          : defaults.governingBody.institutionName,
-        term: typeof gb.term === 'string' && gb.term.trim()
-          ? gb.term
-          : defaults.governingBody.term,
-        members: Array.isArray(gb.members) ? gb.members : defaults.governingBody.members,
-      },
     };
   } catch (err) {
     console.warn('Could not read portal store, resetting defaults:', err.message);
