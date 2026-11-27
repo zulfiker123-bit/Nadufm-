@@ -506,6 +506,8 @@ app.get('/api/offline/bootstrap', (req, res) => {
       notices: getNoticesForBoard(),
     },
     teachers: portal.teachers || [],
+    governingBodyInfo: portal.governingBodyInfo || {},
+    governingBody: portal.governingBody || [],
     academic: {
       routines: portal.routines || [],
       syllabus: portal.syllabus || [],
@@ -551,8 +553,12 @@ app.get(['/student', '/student.php'], (req, res) => {
 });
 
 app.get(['/governingbody', '/governingbody.php'], (req, res) => {
+  const portal = loadPortalStore();
   res.render('governingbody', {
     pageTitle: 'গভর্নিং বডি- নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা',
+    governingBodyInfo: portal.governingBodyInfo || {},
+    governingBody: portal.governingBody || [],
+    convertToBengali,
   });
 });
 
@@ -793,6 +799,7 @@ app.all(['/dashboard', '/dashboard.php', '/admin', '/admin.php', '/admin-panel',
   const excelExamsCount = Object.values(store.results?.exams || {}).filter((e) => (e.rows || []).length > 0).length;
   const excelDocsCount = (store.documents?.rows || []).length;
   const teachersCount = (portal.teachers || []).length;
+  const governingCount = (portal.governingBody || []).length;
   const admissionsCount = (portal.admissions || []).length;
   const routinesCount = (portal.routines || []).length;
   const syllabusCount = (portal.syllabus || []).length;
@@ -906,6 +913,15 @@ app.all(['/dashboard', '/dashboard.php', '/admin', '/admin.php', '/admin-panel',
       icon: 'chalkboard',
       tone: 'ic-teal',
       src: '/admin-teachers.php?embed=1',
+    },
+    {
+      id: 'governing-body',
+      category: 'academic',
+      label: 'গভর্নিং বডি',
+      meta: `${convertToBengali(governingCount)} জন সদস্য`,
+      icon: 'users',
+      tone: 'ic-blue',
+      src: '/admin-governingbody.php?embed=1',
     },
     {
       id: 'routine',
@@ -1039,6 +1055,61 @@ app.delete('/api/portal/teachers/:id', requireAdminApi, verifySameOrigin, (req, 
   portal.teachers = (portal.teachers || []).filter((t) => t.id !== String(req.params.id));
   savePortalStore(portal);
   res.json({ ok: true, teachers: portal.teachers });
+});
+
+app.get(['/admin-governingbody', '/admin-governingbody.php'], requireAdminPage, (req, res) => {
+  const portal = loadPortalStore();
+  res.render('admin-governingbody', {
+    governingBodyInfo: portal.governingBodyInfo || {},
+    governingBody: portal.governingBody || [],
+  });
+});
+
+app.post('/api/portal/governingbody/info', requireAdminApi, verifySameOrigin, (req, res) => {
+  const portal = loadPortalStore();
+  const body = req.body || {};
+  const madrasahName = String(body.madrasahName || '').trim();
+  const tenure = String(body.tenure || '').trim();
+  if (!madrasahName || !tenure) {
+    return res.status(400).json({ error: 'মাদ্রাসার নাম ও কার্যকাল আবশ্যক।' });
+  }
+  portal.governingBodyInfo = { madrasahName, tenure };
+  savePortalStore(portal);
+  res.json({ ok: true, governingBodyInfo: portal.governingBodyInfo });
+});
+
+app.post('/api/portal/governingbody', requireAdminApi, verifySameOrigin, (req, res) => {
+  const portal = loadPortalStore();
+  const body = req.body || {};
+  const id = body.id ? String(body.id) : `gb_${Date.now()}`;
+  const orderNum = Math.max(1, parseInt(String(body.order || '1'), 10) || 1);
+  const item = {
+    id,
+    order: orderNum,
+    name: String(body.name || '').trim(),
+    designation: String(body.designation || '').trim(),
+  };
+  if (!item.name || !item.designation) {
+    return res.status(400).json({ error: 'সদস্যের নাম ও পদবী আবশ্যক।' });
+  }
+  const list = Array.isArray(portal.governingBody) ? portal.governingBody.slice() : [];
+  const idx = list.findIndex((m) => String(m.id) === id);
+  if (idx !== -1) {
+    list[idx] = item;
+  } else {
+    list.push(item);
+  }
+  list.sort((a, b) => (Number(a.order) || 999) - (Number(b.order) || 999));
+  portal.governingBody = list;
+  savePortalStore(portal);
+  res.json({ ok: true, governingBody: portal.governingBody });
+});
+
+app.delete('/api/portal/governingbody/:id', requireAdminApi, verifySameOrigin, (req, res) => {
+  const portal = loadPortalStore();
+  portal.governingBody = (portal.governingBody || []).filter((m) => String(m.id) !== String(req.params.id));
+  savePortalStore(portal);
+  res.json({ ok: true, governingBody: portal.governingBody });
 });
 
 app.get(['/admin-academic', '/admin-academic.php'], requireAdminPage, (req, res) => {

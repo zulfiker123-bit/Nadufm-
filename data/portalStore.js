@@ -7,6 +7,29 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const STORE_PATH = path.join(__dirname, 'portal-store.json');
 
+const DEFAULT_GOVERNING_BODY_INFO = {
+  madrasahName: 'নলতা আহ্ছানিয়া দারুল উলূম ফাযিল মাদ্রাসা, সাতক্ষীরা।',
+  tenure: '২৫.০৪.২০২৫ হতে ২৪.০৪.২০২৮ খ্রি: পর্যন্ত (০৩ বছর)।',
+};
+
+const DEFAULT_GOVERNING_BODY = [
+  { id: 'gb_1', order: 1, name: 'আলহাজ্ব মোঃ রফিকুল ইসলাম', designation: 'সভাপতি (ভাইস চ্যান্সেলর মহোদয় কর্তৃক মনোনীত)' },
+  { id: 'gb_2', order: 2, name: 'জনাব মোঃ নজরুল ইসলাম', designation: 'সহ-সভাপতি' },
+  { id: 'gb_3', order: 3, name: 'জনাব মোঃ নজরুল ইসলাম', designation: 'বিদ্যোৎসাহী প্রতিনিধি (ভাইস চ্যান্সেলর মহোদয় কর্তৃক মনোনীত)' },
+  { id: 'gb_4', order: 4, name: 'আলহাজ্ব এ, এফ, এম শামছুল হক', designation: 'বিদ্যোৎসাহী প্রতিনিধি (বাংলাদেশ মাদ্রাসা শিক্ষা বোর্ড কর্তৃক মনোনীত)' },
+  { id: 'gb_5', order: 5, name: 'আলহাজ্ব মোঃ ইউনুস', designation: 'বিদ্যোৎসাহী প্রতিনিধি (ডি.জি. কর্তৃক মনোনীত)' },
+  { id: 'gb_6', order: 6, name: 'জনাব মোঃ রমজান আলী', designation: 'সদস্য (অভিভাবক প্রতিনিধি)' },
+  { id: 'gb_7', order: 7, name: 'জনাব মোঃ হাবিবুর রহমান', designation: 'সদস্য (অভিভাবক প্রতিনিধি)' },
+  { id: 'gb_8', order: 8, name: 'জনাব মোঃ আব্দুর রাজ্জাক', designation: 'সদস্য (অভিভাবক প্রতিনিধি)' },
+  { id: 'gb_9', order: 9, name: 'আলহাজ মো: সাইদুর রহমান', designation: 'প্রতিষ্ঠাতা সদস্য' },
+  { id: 'gb_10', order: 10, name: 'আলহাজ্ব মো: আব্দুর রাজ্জাক', designation: 'দাতা সদস্য' },
+  { id: 'gb_11', order: 11, name: 'জনাব মো: ইলিয়াস হোসেন', designation: 'সদস্য (শিক্ষক প্রতিনিধি)' },
+  { id: 'gb_12', order: 12, name: 'জনাব শুভ্র রেজা', designation: 'সদস্য (শিক্ষক প্রতিনিধি)' },
+  { id: 'gb_13', order: 13, name: 'জনাব মোঃ মারুফ হোসেন', designation: 'সদস্য (শিক্ষক প্রতিনিধি)' },
+  { id: 'gb_14', order: 14, name: 'জনাব ডাঃ মোঃ হাবিবুর রহমান', designation: 'সদস্য (চিকিৎসক)' },
+  { id: 'gb_15', order: 15, name: 'অধ্যক্ষ, নলতা আহছানিয়া দারুল উলূম ফাযিল মাদরাসা', designation: 'সদস্য সচিব (পদাধিকারবলে)' },
+];
+
 function createDefaultPortalStore() {
   return {
     notices: initialNotices.map((n) => ({ ...n })),
@@ -21,6 +44,8 @@ function createDefaultPortalStore() {
       photo: t.photo || 'logo.png',
       showInCarousel: true,
     })),
+    governingBodyInfo: { ...DEFAULT_GOVERNING_BODY_INFO },
+    governingBody: DEFAULT_GOVERNING_BODY.map((m) => ({ ...m })),
     admissions: [],
     routines: [
       { id: 'r_1', className: 'ইবতেদায়ী (১ম - ৫ম)', day: 'রবিবার - বৃহস্পতিবার', time: '১০:০০ - ১০:৪৫', subject: 'কুরআন মাজিদ ও তাজবিদ', teacher: 'মাও: গোলাম রব্বানী', room: 'ভবন-১' },
@@ -66,6 +91,13 @@ export function loadPortalStore() {
     return {
       notices: Array.isArray(parsed.notices) ? parsed.notices : defaults.notices,
       teachers: Array.isArray(parsed.teachers) ? parsed.teachers : defaults.teachers,
+      governingBodyInfo: (parsed.governingBodyInfo && typeof parsed.governingBodyInfo === 'object')
+        ? {
+            madrasahName: String(parsed.governingBodyInfo.madrasahName || defaults.governingBodyInfo.madrasahName),
+            tenure: String(parsed.governingBodyInfo.tenure || defaults.governingBodyInfo.tenure),
+          }
+        : defaults.governingBodyInfo,
+      governingBody: Array.isArray(parsed.governingBody) ? parsed.governingBody : defaults.governingBody,
       admissions: Array.isArray(parsed.admissions) ? parsed.admissions : defaults.admissions,
       routines: Array.isArray(parsed.routines) ? parsed.routines : defaults.routines,
       syllabus: Array.isArray(parsed.syllabus) ? parsed.syllabus : defaults.syllabus,
