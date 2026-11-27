@@ -1,5 +1,6 @@
 import express from 'express';
 import crypto from 'node:crypto';
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import multer from 'multer';
@@ -22,6 +23,7 @@ import {
   buildExcelBuffer,
 } from './data/excelStore.js';
 import { loadPortalStore, savePortalStore } from './data/portalStore.js';
+import { GALLERY_CATEGORIES, MADRASA_MILESTONES } from './data/gallerySeed.js';
 import {
   getUnifiedStudents,
   getClassesAndRolls,
@@ -506,6 +508,7 @@ app.get('/api/offline/bootstrap', (req, res) => {
       notices: getNoticesForBoard(),
     },
     teachers: portal.teachers || [],
+    gallery: portal.gallery || [],
     academic: {
       routines: portal.routines || [],
       syllabus: portal.syllabus || [],
@@ -535,6 +538,17 @@ app.get(['/teacher-list', '/teacher-list.php'], (req, res) => {
   res.render('teacher-list', {
     pageTitle: 'শিক্ষক কর্মচারী- নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা',
     teachers: portal.teachers || [],
+  });
+});
+
+app.get(['/gallery', '/gallery.php'], (req, res) => {
+  const portal = loadPortalStore();
+  res.render('gallery', {
+    pageTitle: 'ফটো গ্যালারি - নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা',
+    galleryItems: portal.gallery || [],
+    galleryCategories: GALLERY_CATEGORIES,
+    milestones: MADRASA_MILESTONES,
+    convertToBengali,
   });
 });
 
@@ -799,6 +813,7 @@ app.all(['/dashboard', '/dashboard.php', '/admin', '/admin.php', '/admin-panel',
   const feesCount = (portal.fees || []).length;
   const registrationsCount = (portal.registrations || []).length;
   const studentStatsCount = (portal.studentStats || []).length;
+  const galleryCount = (portal.gallery || []).length;
 
   const categories = [
     { id: 'all', label: 'ড্যাশবোর্ড (সব ফিচার)', icon: 'grid-menu' },
@@ -953,6 +968,15 @@ app.all(['/dashboard', '/dashboard.php', '/admin', '/admin.php', '/admin-panel',
       src: '/admin-academic.php?embed=1&section=studentStats&single=1',
     },
     {
+      id: 'gallery',
+      category: 'academic',
+      label: 'ফটো গ্যালারি',
+      meta: `${convertToBengali(galleryCount)}টি স্থিরচিত্র`,
+      icon: 'camera',
+      tone: 'ic-green',
+      src: '/admin-gallery.php?embed=1',
+    },
+    {
       id: 'accounting-entry',
       category: 'accounting',
       label: 'দৈনিক হিসাব এন্ট্রি',
@@ -1039,6 +1063,83 @@ app.delete('/api/portal/teachers/:id', requireAdminApi, verifySameOrigin, (req, 
   portal.teachers = (portal.teachers || []).filter((t) => t.id !== String(req.params.id));
   savePortalStore(portal);
   res.json({ ok: true, teachers: portal.teachers });
+});
+
+app.get(['/admin-gallery', '/admin-gallery.php'], requireAdminPage, (req, res) => {
+  const portal = loadPortalStore();
+  res.render('admin-gallery', {
+    galleryItems: portal.gallery || [],
+  });
+});
+
+app.post('/api/portal/gallery', requireAdminApi, verifySameOrigin, (req, res) => {
+  upload.single('photo')(req, res, (uploadErr) => {
+    if (uploadErr) {
+      return res.status(400).json({ error: uploadErr.message || 'ছবি আপলোড করা যায়নি।' });
+    }
+    const portal = loadPortalStore();
+    const body = req.body || {};
+    const title = String(body.title || '').trim();
+    if (!title) {
+      return res.status(400).json({ error: 'ছবির শিরোনাম আবশ্যক।' });
+    }
+    const allowedCats = ['campus', 'events', 'milestones'];
+    const category = allowedCats.includes(String(body.category || '')) ? String(body.category) : 'campus';
+    const id = body.id ? String(body.id).trim() : `gal_${Date.now()}`;
+    const existingIdx = (portal.gallery || []).findIndex((g) => g.id === id);
+
+    const rawImageUrl = String(body.imageUrl || '').trim();
+    let imageUrl = rawImageUrl ? sanitizeImageUrl(rawImageUrl) : '';
+    if (req.file && req.file.buffer) {
+      const mimeToExt = {
+        'image/jpeg': '.jpg',
+        'image/jpg': '.jpg',
+        'image/png': '.png',
+        'image/webp': '.webp',
+      };
+      const ext = mimeToExt[String(req.file.mimetype || '').toLowerCase()];
+      if (!ext) {
+        return res.status(400).json({ error: 'শুধুমাত্র JPG, PNG অথবা WebP ছবি আপলোড করা যাবে।' });
+      }
+      const uploadDir = path.join(__dirname, 'public', 'uploads', 'gallery');
+      fs.mkdirSync(uploadDir, { recursive: true });
+      const fileName = `gal_${Date.now()}_${crypto.randomBytes(4).toString('hex')}${ext}`;
+      fs.writeFileSync(path.join(uploadDir, fileName), req.file.buffer);
+      imageUrl = `/uploads/gallery/${fileName}`;
+    } else if (!imageUrl && existingIdx !== -1) {
+      imageUrl = portal.gallery[existingIdx].imageUrl || '';
+    }
+
+    if (!imageUrl) {
+      return res.status(400).json({ error: 'একটি ছবি আপলোড করুন অথবা ছবির লিংক দিন।' });
+    }
+
+    const item = {
+      id,
+      title,
+      category,
+      date: String(body.date || '').trim(),
+      location: String(body.location || '').trim(),
+      caption: String(body.caption || '').trim(),
+      imageUrl,
+      featured: body.featured === true || body.featured === '1' || body.featured === 'true',
+    };
+
+    if (existingIdx !== -1) {
+      portal.gallery[existingIdx] = item;
+    } else {
+      portal.gallery = [item, ...(portal.gallery || [])];
+    }
+    savePortalStore(portal);
+    return res.json({ ok: true, gallery: portal.gallery });
+  });
+});
+
+app.delete('/api/portal/gallery/:id', requireAdminApi, verifySameOrigin, (req, res) => {
+  const portal = loadPortalStore();
+  portal.gallery = (portal.gallery || []).filter((g) => g.id !== String(req.params.id));
+  savePortalStore(portal);
+  res.json({ ok: true, gallery: portal.gallery });
 });
 
 app.get(['/admin-academic', '/admin-academic.php'], requireAdminPage, (req, res) => {

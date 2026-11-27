@@ -272,6 +272,7 @@
         meritByClass: {},
         notices: { headlines: [], notices: [] },
         teachers: [],
+        governingBody: { institutionName: '', tenure: '', members: [] },
         academic: { routines: [], syllabus: [], fees: [], registrations: [], studentStats: [] },
         admissions: [],
       };
