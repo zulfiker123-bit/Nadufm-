@@ -74,9 +74,6 @@ function openAdminLoginModal(nextUrl) {
     backdrop.classList.add('open');
   });
   document.body.style.overflow = 'hidden';
-  setTimeout(function () {
-    if (pwInput) pwInput.focus();
-  }, 60);
   return true;
 }
 
