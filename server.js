@@ -914,8 +914,8 @@ app.all(['/dashboard', '/dashboard.php', '/admin', '/admin.php', '/admin-panel',
     {
       id: 'governing-body',
       category: 'academic',
-      label: 'গভর্নিং বডি',
-      meta: `${convertToBengali(governingCount)} জন সদস্য`,
+      label: 'গভর্নিং বডি তথ্য এডিট',
+      meta: `${convertToBengali(governingCount)} জন সদস্য · কমিটি ও সদস্য সম্পাদনা`,
       icon: 'users',
       tone: 'ic-blue',
       src: '/admin-governing.php?embed=1',
@@ -992,6 +992,7 @@ app.all(['/dashboard', '/dashboard.php', '/admin', '/admin.php', '/admin-panel',
     { label: 'সক্রিয় নোটিশ', value: convertToBengali(noticesCount), feature: 'notices' },
     { label: 'ভর্তি আবেদন', value: convertToBengali(admissionsCount), feature: 'admissions' },
     { label: 'শিক্ষক-কর্মচারী', value: convertToBengali(teachersCount), feature: 'teachers' },
+    { label: 'গভর্নিং বডি', value: `${convertToBengali(governingCount)} জন`, feature: 'governing-body' },
   ];
 
   const requestedFeature = req.query.feature ? String(req.query.feature) : '';
