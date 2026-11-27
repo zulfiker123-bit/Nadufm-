@@ -260,7 +260,7 @@
 
                     <div id="admitRollAutoWrap" class="roll-auto-panel" style="display:none;">
                         <div class="roll-auto-title">
-                            <span><i class="fas fa-list-ol"></i> শ্রেণিভিত্তিক অটো রোল তালিকা</span>
+                            <span style="display:inline-flex;align-items:center;gap:6px;"><%- iconSvg('list-ol', 'app-svg-icon', 16) %> শ্রেণিভিত্তিক অটো রোল তালিকা</span>
                             <span style="font-size:0.78rem; color:#475569;">রোল নির্বাচন করুন</span>
                         </div>
                         <select id="admitRollAutoSelect" class="roll-auto-select"></select>
@@ -276,27 +276,27 @@
     <div id="admit-card-result">
         <div class="admit-toolbar no-print">
             <button type="button" class="btn-admit-action btn-print-admit" onclick="window.print()">
-                <i class="fas fa-print" aria-hidden="true"></i>
+                <%- iconSvg('printer', 'app-svg-icon', 17) %>
                 <span>প্রিন্ট করুন</span>
             </button>
             <button type="button" class="btn-admit-action btn-pdf-admit" onclick="downloadAdmitPdf()">
-                <i class="fas fa-file-pdf" aria-hidden="true"></i>
+                <%- iconSvg('file-pdf', 'app-svg-icon', 17) %>
                 <span>PDF ডাউনলোড</span>
             </button>
             <a id="linkAdmitToId" href="/id-card.php" class="btn-admit-action btn-link-admit">
-                <i class="fas fa-id-badge" aria-hidden="true"></i>
+                <%- iconSvg('id-badge', 'app-svg-icon', 17) %>
                 <span>আইডি কার্ড</span>
             </a>
             <a id="linkAdmitToResult" href="/result.php" class="btn-admit-action btn-link-admit">
-                <i class="fas fa-poll" aria-hidden="true"></i>
+                <%- iconSvg('poll', 'app-svg-icon', 17) %>
                 <span>মার্কশিট</span>
             </a>
             <a id="linkAdmitToProfile" href="/student-search.php" class="btn-admit-action btn-reset-admit">
-                <i class="fas fa-certificate" aria-hidden="true"></i>
+                <%- iconSvg('certificate', 'app-svg-icon', 17) %>
                 <span>প্রত্যায়ন / প্রশংসা পত্র</span>
             </a>
             <button type="button" class="btn-admit-action btn-reset-admit" onclick="resetAdmitSearch()">
-                <i class="fas fa-redo" aria-hidden="true"></i>
+                <%- iconSvg('refresh', 'app-svg-icon', 17) %>
                 <span>আবার খুঁজুন</span>
             </button>
         </div>

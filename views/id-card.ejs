@@ -434,7 +434,7 @@
 
                     <div id="idRollAutoWrap" class="roll-auto-panel" style="display:none;">
                         <div class="roll-auto-title">
-                            <span><i class="fas fa-list-ol"></i> শ্রেণিভিত্তিক অটো রোল তালিকা</span>
+                            <span style="display:inline-flex;align-items:center;gap:6px;"><%- iconSvg('list-ol', 'app-svg-icon', 16) %> শ্রেণিভিত্তিক অটো রোল তালিকা</span>
                             <span style="font-size:0.78rem; color:#475569;">ক্লিক করলে স্বয়ংক্রিয়ভাবে লোড হবে</span>
                         </div>
                         <select id="idRollAutoSelect" class="roll-auto-select"></select>
@@ -451,22 +451,22 @@
     <div id="idResultSection">
         <div class="id-toolbar no-print">
             <button type="button" class="id-action-btn btn-green" onclick="window.print()">
-                <i class="fas fa-print"></i> <span>আইডি কার্ড প্রিন্ট</span>
+                <%- iconSvg('printer', 'app-svg-icon', 17) %> <span>আইডি কার্ড প্রিন্ট</span>
             </button>
             <button type="button" class="id-action-btn btn-rose" onclick="downloadIdCardPdf()">
-                <i class="fas fa-file-pdf"></i> <span>PDF ডাউনলোড</span>
+                <%- iconSvg('file-pdf', 'app-svg-icon', 17) %> <span>PDF ডাউনলোড</span>
             </button>
             <a id="linkIdToAdmit" href="/admit.php" class="id-action-btn btn-blue">
-                <i class="fas fa-id-card"></i> <span>এডমিট কার্ড</span>
+                <%- iconSvg('id-card', 'app-svg-icon', 17) %> <span>এডমিট কার্ড</span>
             </a>
             <a id="linkIdToMarksheet" href="/result.php" class="id-action-btn btn-blue">
-                <i class="fas fa-poll"></i> <span>মার্কশিট</span>
+                <%- iconSvg('poll', 'app-svg-icon', 17) %> <span>মার্কশিট</span>
             </a>
             <a id="linkIdToProfile" href="/student-search.php" class="id-action-btn btn-slate">
-                <i class="fas fa-certificate"></i> <span>প্রত্যায়ন / প্রশংসা পত্র</span>
+                <%- iconSvg('certificate', 'app-svg-icon', 17) %> <span>প্রত্যায়ন / প্রশংসা পত্র</span>
             </a>
             <button type="button" class="id-action-btn btn-slate" onclick="resetIdSearch()">
-                <i class="fas fa-redo"></i> <span>আবার খুঁজুন</span>
+                <%- iconSvg('refresh', 'app-svg-icon', 17) %> <span>আবার খুঁজুন</span>
             </button>
         </div>
 

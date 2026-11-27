@@ -413,7 +413,7 @@
 
                 <div id="searchRollAutoWrap" class="roll-auto-panel" style="display:none;">
                     <div class="roll-auto-title">
-                        <span><i class="fas fa-list-ol"></i> এই শ্রেণির অটো রোল তালিকা</span>
+                        <span style="display:inline-flex;align-items:center;gap:6px;"><%- iconSvg('list-ol', 'app-svg-icon', 16) %> এই শ্রেণির অটো রোল তালিকা</span>
                         <span style="font-size:0.78rem; color:#475569;">ক্লিক করলে তথ্য ও ডকুমেন্টস খুলবে</span>
                     </div>
                     <select id="searchRollAutoSelect" class="search-select roll-auto-select"></select>
@@ -427,8 +427,8 @@
                 <input type="text" id="searchQuery" class="search-input" placeholder="আইডি / শিক্ষার্থীর নাম / মোবাইল / জন্ম নিবন্ধন">
             </div>
 
-            <button type="button" onclick="searchStudent()" id="srchBtn" class="search-btn">
-                <i class="fas fa-search"></i> শিক্ষার্থী ও ডকুমেন্টস খুঁজুন
+            <button type="button" onclick="searchStudent()" id="srchBtn" class="search-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;">
+                <%- iconSvg('search', 'app-svg-icon', 18) %> <span>শিক্ষার্থী ও ডকুমেন্টস খুঁজুন</span>
             </button>
             <div id="loading">তথ্য খোঁজা হচ্ছে...</div>
             <div id="searchMsg"></div>
@@ -459,37 +459,37 @@
             <div class="hub-link-summary" id="hubStudentLinkBar"></div>
             <div class="doc-tabs-bar" role="tablist">
                 <button type="button" class="doc-tab-btn active" data-doc="profile" onclick="switchDocTab('profile')">
-                    <i class="fas fa-user-graduate"></i> <span>তথ্য কার্ড</span>
+                    <%- iconSvg('grad-cap', 'app-svg-icon', 17) %> <span>তথ্য কার্ড</span>
                 </button>
                 <button type="button" class="doc-tab-btn" data-doc="idcard" onclick="switchDocTab('idcard')">
-                    <i class="fas fa-id-badge"></i> <span>আইডি কার্ড</span>
+                    <%- iconSvg('id-badge', 'app-svg-icon', 17) %> <span>আইডি কার্ড</span>
                 </button>
                 <button type="button" class="doc-tab-btn" data-doc="admit" onclick="switchDocTab('admit')">
-                    <i class="fas fa-id-card"></i> <span>এডমিট কার্ড</span>
+                    <%- iconSvg('id-card', 'app-svg-icon', 17) %> <span>এডমিট কার্ড</span>
                 </button>
                 <button type="button" class="doc-tab-btn" data-doc="marksheet" onclick="switchDocTab('marksheet')">
-                    <i class="fas fa-poll"></i> <span>মার্কশিট</span>
+                    <%- iconSvg('poll', 'app-svg-icon', 17) %> <span>মার্কশিট</span>
                 </button>
                 <button type="button" class="doc-tab-btn" data-doc="attestation" onclick="switchDocTab('attestation')">
-                    <i class="fas fa-certificate"></i> <span>প্রত্যায়ন পত্র</span>
+                    <%- iconSvg('certificate', 'app-svg-icon', 17) %> <span>প্রত্যায়ন পত্র</span>
                 </button>
                 <button type="button" class="doc-tab-btn" data-doc="testimonial" onclick="switchDocTab('testimonial')">
-                    <i class="fas fa-award"></i> <span>প্রশংসা পত্র</span>
+                    <%- iconSvg('award', 'app-svg-icon', 17) %> <span>প্রশংসা পত্র</span>
                 </button>
             </div>
 
             <div class="print-toolbar">
                 <button type="button" onclick="window.print()" class="tool-btn tool-green">
-                    <i class="fas fa-print"></i> <span>প্রিন্ট করুন (A4)</span>
+                    <%- iconSvg('printer', 'app-svg-icon', 17) %> <span>প্রিন্ট করুন (A4)</span>
                 </button>
                 <button type="button" onclick="downloadCurrentDocPdf()" class="tool-btn tool-rose">
-                    <i class="fas fa-file-pdf"></i> <span>PDF ডাউনলোড</span>
+                    <%- iconSvg('file-pdf', 'app-svg-icon', 17) %> <span>PDF ডাউনলোড</span>
                 </button>
                 <button type="button" onclick="downloadCurrentDocWord()" class="tool-btn tool-blue">
-                    <i class="fas fa-file-word"></i> <span>Word (.doc)</span>
+                    <%- iconSvg('file-word', 'app-svg-icon', 17) %> <span>Word (.doc)</span>
                 </button>
                 <button type="button" onclick="resetStudentSearch()" class="tool-btn tool-slate">
-                    <i class="fas fa-redo"></i> <span>নতুন অনুসন্ধান</span>
+                    <%- iconSvg('refresh', 'app-svg-icon', 17) %> <span>নতুন অনুসন্ধান</span>
                 </button>
             </div>
 

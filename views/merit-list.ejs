@@ -308,11 +308,11 @@
                 </select>
             </div>
             <button type="submit" class="merit-btn">
-                <i class="fas fa-search" aria-hidden="true"></i>
+                <%- iconSvg('search', 'app-svg-icon', 17) %>
                 <span>মেধাতালিকা দেখুন</span>
             </button>
             <a href="/result.php<%= isEmbedded ? '?embed=1' : '' %>" class="merit-btn merit-btn-secondary">
-                <i class="fas fa-poll" aria-hidden="true"></i>
+                <%- iconSvg('poll', 'app-svg-icon', 17) %>
                 <span>ব্যক্তিগত ফলাফল</span>
             </a>
         </form>
@@ -349,7 +349,7 @@
             <div class="merit-section-block" data-merit-group="<%= sec.key %>">
                 <% if (sec.title) { %>
                     <div class="merit-section-heading <%= sec.isScienceSection ? 'science' : '' %>">
-                        <span><i class="fas <%= sec.isScienceSection ? 'fa-atom' : 'fa-users' %>" aria-hidden="true"></i> <%= sec.title %></span>
+                        <span style="display:inline-flex;align-items:center;gap:7px;"><%- iconSvg(sec.isScienceSection ? 'atom' : 'users', 'app-svg-icon', 18) %> <%= sec.title %></span>
                         <span style="font-size:0.86rem;">মোট <%= convertToBengali(_totalStudents) %> জন</span>
                     </div>
                 <% } %>
@@ -428,15 +428,15 @@
             <% }); %>
         <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-top: 20px;" class="no-print">
             <button type="button" onclick="window.print()" class="merit-btn">
-                <i class="fas fa-print" aria-hidden="true"></i>
+                <%- iconSvg('printer', 'app-svg-icon', 17) %>
                 <span>সরাসরি প্রিন্ট (A4)</span>
             </button>
             <button type="button" onclick="downloadMeritPdf()" class="merit-btn merit-btn-rose">
-                <i class="fas fa-file-pdf" aria-hidden="true"></i>
+                <%- iconSvg('file-pdf', 'app-svg-icon', 17) %>
                 <span>PDF ডাউনলোড</span>
             </button>
             <button type="button" onclick="downloadMeritWord()" class="merit-btn merit-btn-blue">
-                <i class="fas fa-file-word" aria-hidden="true"></i>
+                <%- iconSvg('file-word', 'app-svg-icon', 17) %>
                 <span>Word (.doc)</span>
             </button>
         </div>

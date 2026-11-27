@@ -32,7 +32,15 @@
     const itemsPerPage = 5;
     let currentPage = 1;
     let filteredData = allData.slice();
-    const noticeIcons = ["fas fa-bell", "fas fa-info-circle", "fas fa-bullhorn", "fas fa-file-alt", "fas fa-envelope"];
+    const noticeIconKeys = ["bell", "info", "megaphone", "file-text", "mail"];
+    const noticeSvgMap = <%- JSON.stringify({
+        bell: iconSvg('bell', 'app-svg-icon', 20),
+        info: iconSvg('info', 'app-svg-icon', 20),
+        megaphone: iconSvg('megaphone', 'app-svg-icon', 20),
+        'file-text': iconSvg('file-text', 'app-svg-icon', 20),
+        mail: iconSvg('mail', 'app-svg-icon', 20),
+        chevron: iconSvg('chevron-right', 'app-svg-icon', 16),
+    }) %>;
 
     function escapeHtml(str) {
         return String(str ?? '')
@@ -58,7 +66,8 @@
 
         pagedItems.forEach((item, index) => {
             const isNew = item.isNew && item.isNew.toString().trim().toLowerCase() === 'yes';
-            const iconClass = noticeIcons[index % noticeIcons.length];
+            const iconKey = noticeIconKeys[index % noticeIconKeys.length];
+            const iconHtml = noticeSvgMap[iconKey] || noticeSvgMap.bell;
             const targetLink = (item.link && item.link !== "#" && item.link.trim() !== "")
                                ? item.link
                                : `/view_notice.php?id=${item.id}`;
@@ -68,7 +77,7 @@
             li.className = 'notice-item';
             li.innerHTML = `
                 <a href="${escapeHtml(targetLink)}" ${isExternal ? 'target="_blank" rel="noopener"' : ''} class="notice-link">
-                    <span class="notice-icon" aria-hidden="true"><i class="${iconClass}"></i></span>
+                    <span class="notice-icon" aria-hidden="true">${iconHtml}</span>
                     <span class="notice-body">
                         <span class="notice-subject">${escapeHtml(item.subject)}</span>
                         <span class="notice-meta">
@@ -76,7 +85,7 @@
                             ${isNew ? '<span aria-hidden="true">·</span><span class="notice-new-label">নতুন</span>' : ''}
                         </span>
                     </span>
-                    <span class="notice-chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+                    <span class="notice-chevron" aria-hidden="true">${noticeSvgMap.chevron}</span>
                 </a>`;
             container.appendChild(li);
         });

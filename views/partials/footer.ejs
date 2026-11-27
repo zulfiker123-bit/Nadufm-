@@ -3,16 +3,16 @@
     <div class="app-footer-inner">
         <div class="app-footer-socials" aria-label="সোশ্যাল ও লোকেশন লিংক">
             <a href="https://www.facebook.com/naltafazilmadrasah" target="_blank" rel="noopener noreferrer" class="footer-icon-link is-facebook" aria-label="ফেসবুক পেজ" title="ফেসবুক পেজ">
-                <i class="fab fa-facebook-f" aria-hidden="true"></i>
+                <%- iconSvg('facebook', 'app-svg-icon', 19) %>
             </a>
             <a href="https://youtube.com/@naltamadrasah" target="_blank" rel="noopener noreferrer" class="footer-icon-link is-youtube" aria-label="ইউটিউব চ্যানেল" title="ইউটিউব চ্যানেল">
-                <i class="fab fa-youtube" aria-hidden="true"></i>
+                <%- iconSvg('youtube', 'app-svg-icon', 19) %>
             </a>
             <a href="https://maps.google.com/maps?q=%E0%A6%A8%E0%A6%B2%E0%A6%A4%E0%A6%BE%20%E0%A6%86%E0%A6%B9%E0%A6%9B%E0%A6%BE%E0%A6%A8%E0%A6%BF%E0%A6%AF%E0%A6%BC%E0%A6%BE%20%E0%A6%A6%E0%A6%BE%E0%A6%B0%E0%A7%81%E0%A6%B2%20%E0%A6%89%E0%A6%B2%E0%A7%81%E0%A6%AE%20%E0%A6%AB%E0%A6%BE%E0%A6%9C%E0%A6%BF%E0%A6%B2%20%E0%A6%AE%E0%A6%BE%E0%A6%A6%E0%A7%8D%E0%A6%B0%E0%A6%BE%E0%A6%B8%E0%A6%BE" target="_blank" rel="noopener noreferrer" class="footer-icon-link is-location" aria-label="মাদ্রাসার লোকেশন (গুগল ম্যাপ)" title="মাদ্রাসার লোকেশন (গুগল ম্যাপ)">
-                <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                <%- iconSvg('map-pin', 'app-svg-icon', 19) %>
             </a>
             <button type="button" onclick="openHotlineModal()" class="footer-icon-link is-hotline" aria-label="জরুরি হটলাইন" title="জরুরি হটলাইন">
-                <i class="fas fa-phone-volume" aria-hidden="true"></i>
+                <%- iconSvg('phone-wave', 'app-svg-icon', 19) %>
             </button>
         </div>
         <p class="app-footer-title">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</p>
@@ -22,19 +22,19 @@
 
 <nav class="mobile-bottom-nav" aria-label="মোবাইল নেভিগেশন">
     <a href="/index.php" class="mobile-tab" data-nav-match="/">
-        <i class="fas fa-home" aria-hidden="true"></i>
+        <%- iconSvg('home', 'app-svg-icon', 20) %>
         <span>হোম</span>
     </a>
     <a href="/#notice-section" class="mobile-tab" data-nav-match="#notice">
-        <i class="fas fa-bell" aria-hidden="true"></i>
+        <%- iconSvg('bell', 'app-svg-icon', 20) %>
         <span>নোটিশ</span>
     </a>
     <a href="/student.php" class="mobile-tab" data-nav-match="/student">
-        <i class="fas fa-user-graduate" aria-hidden="true"></i>
+        <%- iconSvg('grad-cap', 'app-svg-icon', 20) %>
         <span>শিক্ষার্থী</span>
     </a>
     <button type="button" class="mobile-tab" onclick="openAppDrawer()">
-        <i class="fas fa-th-large" aria-hidden="true"></i>
+        <%- iconSvg('grid-menu', 'app-svg-icon', 20) %>
         <span>মেনু</span>
     </button>
 </nav>
@@ -48,34 +48,34 @@
             <p>নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা</p>
         </div>
         <button type="button" class="app-drawer-close" onclick="closeAppDrawer()" aria-label="মেনু বন্ধ করুন">
-            <i class="fas fa-times" aria-hidden="true"></i>
+            <%- iconSvg('close', 'app-svg-icon', 18) %>
         </button>
     </div>
     <div class="app-drawer-body">
         <div class="app-drawer-group">
             <h4>একাডেমিক ও শিক্ষার্থী সেবা</h4>
             <div class="app-drawer-grid">
-                <a href="/admission.php" class="app-drawer-item"><i class="fas fa-user-plus"></i><span>অনলাইন ভর্তি</span></a>
-                <a href="/id-card.php" class="app-drawer-item"><i class="fas fa-id-badge"></i><span>শিক্ষার্থী আইডি কার্ড</span></a>
-                <a href="/routine.php" class="app-drawer-item"><i class="fas fa-clock"></i><span>ক্লাস ও পরীক্ষার রুটিন</span></a>
-                <a href="/syllabus.php" class="app-drawer-item"><i class="fas fa-book-open"></i><span>সিলেবাস</span></a>
-                <a href="/calendar.php" class="app-drawer-item"><i class="fas fa-calendar-alt"></i><span>শিক্ষাপঞ্জি ২০২৬</span></a>
-                <a href="/holidays.php" class="app-drawer-item"><i class="fas fa-umbrella-beach"></i><span>ছুটির তালিকা</span></a>
-                <a href="/fees.php" class="app-drawer-item"><i class="fas fa-wallet"></i><span>ফি পরিশোধ</span></a>
-                <a href="/registration.php" class="app-drawer-item"><i class="fas fa-clipboard-check"></i><span>রেজিস্ট্রেশন</span></a>
+                <a href="/admission.php" class="app-drawer-item"><span class="app-drawer-item-ico tone-teal"><%- iconSvg('user-plus', 'app-svg-icon', 17) %></span><span>অনলাইন ভর্তি</span></a>
+                <a href="/id-card.php" class="app-drawer-item"><span class="app-drawer-item-ico tone-emerald"><%- iconSvg('id-badge', 'app-svg-icon', 17) %></span><span>শিক্ষার্থী আইডি কার্ড</span></a>
+                <a href="/routine.php" class="app-drawer-item"><span class="app-drawer-item-ico tone-cyan"><%- iconSvg('clock', 'app-svg-icon', 17) %></span><span>ক্লাস ও পরীক্ষার রুটিন</span></a>
+                <a href="/syllabus.php" class="app-drawer-item"><span class="app-drawer-item-ico tone-violet"><%- iconSvg('book-open', 'app-svg-icon', 17) %></span><span>সিলেবাস</span></a>
+                <a href="/calendar.php" class="app-drawer-item"><span class="app-drawer-item-ico tone-rose"><%- iconSvg('calendar', 'app-svg-icon', 17) %></span><span>শিক্ষাপঞ্জি ২০২৬</span></a>
+                <a href="/holidays.php" class="app-drawer-item"><span class="app-drawer-item-ico tone-orange"><%- iconSvg('calendar-off', 'app-svg-icon', 17) %></span><span>ছুটির তালিকা</span></a>
+                <a href="/fees.php" class="app-drawer-item"><span class="app-drawer-item-ico tone-amber"><%- iconSvg('wallet', 'app-svg-icon', 17) %></span><span>ফি পরিশোধ</span></a>
+                <a href="/registration.php" class="app-drawer-item"><span class="app-drawer-item-ico tone-indigo"><%- iconSvg('clipboard-check', 'app-svg-icon', 17) %></span><span>রেজিস্ট্রেশন</span></a>
             </div>
         </div>
         <div class="app-drawer-group">
             <h4>প্রতিষ্ঠান ও প্রশাসন</h4>
             <div class="app-drawer-grid">
-                <a href="/about.php" class="app-drawer-item"><i class="fas fa-school"></i><span>আমাদের সম্পর্কে</span></a>
-                <a href="/teacher-list.php" class="app-drawer-item"><i class="fas fa-chalkboard-teacher"></i><span>শিক্ষক-কর্মচারী</span></a>
-                <a href="/governingbody.php" class="app-drawer-item"><i class="fas fa-users"></i><span>গভর্নিং বডি</span></a>
-                <a href="/morehistory.php" class="app-drawer-item"><i class="fas fa-landmark"></i><span>প্রতিষ্ঠানের ইতিহাস</span></a>
-                <a href="/presidentspeech.php" class="app-drawer-item"><i class="fas fa-user-tie"></i><span>সভাপতির বাণী</span></a>
-                <a href="/principalspeech.php" class="app-drawer-item"><i class="fas fa-microphone-alt"></i><span>অধ্যক্ষের বাণী</span></a>
-                <a href="/contact.php" class="app-drawer-item"><i class="fas fa-phone-alt"></i><span>যোগাযোগ</span></a>
-                <a href="/dashboard.php" class="app-drawer-item"><i class="fas fa-user-shield"></i><span>অ্যাডমিন ও ড্যাশবোর্ড</span></a>
+                <a href="/about.php" class="app-drawer-item"><span class="app-drawer-item-ico tone-indigo"><%- iconSvg('building', 'app-svg-icon', 17) %></span><span>আমাদের সম্পর্কে</span></a>
+                <a href="/teacher-list.php" class="app-drawer-item"><span class="app-drawer-item-ico tone-emerald"><%- iconSvg('chalkboard', 'app-svg-icon', 17) %></span><span>শিক্ষক-কর্মচারী</span></a>
+                <a href="/governingbody.php" class="app-drawer-item"><span class="app-drawer-item-ico tone-blue"><%- iconSvg('users', 'app-svg-icon', 17) %></span><span>গভর্নিং বডি</span></a>
+                <a href="/morehistory.php" class="app-drawer-item"><span class="app-drawer-item-ico tone-amber"><%- iconSvg('landmark', 'app-svg-icon', 17) %></span><span>প্রতিষ্ঠানের ইতিহাস</span></a>
+                <a href="/presidentspeech.php" class="app-drawer-item"><span class="app-drawer-item-ico tone-cyan"><%- iconSvg('tie-user', 'app-svg-icon', 17) %></span><span>সভাপতির বাণী</span></a>
+                <a href="/principalspeech.php" class="app-drawer-item"><span class="app-drawer-item-ico tone-violet"><%- iconSvg('mic', 'app-svg-icon', 17) %></span><span>অধ্যক্ষের বাণী</span></a>
+                <a href="/contact.php" class="app-drawer-item"><span class="app-drawer-item-ico tone-rose"><%- iconSvg('phone-wave', 'app-svg-icon', 17) %></span><span>যোগাযোগ</span></a>
+                <a href="/dashboard.php" class="app-drawer-item"><span class="app-drawer-item-ico tone-slate"><%- iconSvg('shield-user', 'app-svg-icon', 17) %></span><span>অ্যাডমিন ও ড্যাশবোর্ড</span></a>
             </div>
         </div>
     </div>
@@ -84,9 +84,9 @@
 <div id="hotlineModalBackdrop" class="hotline-modal-backdrop" onclick="closeHotlineModal()" hidden>
     <div class="hotline-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="hotlineModalTitle" onclick="event.stopPropagation()">
         <div class="hotline-modal-head">
-            <h3 id="hotlineModalTitle"><i class="fas fa-phone-volume" aria-hidden="true"></i> জাতীয় জরুরি হটলাইন</h3>
+            <h3 id="hotlineModalTitle"><%- iconSvg('phone-wave', 'app-svg-icon', 18) %> জাতীয় জরুরি হটলাইন</h3>
             <button type="button" class="app-drawer-close" onclick="closeHotlineModal()" aria-label="হটলাইন বন্ধ করুন">
-                <i class="fas fa-times" aria-hidden="true"></i>
+                <%- iconSvg('close', 'app-svg-icon', 18) %>
             </button>
         </div>
         <div class="hotline-modal-body">
