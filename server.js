@@ -424,13 +424,6 @@ app.get(['/', '/index.php'], (req, res) => {
   });
 });
 
-app.get(['/notice', '/notice.php', '/notices', '/notices.php'], (req, res) => {
-  res.render('notices', {
-    pageTitle: 'নোটিশ বোর্ড - নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা',
-    notices: getNoticesForBoard(),
-  });
-});
-
 app.get('/api/notices', (req, res) => {
   res.json({
     headlines: getHeadlines(),

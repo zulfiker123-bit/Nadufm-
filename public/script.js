@@ -109,10 +109,6 @@ function togglePopupAdminPassword() {
 
 document.addEventListener('DOMContentLoaded', function () {
   var path = window.location.pathname.toLowerCase();
-  if ((path === '/' || path === '/index.php') && window.location.hash === '#notice-section') {
-    window.location.replace('/notices.php');
-    return;
-  }
   var navItems = document.querySelectorAll('[data-nav-match]');
 
   navItems.forEach(function (el) {

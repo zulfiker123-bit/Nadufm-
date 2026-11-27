@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'nadufm-pwa-v16';
+const CACHE_VERSION = 'nadufm-pwa-v15';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PAGE_CACHE = `${CACHE_VERSION}-pages`;
 const ADMIN_PAGE_CACHE = `${CACHE_VERSION}-admin-pages`;
@@ -30,8 +30,6 @@ const PRECACHE_URLS = [
 const PUBLIC_WARM_PAGES = [
   '/',
   '/index.php',
-  '/notices.php',
-  '/notice.php',
   '/about.php',
   '/teacher-list.php',
   '/contact.php',
