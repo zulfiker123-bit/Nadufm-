@@ -96,10 +96,7 @@
         <div class="card">
             <div class="toolbar">
                 <h2 style="margin:0; border:none; padding:0;">গভর্নিং বডি সদস্য তালিকা (<span id="totalCount">০</span>)</h2>
-                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                    <input type="search" id="searchBox" class="search-input" placeholder="নাম বা পদবি দিয়ে খুঁজুন...">
-                    <a href="/governingbody.php" target="_blank" rel="noopener" class="act-btn act-edit" style="text-decoration:none; min-height:38px; display:inline-flex; align-items:center;">লাইভ পেজ দেখুন</a>
-                </div>
+                <input type="search" id="searchBox" class="search-input" placeholder="নাম বা পদবি দিয়ে খুঁজুন...">
             </div>
             <div class="meta-banner">
                 <div><strong>মাদ্রাসার নাম:</strong> <span id="previewInst"></span></div>
@@ -202,7 +199,6 @@
             document.getElementById('memberFormHeading').textContent = 'সদস্যের তথ্য এডিট করুন';
             document.getElementById('saveMemberBtn').textContent = 'আপডেট করুন';
             document.getElementById('cancelEditBtn').style.display = 'inline-flex';
-            document.getElementById('memberFormHeading').scrollIntoView({ behavior: 'smooth', block: 'start' });
             document.getElementById('mName').focus();
         }
 
@@ -249,10 +245,7 @@
                 showStatus('memberStatusMsg', 'সদস্যকে তালিকা থেকে মুছে ফেলা হয়েছে।');
                 return;
             }
-            const res = await fetch('/api/portal/governing/members/' + encodeURIComponent(id), {
-                method: 'DELETE',
-                credentials: 'same-origin',
-            });
+            const res = await fetch('/api/portal/governing/members/' + encodeURIComponent(id), { method: 'DELETE' });
             const data = await res.json();
             if (res.ok && data.governingBody) {
                 governingBody = data.governingBody;
@@ -305,7 +298,6 @@
             const res = await fetch('/api/portal/governing/meta', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                credentials: 'same-origin',
                 body: JSON.stringify(payload),
             });
             const data = await res.json();
@@ -372,7 +364,6 @@
             const res = await fetch('/api/portal/governing/members', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                credentials: 'same-origin',
                 body: JSON.stringify(payload),
             });
             const data = await res.json();
