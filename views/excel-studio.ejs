@@ -1068,6 +1068,79 @@
             display: none !important;
         }
 
+        .single-sub-extra {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            grid-column: 1 / -1;
+            background: #ffffff;
+            border: 1px solid rgba(21, 128, 61, 0.2);
+            border-radius: 10px;
+            padding: 9px 12px;
+        }
+
+        .uploaded-cls-strip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .uploaded-cls-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 10px;
+            border-radius: 10px;
+            border: 1px solid var(--border-strong);
+            background: var(--surface-subtle);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.14s ease;
+        }
+
+        .uploaded-cls-chip:hover {
+            border-color: rgba(21, 128, 61, 0.45);
+            background: #f0fdf4;
+        }
+
+        .uploaded-cls-chip.is-selected {
+            background: var(--brand-tint);
+            border-color: var(--brand-strong);
+            color: var(--brand-dark);
+        }
+
+        .chip-mini-btn {
+            border: 1px solid rgba(15, 23, 42, 0.14);
+            background: #ffffff;
+            color: var(--text);
+            border-radius: 6px;
+            padding: 2px 7px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .chip-mini-btn:hover {
+            background: #f1f5f9;
+        }
+
+        .chip-mini-btn.is-pub {
+            border-color: #15803d;
+            color: #15803d;
+            background: #f0fdf4;
+        }
+
+        .chip-mini-btn.is-del {
+            border-color: #fca5a5;
+            color: #b91c1c;
+            background: #fef2f2;
+        }
+
         .stats-section-head {
             display: flex;
             align-items: baseline;
@@ -1976,17 +2049,41 @@
                 </div>
             </div>
 
-            <div class="exam-context-bar" aria-label="পরীক্ষা ও শিক্ষাবর্ষ নির্বাচন">
+            <div class="exam-context-bar" aria-label="সাল, পরীক্ষার ধরন, শ্রেণি ও বিষয় নির্বাচন">
                 <div class="field">
-                    <label for="examYearSelect">১. শিক্ষাবর্ষ (সাল) নির্বাচন</label>
+                    <label for="examYearSelect">১. সাল (শিক্ষাবর্ষ)</label>
                     <select id="examYearSelect" onchange="onExamYearSelectChange()"></select>
                     <input type="text" id="examYearInput" class="is-hidden" style="margin-top:6px;" placeholder="যেমন: ২০২৬" oninput="onCustomExamMetaInput()">
                 </div>
                 <div class="field">
-                    <label for="examNameSelect">২. পরীক্ষার নাম নির্বাচন</label>
+                    <label for="examNameSelect">২. পরীক্ষার ধরন</label>
                     <select id="examNameSelect" onchange="onExamNameSelectChange()"></select>
                     <input type="text" id="examNameInput" class="is-hidden" style="margin-top:6px;" placeholder="যেমন: অর্ধ-বার্ষিক পরীক্ষা" oninput="onCustomExamMetaInput()">
                 </div>
+                <div class="field">
+                    <label for="examClassSelect">৩. শ্রেণি নির্বাচন</label>
+                    <select id="examClassSelect" onchange="onExamClassSelectChange()"></select>
+                </div>
+                <div class="field">
+                    <label for="examSubjectSelect">৪. বিষয় নির্বাচন</label>
+                    <select id="examSubjectSelect" onchange="onExamSubjectSelectChange()"></select>
+                </div>
+
+                <div id="singleSubjectExtras" class="single-sub-extra is-hidden">
+                    <div class="field" id="customSubjectNameWrap" style="flex:1 1 180px;">
+                        <label for="customSubjectNameInput">বিষয়ের নাম</label>
+                        <input type="text" id="customSubjectNameInput" placeholder="যেমন: আরবি ১ম পত্র" oninput="updateUnifiedUploadTargetLabel()">
+                    </div>
+                    <div class="field" style="width:120px;">
+                        <label for="singleSubjectFullMarks">পূর্ণমান</label>
+                        <input type="number" id="singleSubjectFullMarks" min="5" max="500" value="100" oninput="updateUnifiedUploadTargetLabel()">
+                    </div>
+                    <label class="auto-pub-check" style="margin-top:16px;">
+                        <input type="checkbox" id="singleSubjectIsOptional" onchange="updateUnifiedUploadTargetLabel()">
+                        <span>৪র্থ (ঐচ্ছিক) বিষয়</span>
+                    </label>
+                </div>
+
                 <div class="exam-context-actions">
                     <label class="auto-pub-check" title="টিক দেওয়া থাকলে Excel আপলোডের পরপরই ফলাফল ওয়েবসাইটে প্রকাশিত হবে; নাহলে খসড়া হিসেবে থাকবে">
                         <input type="checkbox" id="autoPublishOnUpload">
@@ -1996,16 +2093,32 @@
                 </div>
             </div>
 
+            <div class="upload-zone" id="unifiedResultDropZone" style="margin-bottom: 12px;">
+                <div class="upload-zone-info">
+                    <div class="upload-zone-icon"><i class="fas fa-file-excel" aria-hidden="true"></i></div>
+                    <div>
+                        <div id="unifiedUploadTargetTitle" style="font-weight: 700; font-size: 0.96rem; color: var(--brand);">সকল শ্রেণির ফলাফল একক ফিল্ডে আপলোড করুন</div>
+                        <div id="unifiedUploadTargetSub" style="font-size: 0.82rem; color: var(--muted);">উপরে সাল, পরীক্ষার ধরন, শ্রেণি ও বিষয় নির্বাচন করে এখানে Excel বা CSV ফাইল টেনে আনুন অথবা বাটনে ক্লিক করুন।</div>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <label id="unifiedResultUploadBtn" class="btn btn-primary upload-btn-wrap" onclick="event.stopPropagation()">
+                        <span class="upload-btn-label"><i class="fas fa-upload" aria-hidden="true"></i> Excel / CSV আপলোড করুন</span>
+                        <input type="file" id="unifiedResultFileInput" class="upload-overlay-input" accept=".xlsx,.xls,.xlsm,.xlsb,.csv,.tsv,.ods,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain" onclick="event.stopPropagation()" onchange="uploadUnifiedResultExcel(this.files && this.files[0], this)">
+                    </label>
+                </div>
+            </div>
+
             <div class="exam-archive-wrap" id="examArchiveWrap">
                 <div class="exam-archive-head">
                     <span><i class="fas fa-history" aria-hidden="true"></i> সংরক্ষিত পরীক্ষা ও আর্কাইভ (১-ক্লিকে সুইচ করুন)</span>
                     <span id="examArchiveSummary"></span>
                 </div>
                 <div class="exam-archive-pills" id="examArchivePills"></div>
+                <div class="uploaded-cls-strip" id="uploadedClassesStrip"></div>
             </div>
 
             <div id="resultsUploadStatus" class="upload-status-box" style="margin-bottom: 10px;"></div>
-            <div class="class-upload-grid" id="classResultUploadGrid" aria-label="প্রতি শ্রেণির আলাদা রেজাল্ট Excel আপলোড"></div>
 
             <details class="adv-details">
                 <summary><i class="fas fa-cog" aria-hidden="true"></i> পাস নম্বর, প্রমোশন নিয়ম, বিষয় পূর্ণমান ও ফিল্ড ম্যাপিং (<span id="advConfigClassLabel"></span>)</summary>
@@ -2460,6 +2573,28 @@
     const _initCtx = getInitialExamContext();
     let selectedAdminYear = _initCtx.year;
     let selectedAdminExamName = _initCtx.examName;
+    let selectedAdminClassId = String(
+        (state.results?.exams?.[state.results?.activeExamId]?.classId)
+        || '6'
+    );
+    let selectedAdminSubject = '__all__';
+    const DEFAULT_RESULT_SUBJECTS = [
+        'কুরআন মাজিদ',
+        'হাদিস',
+        'আকাঈদ ও ফিকহ',
+        'আরবি',
+        'বাংলা',
+        'ইংরেজি',
+        'গণিত',
+        'তথ্য ও যোগাযোগ প্রযুক্তি',
+        'বিজ্ঞান',
+        'ইসলামের ইতিহাস',
+        'পদার্থবিজ্ঞান',
+        'রসায়ন',
+        'জীববিজ্ঞান',
+        'উচ্চতর গণিত',
+        'কৃষি শিক্ষা',
+    ];
 
     function getActiveExam() {
         const id = state.results?.activeExamId;
@@ -3087,6 +3222,7 @@
         [
             { id: 'studentsDropZone', target: 'students' },
             { id: 'documentsDropZone', target: 'documents' },
+            { id: 'unifiedResultDropZone', target: 'results' },
         ].forEach(({ id, target }) => {
             const zone = document.getElementById(id);
             if (!zone) return;
@@ -3101,7 +3237,9 @@
                 e.preventDefault();
                 zone.classList.remove('is-dragover');
                 const file = e.dataTransfer?.files?.[0];
-                if (file) uploadExcelFile(target, file);
+                if (!file) return;
+                if (target === 'results') uploadUnifiedResultExcel(file);
+                else uploadExcelFile(target, file);
             });
         });
     }
@@ -3443,8 +3581,11 @@
     }
 
     function selectClassResult(classId) {
-        const ex = ensureClassExamRecord(classId);
-        state.results.activeExamId = ex.id;
+        if (classId && classId !== 'auto') {
+            selectedAdminClassId = String(classId);
+            const ex = ensureClassExamRecord(selectedAdminClassId);
+            state.results.activeExamId = ex.id;
+        }
         selectedInlineMarksheetRowId = '';
         renderResultsSection();
     }
@@ -3496,19 +3637,35 @@
             && normExamMetaClient(ex.examName, 'বার্ষিক পরীক্ষা') === eKey
         ));
         const curActive = state.results?.exams?.[state.results?.activeExamId];
-        const targetCid = preferredClassId || curActive?.classId || '6';
+        const fallbackCid = (selectedAdminClassId && selectedAdminClassId !== 'auto') ? selectedAdminClassId : (curActive?.classId || '6');
+        const targetCid = preferredClassId || fallbackCid;
         const chosen = matching.find((ex) => String(ex.classId || '') === String(targetCid) && (ex.rows || []).length > 0)
             || matching.find((ex) => Array.isArray(ex.rows) && ex.rows.length > 0)
             || matching.find((ex) => String(ex.classId || '') === String(targetCid))
             || ensureClassExamRecord(targetCid);
         state.results.activeExamId = chosen.id;
+        if (selectedAdminClassId !== 'auto') {
+            selectedAdminClassId = String(chosen.classId || targetCid);
+        }
         renderResultsSection();
     }
 
-    async function uploadClassResultExcel(classId, droppedFile, inputEl) {
-        const cid = String(classId ?? '6').trim();
-        const inp = inputEl || document.getElementById('classResultFile_' + cid);
-        const btn = document.getElementById('classUploadBtn_' + cid);
+    function getUnifiedSubjectConfig() {
+        const subSel = document.getElementById('examSubjectSelect');
+        const selVal = subSel ? subSel.value : selectedAdminSubject;
+        if (!selVal || selVal === '__all__') {
+            return { mode: 'all', name: '', fullMarks: 100, isOptional: false };
+        }
+        const customName = String(document.getElementById('customSubjectNameInput')?.value || '').trim();
+        const subName = selVal === '__custom__' ? customName : selVal;
+        const fm = Number(document.getElementById('singleSubjectFullMarks')?.value) || 100;
+        const isOpt = Boolean(document.getElementById('singleSubjectIsOptional')?.checked);
+        return { mode: 'single', name: subName, fullMarks: fm, isOptional: isOpt };
+    }
+
+    async function uploadUnifiedResultExcel(droppedFile, inputEl) {
+        const inp = inputEl || document.getElementById('unifiedResultFileInput');
+        const btn = document.getElementById('unifiedResultUploadBtn');
         const btnLabel = btn ? btn.querySelector('.upload-btn-label') : null;
         const selectedFile = droppedFile || (inp && inp.files && inp.files[0]);
 
@@ -3534,9 +3691,22 @@
 
         const year = String(selectedAdminYear || '২০২৬').trim() || '২০২৬';
         const examName = String(selectedAdminExamName || 'বার্ষিক পরীক্ষা').trim() || 'বার্ষিক পরীক্ষা';
-        const existing = getExamForClass(cid, year, examName);
+        const cid = String(selectedAdminClassId || document.getElementById('examClassSelect')?.value || '6').trim();
+        const subCfg = getUnifiedSubjectConfig();
+
+        if (subCfg.mode === 'single' && !subCfg.name) {
+            if (inp) inp.value = '';
+            setUploadStatus('results', 'অনুগ্রহ করে বিষয়ের নাম লিখুন।', 'error');
+            showToast('বিষয়ের নাম লিখুন।', true);
+            document.getElementById('customSubjectNameInput')?.focus();
+            return;
+        }
+
+        const existing = cid !== 'auto' ? getExamForClass(cid, year, examName) : null;
         const examId = existing?.id || '';
-        const className = String(existing?.className || state.classMap?.[cid]?.name || 'ষষ্ঠ').trim();
+        const className = cid === 'auto'
+            ? 'সকল শ্রেণি'
+            : String(existing?.className || state.classMap?.[cid]?.name || 'ষষ্ঠ').trim();
         const autoPubChecked = Boolean(document.getElementById('autoPublishOnUpload')?.checked);
         const shouldPublish = autoPubChecked ? true : (existing && (existing.rows || []).length > 0 ? existing.published !== false : false);
 
@@ -3548,6 +3718,12 @@
         fd.append('className', className);
         fd.append('examName', examName);
         fd.append('year', year);
+        fd.append('subjectMode', subCfg.mode);
+        if (subCfg.mode === 'single') {
+            fd.append('subjectName', subCfg.name);
+            fd.append('subjectFullMarks', String(subCfg.fullMarks));
+            fd.append('subjectIsOptional', subCfg.isOptional ? 'true' : 'false');
+        }
         fd.append('published', shouldPublish ? 'true' : 'false');
         fd.append('passPercent', existing?.passPercent || 33);
         fd.append('maxPromoteFail', existing?.maxPromoteFail || 0);
@@ -3560,8 +3736,9 @@
         if (btnLabel) {
             btnLabel.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> আপলোড হচ্ছে...';
         }
-        const clsLabel = formatClassLabelClient(className, cid);
-        setUploadStatus('results', `${clsLabel} (${examName} ${year}): "${selectedFile.name}" আপলোড ও GPA হিসাব হচ্ছে...`, 'loading');
+        const clsLabel = cid === 'auto' ? 'সব শ্রেণি (অটো)' : formatClassLabelClient(className, cid);
+        const subDesc = subCfg.mode === 'single' ? `${subCfg.name} (${bnNum(subCfg.fullMarks)})` : 'সকল বিষয়';
+        setUploadStatus('results', `${year} · ${examName} · ${clsLabel} · ${subDesc}: "${selectedFile.name}" আপলোড ও GPA হিসাব হচ্ছে...`, 'loading');
         document.getElementById('resultsUploadStatus')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
         try {
@@ -3590,6 +3767,11 @@
             if (searchEl) searchEl.value = '';
             selectedInlineMarksheetRowId = '';
 
+            if (data.state?.results?.activeExamId) {
+                const newActive = data.state.results.exams?.[data.state.results.activeExamId];
+                if (newActive?.classId) selectedAdminClassId = String(newActive.classId);
+            }
+
             applyState(data.state);
             if (inp) inp.value = '';
             const statusHint = shouldPublish ? 'প্রকাশিত হয়েছে' : 'খসড়া হিসেবে সংরক্ষিত হয়েছে — যাচাই করে "প্রকাশ করুন" চাপুন';
@@ -3600,15 +3782,12 @@
             setUploadStatus('results', `${clsLabel}: ${err.message || 'আপলোড ব্যর্থ হয়েছে'}`, 'error');
             showToast(err.message || 'আপলোড ব্যর্থ হয়েছে', true);
         } finally {
-            const latestBtn = document.getElementById('classUploadBtn_' + cid);
-            if (latestBtn) {
-                latestBtn.style.pointerEvents = '';
-                latestBtn.style.opacity = '';
-                const latestLabel = latestBtn.querySelector('.upload-btn-label');
-                const hasRows = (getExamForClass(cid)?.rows || []).length > 0;
-                if (latestLabel) {
-                    latestLabel.innerHTML = `<i class="fas fa-upload" aria-hidden="true"></i> ${hasRows ? 'নতুন Excel' : 'Excel আপলোড'}`;
-                }
+            if (btn) {
+                btn.style.pointerEvents = '';
+                btn.style.opacity = '';
+            }
+            if (btnLabel) {
+                btnLabel.innerHTML = '<i class="fas fa-upload" aria-hidden="true"></i> Excel / CSV আপলোড করুন';
             }
         }
     }
@@ -3788,66 +3967,35 @@
     }
 
     function renderClassResultUploadGrid() {
-        const gridEl = document.getElementById('classResultUploadGrid');
-        if (!gridEl) return;
+        const strip = document.getElementById('uploadedClassesStrip');
+        if (!strip) return;
         const active = getActiveExam();
         const activeCid = String(active?.classId ?? '');
         const classEntries = Object.entries(state.classMap || {});
 
-        gridEl.innerHTML = classEntries.map(([cid, info]) => {
-            const ex = getExamForClass(cid);
+        const uploaded = classEntries
+            .map(([cid, info]) => ({ cid, info, ex: getExamForClass(cid) }))
+            .filter(({ ex }) => ex && Array.isArray(ex.rows) && ex.rows.length > 0);
+
+        if (!uploaded.length) {
+            strip.innerHTML = `<span style="font-size:0.82rem; color:var(--muted);">"${esc(selectedAdminExamName)} (${esc(selectedAdminYear)})"-এ এখনো কোনো শ্রেণির ফলাফল আপলোড করা হয়নি।</span>`;
+            return;
+        }
+
+        strip.innerHTML = `<span style="font-size:0.8rem; font-weight:700; color:var(--muted);">আপলোডকৃত শ্রেণি:</span>` + uploaded.map(({ cid, info, ex }) => {
             const clsLabel = formatClassLabelClient(info.name, cid);
-            const rowCount = (ex?.rows || []).length;
+            const rowCount = ex.rows.length;
             const isSelected = activeCid === String(cid);
-            const isPub = rowCount > 0 && ex.published !== false;
-            let metaText = `${selectedAdminExamName} (${selectedAdminYear}) — এখনো Excel আপলোড হয়নি`;
-            if (rowCount > 0) {
-                const computed = recomputeExamClient(ex);
-                metaText = `${bnNum(rowCount)} জন শিক্ষার্থী · পাস ${bnNum(computed.stats.passRate)}%`;
-            }
-            const statusBadge = rowCount > 0
-                ? (isPub
-                    ? '<span class="pub-badge pub-badge--live"><i class="fas fa-check-circle" aria-hidden="true"></i> প্রকাশিত</span>'
-                    : '<span class="pub-badge pub-badge--draft"><i class="fas fa-clock" aria-hidden="true"></i> খসড়া</span>')
-                : '<span class="class-upload-meta">খালি</span>';
+            const isPub = ex.published !== false;
             return `
-                <div class="class-upload-row ${isSelected ? 'is-selected' : ''}" data-class-id="${esc(cid)}" onclick="selectClassResult('${esc(cid)}')">
-                    <div class="class-upload-top">
-                        <span class="class-upload-title">${esc(clsLabel)}</span>
-                        ${statusBadge}
-                    </div>
-                    <div class="class-upload-meta">${esc(metaText)}</div>
-                    <div class="class-upload-actions" onclick="event.stopPropagation()">
-                        <label id="classUploadBtn_${esc(cid)}" class="btn btn-primary btn-sm upload-btn-wrap" onclick="event.stopPropagation()">
-                            <span class="upload-btn-label"><i class="fas fa-upload" aria-hidden="true"></i> ${rowCount > 0 ? 'নতুন Excel' : 'Excel আপলোড'}</span>
-                            <input type="file" id="classResultFile_${esc(cid)}" class="upload-overlay-input" accept=".xlsx,.xls,.xlsm,.xlsb,.csv,.tsv,.ods,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain" onclick="event.stopPropagation()" onchange="uploadClassResultExcel('${esc(cid)}', this.files && this.files[0], this)">
-                        </label>
-                        ${rowCount > 0 ? `
-                            <button type="button" class="btn btn-sm ${isPub ? 'btn-amber' : 'btn-outline'}" style="${!isPub ? 'border-color:#15803d; color:#15803d; background:#f0fdf4;' : ''}" onclick="toggleExamPublish('${esc(ex.id)}', ${isPub ? 'false' : 'true'}, event)" title="${isPub ? 'ওয়েবসাইট থেকে লুকিয়ে খসড়া করুন' : 'শিক্ষার্থী ও অভিভাবকদের জন্য প্রকাশ করুন'}">${isPub ? 'খসড়া করুন' : 'প্রকাশ করুন'}</button>
-                            <button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation(); selectClassResult('${esc(cid)}')">দেখুন</button>
-                            <button type="button" class="btn btn-danger-outline btn-sm" onclick="clearClassResult('${esc(cid)}', event)" title="এই পরীক্ষার এই শ্রেণির রেজাল্ট মুছুন"><i class="fas fa-trash" aria-hidden="true"></i></button>
-                        ` : ''}
-                    </div>
+                <div class="uploaded-cls-chip ${isSelected ? 'is-selected' : ''}" onclick="selectClassResult('${esc(cid)}')">
+                    <span>${esc(clsLabel)} (${bnNum(rowCount)} জন)</span>
+                    <span class="pub-badge ${isPub ? 'pub-badge--live' : 'pub-badge--draft'}">${isPub ? 'প্রকাশিত' : 'খসড়া'}</span>
+                    <button type="button" class="chip-mini-btn ${isPub ? '' : 'is-pub'}" onclick="toggleExamPublish('${esc(ex.id)}', ${isPub ? 'false' : 'true'}, event)">${isPub ? 'খসড়া' : 'প্রকাশ'}</button>
+                    <button type="button" class="chip-mini-btn is-del" onclick="clearClassResult('${esc(cid)}', event)" title="মুছে ফেলুন"><i class="fas fa-trash" aria-hidden="true"></i></button>
                 </div>
             `;
         }).join('');
-
-        gridEl.querySelectorAll('.class-upload-row').forEach((card) => {
-            const cid = card.getAttribute('data-class-id');
-            card.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                card.classList.add('is-dragover');
-            });
-            card.addEventListener('dragleave', () => {
-                card.classList.remove('is-dragover');
-            });
-            card.addEventListener('drop', (e) => {
-                e.preventDefault();
-                card.classList.remove('is-dragover');
-                const file = e.dataTransfer?.files?.[0];
-                if (file && cid) uploadClassResultExcel(cid, file);
-            });
-        });
     }
 
     function renderActivePublishBanner() {
@@ -3872,13 +4020,39 @@
                <button type="button" class="btn btn-primary btn-sm" onclick="toggleExamPublish('${esc(exam.id)}', true)"><i class="fas fa-bullhorn" aria-hidden="true"></i> এখনই প্রকাশ করুন</button>`;
     }
 
+    function updateUnifiedUploadTargetLabel() {
+        const titleEl = document.getElementById('unifiedUploadTargetTitle');
+        const subEl = document.getElementById('unifiedUploadTargetSub');
+        const cid = String(selectedAdminClassId || document.getElementById('examClassSelect')?.value || '6');
+        const clsText = cid === 'auto'
+            ? 'সব শ্রেণি (Excel-এর শ্রেণি কলাম অনুযায়ী)'
+            : formatClassLabelClient(state.classMap?.[cid]?.name, cid);
+        const subCfg = getUnifiedSubjectConfig();
+        const subText = subCfg.mode === 'single'
+            ? `${subCfg.name || 'নির্বাচিত বিষয়'} (পূর্ণমান: ${bnNum(subCfg.fullMarks)}${subCfg.isOptional ? ', ৪র্থ বিষয়' : ''})`
+            : 'সকল বিষয় (পূর্ণ রেজাল্ট শিট)';
+
+        if (titleEl) {
+            titleEl.textContent = `${selectedAdminYear} · ${selectedAdminExamName} · ${clsText} · ${subText}`;
+        }
+        if (subEl) {
+            if (subCfg.mode === 'single') {
+                subEl.textContent = 'এই মোডে এক্সেল ফাইলে "রোল" (ঐচ্ছিক: নাম) এবং ঐ বিষয়ের নম্বর কলাম থাকলেই চলবে — বিদ্যমান শিটে রোল অনুযায়ী নম্বর যুক্ত/আপডেট হবে।';
+            } else if (cid === 'auto') {
+                subEl.textContent = 'ফাইলে "শ্রেণি" কলাম থাকতে হবে; এক আপলোডেই সব শ্রেণির আলাদা আলাদা রেজাল্ট শিট তৈরি হয়ে যাবে।';
+            } else {
+                subEl.textContent = 'এখানে Excel বা CSV ফাইল টেনে আনুন অথবা ডানপাশের বাটনে ক্লিক করে নির্বাচন করুন।';
+            }
+        }
+    }
+
     function renderExamMetaInputs() {
         const active = getActiveExam();
         const clsLabel = formatClassLabelClient(active?.className, active?.classId);
         const advLbl = document.getElementById('advConfigClassLabel');
         if (advLbl) advLbl.textContent = `${clsLabel} (${selectedAdminExamName} ${selectedAdminYear})`;
 
-        // Populate Year select
+        // 1. Year select
         const yearSel = document.getElementById('examYearSelect');
         const yearInp = document.getElementById('examYearInput');
         const storedYears = Object.values(state.results?.exams || {}).map((e) => String(e.year || '').trim()).filter(Boolean);
@@ -3899,7 +4073,7 @@
             }
         }
 
-        // Populate Exam Name select
+        // 2. Exam Name select
         const nameSel = document.getElementById('examNameSelect');
         const nameInp = document.getElementById('examNameInput');
         const storedNames = Object.values(state.results?.exams || {}).map((e) => String(e.examName || '').trim()).filter(Boolean);
@@ -3920,6 +4094,46 @@
             }
         }
 
+        // 3. Class select (single unified class selector + auto split option)
+        const clsSel = document.getElementById('examClassSelect');
+        if (clsSel) {
+            const classEntries = Object.entries(state.classMap || {});
+            const clsOpts = classEntries.map(([cid, info]) => {
+                const ex = getExamForClass(cid);
+                const cnt = (ex?.rows || []).length;
+                const lbl = formatClassLabelClient(info.name, cid);
+                const suffix = cnt > 0 ? ` (${bnNum(cnt)} জন ✓)` : '';
+                return `<option value="${esc(cid)}">${esc(lbl + suffix)}</option>`;
+            }).join('');
+            clsSel.innerHTML = clsOpts + '<option value="auto">সব শ্রেণি (Excel-এ শ্রেণি কলাম অনুযায়ী অটো ভাগ)</option>';
+            const validOpt = selectedAdminClassId === 'auto' || Boolean(state.classMap?.[selectedAdminClassId]);
+            if (!validOpt) selectedAdminClassId = String(active?.classId || '6');
+            clsSel.value = selectedAdminClassId;
+        }
+
+        // 4. Subject select (All subjects OR single subject merge)
+        const subSel = document.getElementById('examSubjectSelect');
+        const subExtra = document.getElementById('singleSubjectExtras');
+        const customSubWrap = document.getElementById('customSubjectNameWrap');
+        if (subSel) {
+            const activeSubs = (active?.columns || [])
+                .filter((c) => c.isSubject)
+                .map((c) => cleanSubTitle(c.label))
+                .filter(Boolean);
+            const subOptions = Array.from(new Set([...activeSubs, ...DEFAULT_RESULT_SUBJECTS]));
+            subSel.innerHTML = '<option value="__all__">সকল বিষয় (পূর্ণ রেজাল্ট শিট)</option>'
+                + subOptions.map((s) => `<option value="${esc(s)}">${esc(s)} (একক বিষয়)</option>`).join('')
+                + '<option value="__custom__">+ কাস্টম বিষয় লিখুন...</option>';
+            if (selectedAdminSubject !== '__all__' && selectedAdminSubject !== '__custom__' && !subOptions.includes(selectedAdminSubject)) {
+                selectedAdminSubject = '__custom__';
+            }
+            subSel.value = selectedAdminSubject;
+            if (subExtra) subExtra.classList.toggle('is-hidden', selectedAdminSubject === '__all__');
+            if (customSubWrap) customSubWrap.classList.toggle('is-hidden', selectedAdminSubject !== '__custom__');
+        }
+
+        updateUnifiedUploadTargetLabel();
+
         // Group Bulk Publish buttons
         const groupCtrls = document.getElementById('examGroupPublishControls');
         if (groupCtrls) {
@@ -3937,13 +4151,48 @@
                     (draftCnt > 0 ? `<button type="button" class="btn btn-primary btn-sm" onclick="publishExamGroup(true)"><i class="fas fa-bullhorn" aria-hidden="true"></i> সকল শ্রেণি প্রকাশ করুন (${bnNum(ctxExams.length)})</button>` : '')
                     + (pubCnt > 0 ? `<button type="button" class="btn btn-outline btn-sm" onclick="publishExamGroup(false)"><i class="fas fa-eye-slash" aria-hidden="true"></i> সব খসড়া করুন</button>` : '');
             } else {
-                groupCtrls.innerHTML = '<span style="font-size:0.8rem; color:var(--muted);">নিচের যেকোনো শ্রেণির কার্ডে Excel আপলোড করুন</span>';
+                groupCtrls.innerHTML = '<span style="font-size:0.8rem; color:var(--muted);">নিচের বক্সে ফাইল আপলোড করুন</span>';
             }
         }
 
         document.getElementById('examPassPercent').value = active?.passPercent || 33;
         document.getElementById('examMaxPromoteFail').value = String(active?.maxPromoteFail ?? 0);
         document.getElementById('examPromoLabel').value = active?.promotionLabel || 'বিশেষ বিবেচনায় প্রমোটেড';
+    }
+
+    function onExamClassSelectChange() {
+        const clsSel = document.getElementById('examClassSelect');
+        if (!clsSel) return;
+        selectedAdminClassId = clsSel.value || '6';
+        if (selectedAdminClassId !== 'auto') {
+            const ex = ensureClassExamRecord(selectedAdminClassId);
+            state.results.activeExamId = ex.id;
+            selectedInlineMarksheetRowId = '';
+        }
+        renderResultsSection();
+    }
+
+    function onExamSubjectSelectChange() {
+        const subSel = document.getElementById('examSubjectSelect');
+        const subExtra = document.getElementById('singleSubjectExtras');
+        const customSubWrap = document.getElementById('customSubjectNameWrap');
+        if (!subSel) return;
+        selectedAdminSubject = subSel.value || '__all__';
+        if (subExtra) subExtra.classList.toggle('is-hidden', selectedAdminSubject === '__all__');
+        if (customSubWrap) customSubWrap.classList.toggle('is-hidden', selectedAdminSubject !== '__custom__');
+        if (selectedAdminSubject === '__custom__') {
+            document.getElementById('customSubjectNameInput')?.focus();
+        } else if (selectedAdminSubject !== '__all__') {
+            const active = getActiveExam();
+            const matchedCol = (active?.columns || []).find((c) => c.isSubject && cleanSubTitle(c.label) === selectedAdminSubject);
+            if (matchedCol) {
+                const fmInp = document.getElementById('singleSubjectFullMarks');
+                const optChk = document.getElementById('singleSubjectIsOptional');
+                if (fmInp) fmInp.value = Number(matchedCol.fullMarks) || 100;
+                if (optChk) optChk.checked = Boolean(matchedCol.isOptional);
+            }
+        }
+        updateUnifiedUploadTargetLabel();
     }
 
     function onExamYearSelectChange() {
@@ -3995,6 +4244,7 @@
             exam.title = `${clsLabel} — ${selectedAdminExamName}`;
             markDirty('results', true);
         }
+        updateUnifiedUploadTargetLabel();
         renderExamArchiveStrip();
         renderClassResultUploadGrid();
         renderActivePublishBanner();
@@ -4365,7 +4615,7 @@
 
         if (!exam.rows || exam.rows.length === 0) {
             const clsLabel = formatClassLabelClient(exam.className, exam.classId);
-            container.innerHTML = `<div class="empty-state"><i class="fas fa-poll-h" aria-hidden="true"></i><p>${esc(clsLabel)}-এর রেজাল্ট শিটে এখনো কোনো শিক্ষার্থী নেই। উপরের <strong>${esc(clsLabel)}</strong> কার্ড থেকে Excel আপলোড করুন অথবা <strong>নতুন শিক্ষার্থী</strong> যোগ করুন।</p></div>`;
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-poll-h" aria-hidden="true"></i><p>${esc(clsLabel)}-এর রেজাল্ট শিটে এখনো কোনো শিক্ষার্থী নেই। উপরের ফিল্ড থেকে <strong>${esc(clsLabel)}</strong> নির্বাচন করে Excel আপলোড করুন অথবা <strong>নতুন শিক্ষার্থী</strong> যোগ করুন।</p></div>`;
             return;
         }
 

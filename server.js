@@ -1648,82 +1648,243 @@ app.post('/api/excel/upload', requireAdminApi, verifySameOrigin, (req, res) => {
         updatedAt: now,
       };
     } else if (target === 'results') {
-      const classId = (req.body.classId !== undefined && String(req.body.classId).trim() !== '')
+      const requestedClassId = (req.body.classId !== undefined && String(req.body.classId).trim() !== '')
         ? String(req.body.classId).trim()
         : '6';
-      const requestedClassName = String(req.body.className || (classMap[classId]?.name || 'ষষ্ঠ')).trim();
       const requestedExamName = String(req.body.examName || 'বার্ষিক পরীক্ষা').trim() || 'বার্ষিক পরীক্ষা';
       const requestedYear = String(req.body.year || '২০২৬').trim() || '২০২৬';
       const reqExamKey = normalizeExamMetaKey(requestedExamName, 'বার্ষিক পরীক্ষা');
       const reqYearKey = normalizeExamMetaKey(requestedYear, '২০২৬');
+      const subjectMode = String(req.body.subjectMode || 'all').trim() === 'single' ? 'single' : 'all';
+      const singleSubName = String(req.body.subjectName || '').trim();
+      const singleSubFmRaw = parseFloat(bnToEnNumber(String(req.body.subjectFullMarks || '100')));
+      const singleSubFm = (!Number.isNaN(singleSubFmRaw) && singleSubFmRaw >= 5 && singleSubFmRaw <= 500) ? singleSubFmRaw : 100;
+      const singleSubOptional = String(req.body.subjectIsOptional || '').toLowerCase() === 'true' || req.body.subjectIsOptional === '1';
 
-      let examId = String(req.body.examId || '').trim();
-      if (examId && store.results.exams?.[examId]) {
-        const cur = store.results.exams[examId];
-        const sameSlot = String(cur.classId ?? '') === classId
-          && normalizeExamMetaKey(cur.examName, 'বার্ষিক পরীক্ষা') === reqExamKey
-          && normalizeExamMetaKey(cur.year, '২০২৬') === reqYearKey;
-        if (!sameSlot) {
-          examId = '';
-        }
-      } else {
-        examId = '';
+      if (subjectMode === 'single' && !singleSubName) {
+        return res.status(400).json({ error: 'একক বিষয় আপলোডের জন্য বিষয়ের নাম লিখুন বা নির্বাচন করুন।' });
       }
 
-      if (!examId) {
+      const allocateOrMatchExamId = (cid, explicitId = '') => {
+        if (explicitId && store.results.exams?.[explicitId]) {
+          const cur = store.results.exams[explicitId];
+          const sameSlot = String(cur.classId ?? '') === cid
+            && normalizeExamMetaKey(cur.examName, 'বার্ষিক পরীক্ষা') === reqExamKey
+            && normalizeExamMetaKey(cur.year, '২০২৬') === reqYearKey;
+          if (sameSlot) return explicitId;
+        }
         const matchedExisting = Object.values(store.results.exams || {}).find((ex) => (
-          String(ex.classId ?? '') === classId
+          String(ex.classId ?? '') === cid
           && normalizeExamMetaKey(ex.examName, 'বার্ষিক পরীক্ষা') === reqExamKey
           && normalizeExamMetaKey(ex.year, '২০২৬') === reqYearKey
         ));
-        if (matchedExisting) {
-          examId = matchedExisting.id;
-        } else if (!store.results.exams?.[`exam_class_${classId}`]) {
-          examId = `exam_class_${classId}`;
-        } else {
-          examId = `exam_${classId}_${Date.now()}`;
+        if (matchedExisting) return matchedExisting.id;
+        if (!store.results.exams?.[`exam_class_${cid}`]) return `exam_class_${cid}`;
+        return `exam_${cid}_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`;
+      };
+
+      const resolvePublishedFlag = (existing) => {
+        const hasPub = req.body.published !== undefined && String(req.body.published).trim() !== '';
+        if (hasPub) {
+          return String(req.body.published).toLowerCase() === 'true' || req.body.published === true || String(req.body.published) === '1';
         }
+        return (existing?.id && existing.published !== undefined) ? Boolean(existing.published) : false;
+      };
+
+      const mappingGuess = autoDetectStudentMapping(parsed.columns);
+      const detectedCols = detectResultColumns(parsed.columns);
+
+      const upsertExamRows = (cid, cName, targetRows, explicitId = '') => {
+        const examId = allocateOrMatchExamId(cid, explicitId);
+        const existing = store.results.exams[examId] || {};
+        const resolvedPublished = resolvePublishedFlag(existing);
+        const resolvedClassName = String(cName || existing.className || classMap[cid]?.name || 'ষষ্ঠ').trim();
+
+        if (subjectMode === 'single') {
+          const rollKey = mappingGuess.roll || (parsed.columns[0]?.key || '');
+          const nameKey = mappingGuess.name_bn || '';
+          const fatherKey = mappingGuess.father_bn || '';
+          const idKey = mappingGuess.id || '';
+          const groupKey = mappingGuess.group || '';
+          const classColKey = mappingGuess.class_name || '';
+
+          const cleanSingleSub = singleSubName.replace(/\s*\([^)]*\)/g, '').trim() || singleSubName;
+          const cleanNormSub = normalizeExamMetaKey(cleanSingleSub);
+          const reservedKeys = new Set([rollKey, nameKey, fatherKey, idKey, groupKey, classColKey].filter(Boolean));
+
+          // Find mark column in uploaded file
+          let scoreCol = parsed.columns.find((c) => !reservedKeys.has(c.key) && normalizeExamMetaKey(c.label.replace(/\s*\([^)]*\)/g, '')) === cleanNormSub);
+          if (!scoreCol) {
+            scoreCol = parsed.columns.find((c) => !reservedKeys.has(c.key) && /নম্বর|প্রাপ্ত|marks|score|number|subject/i.test(`${c.label} ${c.key}`));
+          }
+          if (!scoreCol) {
+            scoreCol = parsed.columns.find((c) => !reservedKeys.has(c.key));
+          }
+          if (!scoreCol) {
+            throw new Error(`"${cleanSingleSub}" বিষয়ের নম্বরের কলাম এক্সেলে পাওয়া যায়নি।`);
+          }
+
+          let baseCols = Array.isArray(existing.columns) && existing.columns.length > 0
+            ? existing.columns.map((c) => ({ ...c }))
+            : [
+                { key: 'roll', label: 'রোল', isSubject: false, fullMarks: 0 },
+                { key: 'name', label: 'শিক্ষার্থীর নাম', isSubject: false, fullMarks: 0 },
+                { key: 'father', label: 'পিতার নাম', isSubject: false, fullMarks: 0 },
+              ];
+          let baseMapping = existing.mapping && existing.mapping.roll
+            ? { ...existing.mapping }
+            : { roll: 'roll', name: 'name', father: 'father', id: '', group: '', optionalSubject: '' };
+          let baseRows = Array.isArray(existing.rows) ? existing.rows.map((r) => ({ ...r })) : [];
+
+          let targetSubCol = baseCols.find((c) => c.isSubject && normalizeExamMetaKey(c.label.replace(/\s*\([^)]*\)/g, '')) === cleanNormSub);
+          const formattedLabel = `${cleanSingleSub} (${singleSubFm})${singleSubOptional ? ' (4th)' : ''}`;
+          if (targetSubCol) {
+            targetSubCol.fullMarks = singleSubFm;
+            targetSubCol.isOptional = singleSubOptional;
+            targetSubCol.label = formattedLabel;
+          } else {
+            const newSubKey = `sub_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`;
+            targetSubCol = {
+              key: newSubKey,
+              label: formattedLabel,
+              isSubject: true,
+              fullMarks: singleSubFm,
+              isOptional: singleSubOptional,
+            };
+            baseCols.push(targetSubCol);
+          }
+
+          const exRollKey = baseMapping.roll || 'roll';
+          const exNameKey = baseMapping.name || 'name';
+          const exFatherKey = baseMapping.father || 'father';
+          const rollIndexMap = new Map();
+          baseRows.forEach((r, idx) => {
+            const rk = normalizeRollKey(r[exRollKey]);
+            if (rk) rollIndexMap.set(rk, idx);
+          });
+
+          let updatedRows = 0;
+          targetRows.forEach((srcRow, idx) => {
+            const rawRoll = String(srcRow[rollKey] || '').trim();
+            const rk = normalizeRollKey(rawRoll);
+            if (!rk) return;
+            const markVal = String(srcRow[scoreCol.key] ?? '').trim();
+            const srcName = nameKey ? String(srcRow[nameKey] || '').trim() : '';
+            const srcFather = fatherKey ? String(srcRow[fatherKey] || '').trim() : '';
+
+            if (rollIndexMap.has(rk)) {
+              const rowObj = baseRows[rollIndexMap.get(rk)];
+              rowObj[targetSubCol.key] = markVal;
+              if (srcName && !String(rowObj[exNameKey] || '').trim()) rowObj[exNameKey] = srcName;
+              if (srcFather && !String(rowObj[exFatherKey] || '').trim()) rowObj[exFatherKey] = srcFather;
+            } else {
+              const newRow = { _id: `row_${Date.now()}_${idx}_${Math.random().toString(36).slice(2, 5)}` };
+              baseCols.forEach((c) => { newRow[c.key] = ''; });
+              newRow[exRollKey] = rawRoll;
+              if (exNameKey) newRow[exNameKey] = srcName;
+              if (exFatherKey) newRow[exFatherKey] = srcFather;
+              newRow[targetSubCol.key] = markVal;
+              baseRows.push(newRow);
+              rollIndexMap.set(rk, baseRows.length - 1);
+            }
+            updatedRows++;
+          });
+
+          store.results.exams[examId] = {
+            id: examId,
+            title: String(req.body.title || `${formatClassLabel(resolvedClassName, cid)} — ${requestedExamName}`),
+            classId: cid,
+            className: resolvedClassName,
+            examName: requestedExamName,
+            year: requestedYear,
+            published: resolvedPublished,
+            publishedAt: resolvedPublished ? (existing.publishedAt || now) : null,
+            passPercent: Number(req.body.passPercent || existing.passPercent || 33),
+            maxPromoteFail: Number(req.body.maxPromoteFail ?? existing.maxPromoteFail ?? 0),
+            promotionLabel: String(req.body.promotionLabel || existing.promotionLabel || 'বিশেষ বিবেচনায় প্রমোটেড'),
+            columns: baseCols,
+            mapping: baseMapping,
+            rows: baseRows,
+            updatedAt: now,
+          };
+          return { examId, className: resolvedClassName, count: updatedRows };
+        }
+
+        store.results.exams[examId] = {
+          id: examId,
+          title: String(req.body.title || `${formatClassLabel(resolvedClassName, cid)} — ${requestedExamName}`),
+          classId: cid,
+          className: resolvedClassName,
+          examName: requestedExamName,
+          year: requestedYear,
+          published: resolvedPublished,
+          publishedAt: resolvedPublished ? (existing.publishedAt || now) : null,
+          passPercent: Number(req.body.passPercent || existing.passPercent || 33),
+          maxPromoteFail: Number(req.body.maxPromoteFail ?? existing.maxPromoteFail ?? 0),
+          promotionLabel: String(req.body.promotionLabel || existing.promotionLabel || 'বিশেষ বিবেচনায় প্রমোটেড'),
+          columns: detectedCols,
+          mapping: {
+            roll: mappingGuess.roll || (parsed.columns[0]?.key || ''),
+            name: mappingGuess.name_bn || (parsed.columns[1]?.key || ''),
+            father: mappingGuess.father_bn || '',
+            id: mappingGuess.id || '',
+            group: mappingGuess.group || '',
+            optionalSubject: mappingGuess.optionalSubject || '',
+          },
+          rows: targetRows,
+          updatedAt: now,
+        };
+        return { examId, className: resolvedClassName, count: targetRows.length };
+      };
+
+      if (requestedClassId === 'auto') {
+        const classColKey = mappingGuess.class_name;
+        if (!classColKey) {
+          return res.status(400).json({ error: 'সকল শ্রেণি একসাথে আপলোডের জন্য এক্সেল ফাইলে "শ্রেণি" কলাম থাকতে হবে, অথবা উপরের তালিকা থেকে নির্দিষ্ট শ্রেণি নির্বাচন করুন।' });
+        }
+        const grouped = new Map();
+        for (const r of parsed.rows) {
+          const rawCls = String(r[classColKey] || '').trim();
+          if (!rawCls) continue;
+          const norm = normalizeClassInput(rawCls);
+          const matchedCid = Object.keys(classMap).find((k) => {
+            if (norm.key && k === norm.key) return true;
+            return normalizeClassInput(classMap[k]?.name || '').key === norm.key;
+          });
+          if (!matchedCid) continue;
+          if (!grouped.has(matchedCid)) {
+            grouped.set(matchedCid, { classId: matchedCid, className: classMap[matchedCid].name, rows: [] });
+          }
+          grouped.get(matchedCid).rows.push(r);
+        }
+        if (grouped.size === 0) {
+          return res.status(400).json({ error: 'ফাইলের "শ্রেণি" কলামে কোনো পরিচিত শ্রেণি (যেমন: ষষ্ঠ, সপ্তম, অষ্টম...) পাওয়া যায়নি।' });
+        }
+        const summaryParts = [];
+        let firstExamId = '';
+        for (const grp of grouped.values()) {
+          const info = upsertExamRows(grp.classId, grp.className, grp.rows);
+          if (!firstExamId) firstExamId = info.examId;
+          summaryParts.push(`${formatClassLabel(info.className, grp.classId)} (${convertToBengali(info.count)} জন)`);
+        }
+        if (firstExamId) store.results.activeExamId = firstExamId;
+        saveExcelStore(store);
+        return res.json({
+          message: `${convertToBengali(grouped.size)}টি শ্রেণির ফলাফল সফলভাবে আপলোড হয়েছে: ${summaryParts.join(', ')}।`,
+          state: serializeExcelState(store),
+        });
       }
 
-      const existing = store.results.exams[examId] || {};
-      const detectedCols = detectResultColumns(parsed.columns);
-      const mappingGuess = autoDetectStudentMapping(parsed.columns);
-      const resolvedClassId = (req.body.classId !== undefined && String(req.body.classId).trim() !== '')
-        ? String(req.body.classId).trim()
-        : String(existing.classId ?? classId);
-      const className = String(req.body.className || existing.className || requestedClassName || 'ষষ্ঠ').trim();
-      const examName = requestedExamName;
-      const year = requestedYear;
-      const hasPublishedField = req.body.published !== undefined && String(req.body.published).trim() !== '';
-      const resolvedPublished = hasPublishedField
-        ? (String(req.body.published).toLowerCase() === 'true' || req.body.published === true || String(req.body.published) === '1')
-        : (existing.id && existing.published !== undefined ? Boolean(existing.published) : false);
-
-      store.results.exams[examId] = {
-        id: examId,
-        title: String(req.body.title || `${formatClassLabel(className, resolvedClassId)} — ${examName}`),
-        classId: resolvedClassId,
-        className,
-        examName,
-        year,
-        published: resolvedPublished,
-        publishedAt: resolvedPublished ? (existing.publishedAt || now) : null,
-        passPercent: Number(req.body.passPercent || existing.passPercent || 33),
-        maxPromoteFail: Number(req.body.maxPromoteFail ?? existing.maxPromoteFail ?? 0),
-        promotionLabel: String(req.body.promotionLabel || existing.promotionLabel || 'বিশেষ বিবেচনায় প্রমোটেড'),
-        columns: detectedCols,
-        mapping: {
-          roll: mappingGuess.roll || (parsed.columns[0]?.key || ''),
-          name: mappingGuess.name_bn || (parsed.columns[1]?.key || ''),
-          father: mappingGuess.father_bn || '',
-          id: mappingGuess.id || '',
-          group: mappingGuess.group || '',
-          optionalSubject: mappingGuess.optionalSubject || '',
-        },
-        rows: parsed.rows,
-        updatedAt: now,
-      };
-      store.results.activeExamId = examId;
+      const requestedClassName = String(req.body.className || (classMap[requestedClassId]?.name || 'ষষ্ঠ')).trim();
+      const info = upsertExamRows(requestedClassId, requestedClassName, parsed.rows, String(req.body.examId || '').trim());
+      store.results.activeExamId = info.examId;
+      saveExcelStore(store);
+      return res.json({
+        message: subjectMode === 'single'
+          ? `"${singleSubName}" বিষয়ের ${convertToBengali(info.count)} জন শিক্ষার্থীর নম্বর সফলভাবে যুক্ত/আপডেট হয়েছে।`
+          : `ফাইল সফলভাবে আপলোড হয়েছে (${parsed.rows.length}টি সারি, ${parsed.columns.length}টি কলাম)।`,
+        state: serializeExcelState(store),
+      });
     } else {
       return res.status(400).json({ error: 'অবৈধ টার্গেট শিট।' });
     }
