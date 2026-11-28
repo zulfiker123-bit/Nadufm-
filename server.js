@@ -294,7 +294,7 @@ app.post(['/admin-logout', '/admin-logout.php'], verifySameOrigin, (req, res) =>
 function formatClassLabel(name, classId = '') {
   const raw = String(name || (classId && classMap[classId]?.name) || '').trim();
   if (!raw || raw === 'custom') return 'নির্ধারিত শ্রেণি';
-  return /(?:শ্রেণি|শ্রেণী)$/.test(raw) ? raw : `${raw} শ্রেণি`;
+  return /(?:শ্রেণি|শ্রেণী|বর্ষ)$/.test(raw) ? raw : `${raw} শ্রেণি`;
 }
 
 function buildCsvSyntheticExam(classId, className, csvRows) {
@@ -781,23 +781,25 @@ app.get(['/merit-list', '/merit-list.php'], async (req, res) => {
     selectedName = formatClassLabel(classMap[selectedClass].name, selectedClass);
     selectedExamTitle = `শ্রেণি: ${selectedName} · বার্ষিক পরীক্ষার মেধাতালিকা`;
     const gid = classMap[selectedClass].gid;
-    const csvUrl = `https://docs.google.com/spreadsheets/d/e/2PACX-1vSYfZ7IOoN4gbjjSgT02E1ugUQvhPmL39Ch4gJns0GGbb9OrCO4Wm9hdmbpPaEerRC5m2S0-WOJQcV4/pub?output=csv&gid=${gid}`;
+    if (gid) {
+      const csvUrl = `https://docs.google.com/spreadsheets/d/e/2PACX-1vSYfZ7IOoN4gbjjSgT02E1ugUQvhPmL39Ch4gJns0GGbb9OrCO4Wm9hdmbpPaEerRC5m2S0-WOJQcV4/pub?output=csv&gid=${gid}`;
 
-    try {
-      const response = await fetch(csvUrl);
-      if (response.ok) {
-        const csvText = await response.text();
-        const rows = parseCsv(csvText);
-        if (rows.length > 1) {
-          const syntheticExam = buildCsvSyntheticExam(selectedClass, classMap[selectedClass].name, rows);
-          const computed = computeResultSheet(syntheticExam);
-          scienceMeritData = (computed.scienceMeritList || []).map(mapComputedMeritItem);
-          otherMeritData = (computed.otherMeritList || []).map(mapComputedMeritItem);
-          meritData = [...otherMeritData, ...scienceMeritData];
+      try {
+        const response = await fetch(csvUrl);
+        if (response.ok) {
+          const csvText = await response.text();
+          const rows = parseCsv(csvText);
+          if (rows.length > 1) {
+            const syntheticExam = buildCsvSyntheticExam(selectedClass, classMap[selectedClass].name, rows);
+            const computed = computeResultSheet(syntheticExam);
+            scienceMeritData = (computed.scienceMeritList || []).map(mapComputedMeritItem);
+            otherMeritData = (computed.otherMeritList || []).map(mapComputedMeritItem);
+            meritData = [...otherMeritData, ...scienceMeritData];
+          }
         }
+      } catch (err) {
+        console.warn('Failed to fetch merit list CSV:', err.message);
       }
-    } catch (err) {
-      console.warn('Failed to fetch merit list CSV:', err.message);
     }
   }
 
@@ -2522,66 +2524,68 @@ app.all(['/result', '/result.php', '/view_result.php'], async (req, res) => {
       selectedClassName = classMap[csvClassKey].name;
       selectedExamTitle = 'বার্ষিক পরীক্ষা - একাডেমিক ট্রান্সক্রিপ্ট';
       const gid = classMap[csvClassKey].gid;
-      const csvUrl = `https://docs.google.com/spreadsheets/d/e/2PACX-1vSYfZ7IOoN4gbjjSgT02E1ugUQvhPmL39Ch4gJns0GGbb9OrCO4Wm9hdmbpPaEerRC5m2S0-WOJQcV4/pub?output=csv&gid=${gid}`;
+      if (gid) {
+        const csvUrl = `https://docs.google.com/spreadsheets/d/e/2PACX-1vSYfZ7IOoN4gbjjSgT02E1ugUQvhPmL39Ch4gJns0GGbb9OrCO4Wm9hdmbpPaEerRC5m2S0-WOJQcV4/pub?output=csv&gid=${gid}`;
 
-      try {
-        const response = await fetch(csvUrl);
-        if (response.ok) {
-          const csvText = await response.text();
-          const rows = parseCsv(csvText);
-          if (rows.length > 1) {
-            const syntheticExam = buildCsvSyntheticExam(csvClassKey, selectedClassName, rows);
-            const { evaluatedRows } = computeResultSheet(syntheticExam);
-            const found = evaluatedRows.find((r) => normalizeRollKey(r.roll) === searchRollNorm);
-            if (found) {
-              const unifiedCsv = findUnifiedStudents(excelStore, portal, {
-                classParam: selectedClassName || csvClassKey,
-                rollParam: found.roll,
-              }).exact;
-              studentResult = {
-                name: found.name || unifiedCsv?.name_bn || '—',
-                displayName: found.displayName || formatStudentNameWithGroup(found.name || unifiedCsv?.name_bn || '—', Boolean(found.isScience)),
-                isScience: Boolean(found.isScience),
-                groupLabel: found.groupLabel || (found.isScience ? 'বিজ্ঞান' : 'সাধারণ'),
-                father: found.father || unifiedCsv?.father_bn || '',
-                mother: unifiedCsv?.mother_bn || '',
-                id: found.studentId || unifiedCsv?.id || unifiedCsv?.reg_no || '',
-                roll: found.roll,
-                subs: found.subjects.map((s) => ({
-                  name: s.name,
-                  fm: s.fullMarks,
-                  obtained: s.obtained,
-                  display_avg: s.averageMark ?? s.numericMark,
-                  sum: s.numericMark,
-                  is_fail: s.isFail,
-                  grade: s.grade,
-                  gp: s.gp,
-                  isCombined: Boolean(s.isCombined),
-                  isOptional: Boolean(s.isOptional),
-                })),
-                total: found.totalObtained,
-                tfm: found.totalFullMarks,
-                fail: found.failCount,
-                gpa: found.gpa,
-                gpaWithoutOptional: found.gpaWithoutOptional ?? found.gpa,
-                isBoardExam: Boolean(found.isBoardExam),
-                boardType: found.boardType || '',
-                hasOptionalSubject: Boolean(found.hasOptionalSubject),
-                optionalSubjectName: found.optionalSubjectName || '',
-                optionalBonus: found.optionalBonus || 0,
-                optionalFailCount: found.optionalFailCount || 0,
-                meritRank: found.meritRank,
-                status: found.status,
-                statusBn: found.statusBn,
-                isPromoted: found.isPromoted,
-                examName: 'বার্ষিক পরীক্ষা',
-                year: '২০২৬',
-              };
+        try {
+          const response = await fetch(csvUrl);
+          if (response.ok) {
+            const csvText = await response.text();
+            const rows = parseCsv(csvText);
+            if (rows.length > 1) {
+              const syntheticExam = buildCsvSyntheticExam(csvClassKey, selectedClassName, rows);
+              const { evaluatedRows } = computeResultSheet(syntheticExam);
+              const found = evaluatedRows.find((r) => normalizeRollKey(r.roll) === searchRollNorm);
+              if (found) {
+                const unifiedCsv = findUnifiedStudents(excelStore, portal, {
+                  classParam: selectedClassName || csvClassKey,
+                  rollParam: found.roll,
+                }).exact;
+                studentResult = {
+                  name: found.name || unifiedCsv?.name_bn || '—',
+                  displayName: found.displayName || formatStudentNameWithGroup(found.name || unifiedCsv?.name_bn || '—', Boolean(found.isScience)),
+                  isScience: Boolean(found.isScience),
+                  groupLabel: found.groupLabel || (found.isScience ? 'বিজ্ঞান' : 'সাধারণ'),
+                  father: found.father || unifiedCsv?.father_bn || '',
+                  mother: unifiedCsv?.mother_bn || '',
+                  id: found.studentId || unifiedCsv?.id || unifiedCsv?.reg_no || '',
+                  roll: found.roll,
+                  subs: found.subjects.map((s) => ({
+                    name: s.name,
+                    fm: s.fullMarks,
+                    obtained: s.obtained,
+                    display_avg: s.averageMark ?? s.numericMark,
+                    sum: s.numericMark,
+                    is_fail: s.isFail,
+                    grade: s.grade,
+                    gp: s.gp,
+                    isCombined: Boolean(s.isCombined),
+                    isOptional: Boolean(s.isOptional),
+                  })),
+                  total: found.totalObtained,
+                  tfm: found.totalFullMarks,
+                  fail: found.failCount,
+                  gpa: found.gpa,
+                  gpaWithoutOptional: found.gpaWithoutOptional ?? found.gpa,
+                  isBoardExam: Boolean(found.isBoardExam),
+                  boardType: found.boardType || '',
+                  hasOptionalSubject: Boolean(found.hasOptionalSubject),
+                  optionalSubjectName: found.optionalSubjectName || '',
+                  optionalBonus: found.optionalBonus || 0,
+                  optionalFailCount: found.optionalFailCount || 0,
+                  meritRank: found.meritRank,
+                  status: found.status,
+                  statusBn: found.statusBn,
+                  isPromoted: found.isPromoted,
+                  examName: 'বার্ষিক পরীক্ষা',
+                  year: '২০২৬',
+                };
+              }
             }
           }
+        } catch (err) {
+          console.warn('Failed to fetch result CSV:', err.message);
         }
-      } catch (err) {
-        console.warn('Failed to fetch result CSV:', err.message);
       }
     }
 

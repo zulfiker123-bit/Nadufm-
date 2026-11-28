@@ -1187,6 +1187,123 @@
             background: var(--surface);
         }
 
+        .quick-entry-bar {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--surface-subtle);
+        }
+
+        .quick-entry-controls {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .quick-entry-subadd {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .quick-entry-subadd input[type="text"],
+        .quick-entry-subadd input[type="number"] {
+            height: 36px;
+            padding: 0 10px;
+            border: 1px solid var(--border-strong);
+            border-radius: 8px;
+            font-size: 0.84rem;
+            background: #ffffff;
+            font-family: inherit;
+        }
+
+        .quick-mark-input {
+            width: 112px;
+            height: 36px;
+            padding: 0 10px;
+            border: 1px solid var(--border-strong);
+            border-radius: 8px;
+            font-size: 0.94rem;
+            font-weight: 700;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            background: #ffffff;
+            color: var(--text);
+            transition: border-color 0.14s ease, box-shadow 0.14s ease;
+        }
+
+        .quick-mark-input:focus {
+            outline: none;
+            border-color: var(--brand-strong);
+            box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.14);
+        }
+
+        .quick-abs-btn {
+            height: 34px;
+            padding: 0 10px;
+            border-radius: 7px;
+            border: 1px solid var(--border-strong);
+            background: #ffffff;
+            color: #475569;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+
+        .quick-abs-btn.is-active {
+            background: #fef2f2;
+            border-color: #fca5a5;
+            color: #b91c1c;
+        }
+
+        .quick-grade-badge {
+            display: inline-block;
+            min-width: 72px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .quick-grade-badge.is-pass { color: #15803d; }
+        .quick-grade-badge.is-fail { color: #b91c1c; }
+        .quick-grade-badge.is-empty { color: var(--muted); font-weight: 500; }
+
+        .quick-add-row-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .subject-del-btn {
+            border: none;
+            background: transparent;
+            color: #b91c1c;
+            cursor: pointer;
+            font-size: 0.9rem;
+            line-height: 1;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        .subject-del-btn:hover {
+            background: #fef2f2;
+        }
+
         .inline-ms-toolbar {
             display: flex;
             align-items: center;
@@ -2148,6 +2265,14 @@
                 </div>
                 <div style="font-weight:700; font-size:0.84rem; color:var(--brand); margin-bottom:8px;">বিষয়সমূহের নাম ও পূর্ণমান:</div>
                 <div class="subject-marks-grid" id="resultsSubjectsGrid"></div>
+                <div class="quick-entry-subadd" style="margin:8px 0 14px;">
+                    <input type="text" id="advNewSubName" placeholder="নতুন বিষয়ের নাম (যেমন: বিজ্ঞান)" style="min-width:190px;">
+                    <input type="number" id="advNewSubFm" value="100" min="5" max="500" style="width:92px;" title="পূর্ণমান" aria-label="নতুন বিষয়ের পূর্ণমান">
+                    <label style="display:inline-flex; align-items:center; gap:4px; font-size:0.8rem; color:#475569; cursor:pointer; white-space:nowrap;">
+                        <input type="checkbox" id="advNewSubOpt"> ৪র্থ বিষয়
+                    </label>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="addSubjectColumnFromInputs('advNewSubName','advNewSubFm','advNewSubOpt')"><i class="fas fa-plus" aria-hidden="true"></i> বিষয় যোগ করুন</button>
+                </div>
                 <div style="font-weight:700; font-size:0.84rem; color:var(--brand); margin:8px 0;">কলাম ফিল্ড ম্যাপিং:</div>
                 <div class="grid-4" id="resultsMappingGrid"></div>
             </details>
@@ -2171,6 +2296,7 @@
                     <select id="resultsTableClassSelect" class="toolbar-class-select" aria-label="শ্রেণি নির্বাচন" onchange="selectClassResult(this.value)"></select>
                     <div class="seg-group" role="tablist" aria-label="ফলাফল দেখার ধরন">
                         <button type="button" class="seg-btn active" id="btnViewEditor" onclick="setResultSubView('editor')">রেজাল্ট শিট</button>
+                        <button type="button" class="seg-btn" id="btnViewQuick" onclick="setResultSubView('quick')">দ্রুত নম্বর এন্ট্রি</button>
                         <button type="button" class="seg-btn" id="btnViewMerit" onclick="setResultSubView('merit')">মেধা তালিকা</button>
                         <button type="button" class="seg-btn" id="btnViewMarksheet" onclick="setResultSubView('marksheet')">মার্কশিট</button>
                     </div>
@@ -2182,7 +2308,8 @@
                     </div>
                 </div>
                 <div class="btn-group">
-                    <input type="search" id="resultsSearchInput" class="search-toolbar-input" placeholder="নাম বা রোল খুঁজুন..." oninput="renderResultsTable()" style="min-width:180px;">
+                    <input type="search" id="resultsSearchInput" class="search-toolbar-input" placeholder="নাম বা রোল খুঁজুন..." oninput="renderResultsTable()" style="min-width:170px;">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="importStudentsToResultSheet()" title="শিক্ষার্থী তালিকা থেকে এই শ্রেণির রোল ও নাম নিয়ে আসুন"><i class="fas fa-user-plus" aria-hidden="true"></i> শিক্ষার্থী তালিকা থেকে আনুন</button>
                     <button type="button" class="btn btn-outline btn-sm" onclick="addResultRow()"><i class="fas fa-plus" aria-hidden="true"></i> নতুন শিক্ষার্থী</button>
                     <button type="button" id="resultsSaveBtnBottom" class="btn btn-primary btn-sm" onclick="saveResultsSheet()"><i class="fas fa-save" aria-hidden="true"></i> সংরক্ষণ করুন</button>
                 </div>
@@ -2403,6 +2530,7 @@
     let resultSubView = 'editor';
     let resultStatusFilter = 'all';
     let selectedInlineMarksheetRowId = '';
+    let selectedQuickSubjectKey = '';
     const activeClassFilter = {
         students: 'all',
         documents: 'all',
@@ -3524,7 +3652,7 @@
     function formatClassLabelClient(name, classId) {
         const raw = String(name || (classId && state.classMap?.[classId]?.name) || '').trim();
         if (!raw || raw === 'custom') return 'নির্ধারিত শ্রেণি';
-        return /(?:শ্রেণি|শ্রেণী)$/.test(raw) ? raw : `${raw} শ্রেণি`;
+        return /(?:শ্রেণি|শ্রেণী|বর্ষ)$/.test(raw) ? raw : `${raw} শ্রেণি`;
     }
 
     function getExamForClass(classId, targetYear, targetExamName) {
@@ -4307,9 +4435,10 @@
                         <label style="display:inline-flex; align-items:center; gap:3px; font-size:0.74rem; color:#475569; cursor:pointer; margin-left:2px; white-space:nowrap;" title="৪র্থ / ঐচ্ছিক বিষয় হিসেবে চিহ্নিত করুন">
                             <input type="checkbox" ${col.isOptional ? 'checked' : ''} onchange="toggleResultColOptional(${idx}, this.checked)"> ৪র্থ
                         </label>
+                        <button type="button" class="subject-del-btn" onclick="removeResultSubjectCol(${idx})" title="বিষয়টি সরান" aria-label="${esc(col.label)} সরান">&times;</button>
                     </div>
                 `).join('')
-                : '<p style="font-size:0.84rem; color:var(--muted);">কোনো বিষয়ের কলাম পাওয়া যায়নি।</p>';
+                : '<p style="font-size:0.84rem; color:var(--muted);">কোনো বিষয়ের কলাম পাওয়া যায়নি। নিচ থেকে নতুন বিষয় যোগ করুন।</p>';
         }
 
         if (mapGridEl) {
@@ -4499,10 +4628,191 @@
         renderResultsTableAndStats();
     }
 
+    function normalizeClassKeyClient(raw) {
+        const s = String(raw ?? '').trim();
+        if (!s) return '';
+        if (state.classMap && Object.prototype.hasOwnProperty.call(state.classMap, s)) return s;
+        return normalizeClassClient(s);
+    }
+
+    function ensureExamBaseColumns(exam) {
+        if (!Array.isArray(exam.columns)) exam.columns = [];
+        if (!exam.mapping) exam.mapping = {};
+        const ensureCol = (mapKey, defaultKey, defaultLabel) => {
+            if (exam.mapping[mapKey] && exam.columns.some((c) => c.key === exam.mapping[mapKey])) return exam.mapping[mapKey];
+            const found = exam.columns.find((c) => !c.isSubject && (c.key === defaultKey || c.label === defaultLabel));
+            if (found) {
+                exam.mapping[mapKey] = found.key;
+                return found.key;
+            }
+            const firstSubIdx = exam.columns.findIndex((c) => c.isSubject);
+            const newCol = { key: defaultKey, label: defaultLabel, isSubject: false, fullMarks: 0 };
+            if (firstSubIdx >= 0) exam.columns.splice(firstSubIdx, 0, newCol);
+            else exam.columns.push(newCol);
+            exam.mapping[mapKey] = defaultKey;
+            return defaultKey;
+        };
+        const rollKey = ensureCol('roll', 'roll', 'রোল');
+        const nameKey = ensureCol('name', 'name', 'শিক্ষার্থীর নাম');
+        const fatherKey = ensureCol('father', 'father', 'পিতার নাম');
+        return { rollKey, nameKey, fatherKey };
+    }
+
+    function importStudentsToResultSheet() {
+        const exam = getActiveExam();
+        const targetClassKey = normalizeClassKeyClient(exam.classId || exam.className);
+        const clsLabel = formatClassLabelClient(exam.className, exam.classId);
+        const stSheet = state.students || {};
+        const stRows = Array.isArray(stSheet.rows) ? stSheet.rows : [];
+        if (!stRows.length) {
+            showToast('১ম ট্যাবে কোনো শিক্ষার্থী তালিকা পাওয়া যায়নি। আগে শিক্ষার্থী যোগ বা আপলোড করুন।', true);
+            return;
+        }
+
+        const stMap = stSheet.mapping || {};
+        const stRollKey = stMap.roll || stSheet.columns?.find((c) => /রোল|roll/i.test(c.label + ' ' + c.key))?.key || '';
+        const stNameKey = stMap.name_bn || stMap.name_en || stSheet.columns?.find((c) => /নাম|name/i.test(c.label + ' ' + c.key))?.key || '';
+        const stFatherKey = stMap.father_bn || stSheet.columns?.find((c) => /পিতা|father/i.test(c.label + ' ' + c.key))?.key || '';
+        const stGroupKey = stMap.group || stSheet.columns?.find((c) => /বিভাগ|গ্রুপ|group/i.test(c.label + ' ' + c.key))?.key || '';
+        const stIdKey = stMap.id || stSheet.columns?.find((c) => /আইডি|\bid\b/i.test(c.label + ' ' + c.key))?.key || '';
+
+        const matchingStudents = stRows.filter((sr) => {
+            const clsRaw = getRowClassValue('students', sr);
+            return normalizeClassKeyClient(clsRaw) === targetClassKey;
+        });
+
+        if (!matchingStudents.length) {
+            showToast(`শিক্ষার্থী তালিকায় ${clsLabel}-এর কোনো শিক্ষার্থী পাওয়া যায়নি।`, true);
+            return;
+        }
+
+        const { rollKey, nameKey, fatherKey } = ensureExamBaseColumns(exam);
+        if (!Array.isArray(exam.rows)) exam.rows = [];
+
+        const existingByRoll = new Map();
+        exam.rows.forEach((r, idx) => {
+            const rk = normalizeRollClient(r[rollKey]);
+            if (rk) existingByRoll.set(rk, idx);
+        });
+
+        let addedCount = 0;
+        let updatedCount = 0;
+        matchingStudents.forEach((sr, i) => {
+            const rawRoll = stRollKey ? String(sr[stRollKey] ?? '').trim() : String(i + 1);
+            const rawName = stNameKey ? String(sr[stNameKey] ?? '').trim() : '';
+            const rawFather = stFatherKey ? String(sr[stFatherKey] ?? '').trim() : '';
+            const rawGroup = stGroupKey ? String(sr[stGroupKey] ?? '').trim() : '';
+            const rawId = stIdKey ? String(sr[stIdKey] ?? '').trim() : '';
+            const rk = normalizeRollClient(rawRoll);
+
+            if (rk && existingByRoll.has(rk)) {
+                const exRow = exam.rows[existingByRoll.get(rk)];
+                let touched = false;
+                if (rawName && !String(exRow[nameKey] || '').trim()) { exRow[nameKey] = rawName; touched = true; }
+                if (rawFather && !String(exRow[fatherKey] || '').trim()) { exRow[fatherKey] = rawFather; touched = true; }
+                if (rawGroup && exam.mapping.group && !String(exRow[exam.mapping.group] || '').trim()) { exRow[exam.mapping.group] = rawGroup; touched = true; }
+                if (touched) updatedCount++;
+                return;
+            }
+
+            if (rawGroup && !exam.mapping.group) {
+                const firstSubIdx = exam.columns.findIndex((c) => c.isSubject);
+                const grpCol = { key: 'group', label: 'বিভাগ', isSubject: false, fullMarks: 0 };
+                if (firstSubIdx >= 0) exam.columns.splice(firstSubIdx, 0, grpCol);
+                else exam.columns.push(grpCol);
+                exam.mapping.group = 'group';
+            }
+
+            const newRow = { _id: `r_${Date.now()}_${i}_${Math.random().toString(36).slice(2, 5)}` };
+            exam.columns.forEach((c) => { newRow[c.key] = ''; });
+            newRow[rollKey] = rawRoll || String(exam.rows.length + 1);
+            newRow[nameKey] = rawName;
+            newRow[fatherKey] = rawFather;
+            if (rawGroup && exam.mapping.group) newRow[exam.mapping.group] = rawGroup;
+            if (rawId && exam.mapping.id) newRow[exam.mapping.id] = rawId;
+            exam.rows.push(newRow);
+            if (rk) existingByRoll.set(rk, exam.rows.length - 1);
+            addedCount++;
+        });
+
+        exam.rows.sort((a, b) => {
+            const ra = parseInt(enNum(String(a[rollKey] || '0')), 10);
+            const rb = parseInt(enNum(String(b[rollKey] || '0')), 10);
+            if (!Number.isNaN(ra) && !Number.isNaN(rb) && ra !== rb) return ra - rb;
+            return String(a[rollKey] || '').localeCompare(String(b[rollKey] || ''));
+        });
+
+        if (addedCount === 0 && updatedCount === 0) {
+            showToast(`${clsLabel}-এর সব শিক্ষার্থী (${bnNum(matchingStudents.length)} জন) ইতিমধ্যে রেজাল্ট শিটে রয়েছে।`);
+            return;
+        }
+
+        markDirty('results', true);
+        renderResultsSection();
+        showToast(`${clsLabel}: ${bnNum(addedCount)} জন নতুন শিক্ষার্থী যুক্ত হয়েছে — এবার নম্বর লিখে সংরক্ষণ করুন।`);
+    }
+
+    function addSubjectColumnFromInputs(nameId, fmId, optId) {
+        const nameEl = document.getElementById(nameId);
+        const fmEl = document.getElementById(fmId);
+        const optEl = document.getElementById(optId);
+        const rawName = String(nameEl?.value || '').trim();
+        if (!rawName) {
+            showToast('বিষয়ের নাম লিখুন।', true);
+            nameEl?.focus();
+            return;
+        }
+        const parsedFm = parseFloat(enNum(String(fmEl?.value || '100')));
+        const fm = (!Number.isNaN(parsedFm) && parsedFm >= 5 && parsedFm <= 500) ? parsedFm : 100;
+        const isOpt = Boolean(optEl?.checked);
+        const cleanTitle = rawName.replace(/\s*\([^)]*\)/g, '').trim() || rawName;
+        const exam = getActiveExam();
+        const existing = (exam.columns || []).find((c) => c.isSubject && cleanSubTitle(c.label).toLowerCase() === cleanTitle.toLowerCase());
+        if (existing) {
+            selectedQuickSubjectKey = existing.key;
+            showToast(`"${cleanTitle}" বিষয়টি ইতিমধ্যে রয়েছে।`);
+            renderResultsSection();
+            return;
+        }
+        const newKey = `sub_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`;
+        exam.columns.push({
+            key: newKey,
+            label: formatSubjectColLabelClient(cleanTitle, fm, isOpt),
+            isSubject: true,
+            fullMarks: fm,
+            isOptional: isOpt,
+        });
+        (exam.rows || []).forEach((r) => { r[newKey] = ''; });
+        selectedQuickSubjectKey = newKey;
+        if (nameEl) nameEl.value = '';
+        if (optEl) optEl.checked = false;
+        markDirty('results', true);
+        renderResultsSection();
+        showToast(`"${cleanTitle}" (${bnNum(fm)}) বিষয়টি যোগ করা হয়েছে।`);
+    }
+
+    function removeResultSubjectCol(colIdx) {
+        const exam = getActiveExam();
+        const col = exam?.columns?.[colIdx];
+        if (!col || !col.isSubject) return;
+        const subName = cleanSubTitle(col.label) || col.label;
+        exam.columns.splice(colIdx, 1);
+        if (selectedQuickSubjectKey === col.key) selectedQuickSubjectKey = '';
+        markDirty('results', true);
+        renderResultsSection();
+        showToast(`"${subName}" বিষয়টি সরানো হয়েছে।`);
+    }
+
     function addResultRow() {
         const exam = getActiveExam();
+        const { rollKey } = ensureExamBaseColumns(exam);
         const row = { _id: `r_${Date.now()}_${Math.random().toString(36).slice(2, 6)}` };
         exam.columns.forEach((c) => { row[c.key] = ''; });
+        const maxRoll = (exam.rows || []).reduce((mx, r) => {
+            const n = parseInt(enNum(String(r[rollKey] || '0')), 10);
+            return (!Number.isNaN(n) && n > mx) ? n : mx;
+        }, 0);
+        row[rollKey] = String(maxRoll + 1);
         exam.rows.push(row);
         markDirty('results', true);
         renderClassResultUploadGrid();
@@ -4528,6 +4838,7 @@
     function setResultSubView(view) {
         resultSubView = view;
         document.getElementById('btnViewEditor')?.classList.toggle('active', view === 'editor');
+        document.getElementById('btnViewQuick')?.classList.toggle('active', view === 'quick');
         document.getElementById('btnViewMerit')?.classList.toggle('active', view === 'merit');
         document.getElementById('btnViewMarksheet')?.classList.toggle('active', view === 'marksheet');
         renderResultsTable();
@@ -4571,7 +4882,7 @@
         renderResultsTable();
     }
 
-    function renderResultsTableAndStats() {
+    function renderResultStatsOnly() {
         const exam = getActiveExam();
         const computed = recomputeExamClient(exam);
         const s = computed.stats;
@@ -4604,7 +4915,88 @@
             <div class="stat-box"><div class="stat-box-label">অকৃতকার্য (Failed)</div><div class="stat-box-val" style="color:#b91c1c;">${bnNum(s.failed)}</div></div>
             <div class="stat-box"><div class="stat-box-label">পাসের হার</div><div class="stat-box-val">${bnNum(s.passRate)}%</div></div>
         `;
+        return computed;
+    }
+
+    function renderResultsTableAndStats() {
+        renderResultStatsOnly();
         renderResultsTable();
+    }
+
+    function computeQuickBadgeInfo(rawVal, fm, passPercent) {
+        const trimmed = String(rawVal ?? '').trim();
+        if (!trimmed) return { text: 'ফাঁকা', cls: 'is-empty', isAbs: false };
+        const res = evalSinglePaperClient(trimmed, fm, passPercent);
+        if (res.isAbsent) return { text: 'Abs (F)', cls: 'is-fail', isAbs: true };
+        const [grade, gp] = getGradeClient(res.mark, fm, res.isFail);
+        return {
+            text: `${grade} (${bnNum(gp)})`,
+            cls: res.isFail ? 'is-fail' : 'is-pass',
+            isAbs: false,
+        };
+    }
+
+    function onQuickEntrySubjectChange(colKey) {
+        selectedQuickSubjectKey = String(colKey || '');
+        renderResultsTable();
+    }
+
+    function onQuickMarkInput(el, rowIdx, colKey, fm) {
+        const exam = getActiveExam();
+        if (!exam || !exam.rows?.[rowIdx]) return;
+        exam.rows[rowIdx][colKey] = el.value;
+        markDirty('results', true);
+        const passPercent = Number(exam.passPercent) > 0 ? Number(exam.passPercent) : 33;
+        const info = computeQuickBadgeInfo(el.value, fm, passPercent);
+        const badge = document.getElementById(`quickGrade_${rowIdx}`);
+        if (badge) {
+            badge.textContent = info.text;
+            badge.className = `quick-grade-badge ${info.cls}`;
+        }
+        const absBtn = document.getElementById(`quickAbsBtn_${rowIdx}`);
+        if (absBtn) absBtn.classList.toggle('is-active', info.isAbs);
+        renderResultStatsOnly();
+        renderClassResultUploadGrid();
+    }
+
+    function onQuickMarkKeyDown(event, qIdx) {
+        if (event.key === 'Enter' || event.key === 'ArrowDown') {
+            event.preventDefault();
+            const next = document.querySelector(`#resultsTableContainer .quick-mark-input[data-quick-idx="${qIdx + 1}"]`);
+            if (next) {
+                next.focus();
+                next.select();
+            }
+        } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            const prev = document.querySelector(`#resultsTableContainer .quick-mark-input[data-quick-idx="${qIdx - 1}"]`);
+            if (prev) {
+                prev.focus();
+                prev.select();
+            }
+        }
+    }
+
+    function toggleQuickMarkAbsent(rowIdx, colKey, fm, qIdx) {
+        const exam = getActiveExam();
+        if (!exam || !exam.rows?.[rowIdx]) return;
+        const cur = String(exam.rows[rowIdx][colKey] ?? '').trim().toUpperCase();
+        const nextVal = (cur === 'A' || cur === 'ABS') ? '' : 'A';
+        exam.rows[rowIdx][colKey] = nextVal;
+        const inp = document.querySelector(`#resultsTableContainer .quick-mark-input[data-quick-idx="${qIdx}"]`);
+        if (inp) inp.value = nextVal;
+        markDirty('results', true);
+        const passPercent = Number(exam.passPercent) > 0 ? Number(exam.passPercent) : 33;
+        const info = computeQuickBadgeInfo(nextVal, fm, passPercent);
+        const badge = document.getElementById(`quickGrade_${rowIdx}`);
+        if (badge) {
+            badge.textContent = info.text;
+            badge.className = `quick-grade-badge ${info.cls}`;
+        }
+        const absBtn = document.getElementById(`quickAbsBtn_${rowIdx}`);
+        if (absBtn) absBtn.classList.toggle('is-active', info.isAbs);
+        renderResultStatsOnly();
+        renderClassResultUploadGrid();
     }
 
     function renderResultsTable() {
@@ -4615,7 +5007,16 @@
 
         if (!exam.rows || exam.rows.length === 0) {
             const clsLabel = formatClassLabelClient(exam.className, exam.classId);
-            container.innerHTML = `<div class="empty-state"><i class="fas fa-poll-h" aria-hidden="true"></i><p>${esc(clsLabel)}-এর রেজাল্ট শিটে এখনো কোনো শিক্ষার্থী নেই। উপরের ফিল্ড থেকে <strong>${esc(clsLabel)}</strong> নির্বাচন করে Excel আপলোড করুন অথবা <strong>নতুন শিক্ষার্থী</strong> যোগ করুন।</p></div>`;
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-poll-h" aria-hidden="true"></i>
+                    <p>${esc(clsLabel)}-এর রেজাল্ট শিটে এখনো কোনো শিক্ষার্থী নেই। সরাসরি এন্ট্রি দিতে নিচের বাটনে ক্লিক করুন অথবা Excel আপলোড করুন।</p>
+                    <div class="btn-group" style="justify-content:center; margin-top:12px;">
+                        <button type="button" class="btn btn-primary btn-sm" onclick="importStudentsToResultSheet()"><i class="fas fa-user-plus" aria-hidden="true"></i> শিক্ষার্থী তালিকা থেকে আনুন</button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="addResultRow()"><i class="fas fa-plus" aria-hidden="true"></i> নতুন শিক্ষার্থী যোগ করুন</button>
+                    </div>
+                </div>
+            `;
             return;
         }
 
@@ -4626,6 +5027,100 @@
             }
             return true;
         };
+
+        if (resultSubView === 'quick') {
+            const subCols = (exam.columns || []).filter((c) => c.isSubject);
+            if (!subCols.length) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-book-open" aria-hidden="true"></i>
+                        <p>দ্রুত নম্বর এন্ট্রির জন্য কমপক্ষে একটি বিষয় যোগ করুন।</p>
+                        <div class="quick-entry-subadd" style="justify-content:center; margin-top:12px;">
+                            <input type="text" id="quickEmptySubName" placeholder="বিষয়ের নাম (যেমন: বাংলা)">
+                            <input type="number" id="quickEmptySubFm" value="100" min="5" max="500" style="width:90px;">
+                            <label style="display:inline-flex; align-items:center; gap:4px; font-size:0.8rem;"><input type="checkbox" id="quickEmptySubOpt"> ৪র্থ বিষয়</label>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="addSubjectColumnFromInputs('quickEmptySubName','quickEmptySubFm','quickEmptySubOpt')"><i class="fas fa-plus" aria-hidden="true"></i> বিষয় যোগ করুন</button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            const activeSub = subCols.find((c) => c.key === selectedQuickSubjectKey) || subCols[0];
+            selectedQuickSubjectKey = activeSub.key;
+            const fm = Number(activeSub.fullMarks) > 0 ? Number(activeSub.fullMarks) : 100;
+            const passPercent = Number(exam.passPercent) > 0 ? Number(exam.passPercent) : 33;
+            const indexed = computed.evaluatedRows
+                .map((ev, idx) => ({ ev, idx }))
+                .filter(({ ev }) => matchesFilter(ev));
+
+            container.innerHTML = `
+                <div class="quick-entry-bar">
+                    <div class="quick-entry-controls">
+                        <div class="field" style="min-width:220px;">
+                            <label for="quickEntrySubjectSelect">বিষয় নির্বাচন করুন</label>
+                            <select id="quickEntrySubjectSelect" onchange="onQuickEntrySubjectChange(this.value)">
+                                ${subCols.map((c) => `<option value="${esc(c.key)}" ${c.key === activeSub.key ? 'selected' : ''}>${esc(cleanSubTitle(c.label))} (পূর্ণমান: ${bnNum(Number(c.fullMarks) || 100)}${c.isOptional ? ', ৪র্থ' : ''})</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="quick-entry-subadd">
+                            <input type="text" id="quickNewSubName" placeholder="+ নতুন বিষয় (যেমন: বিজ্ঞান)" style="width:185px;">
+                            <input type="number" id="quickNewSubFm" value="100" min="5" max="500" style="width:78px;" title="পূর্ণমান">
+                            <label style="display:inline-flex; align-items:center; gap:4px; font-size:0.78rem; color:#475569; cursor:pointer; white-space:nowrap;">
+                                <input type="checkbox" id="quickNewSubOpt"> ৪র্থ
+                            </label>
+                            <button type="button" class="btn btn-outline btn-sm" onclick="addSubjectColumnFromInputs('quickNewSubName','quickNewSubFm','quickNewSubOpt')"><i class="fas fa-plus" aria-hidden="true"></i> যোগ</button>
+                        </div>
+                    </div>
+                    <div style="font-size:0.79rem; color:var(--muted);">
+                        <i class="fas fa-keyboard" aria-hidden="true"></i> নম্বর লিখে <strong>Enter</strong> চাপলে পরের শিক্ষার্থীর ঘরে চলে যাবে
+                    </div>
+                </div>
+                ${indexed.length ? `
+                    <div class="table-wrap">
+                        <table class="sheet-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:70px;">রোল</th>
+                                    <th style="text-align:left;">শিক্ষার্থীর নাম</th>
+                                    <th>প্রাপ্ত নম্বর (পূর্ণমান: ${bnNum(fm)})</th>
+                                    <th>অনুপস্থিত</th>
+                                    <th>তাৎক্ষণিক গ্রেড</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${indexed.map(({ ev, idx }, qIdx) => {
+                                    const curVal = exam.rows[idx]?.[activeSub.key] ?? '';
+                                    const info = computeQuickBadgeInfo(curVal, fm, passPercent);
+                                    return `
+                                        <tr>
+                                            <td style="font-weight:700; font-variant-numeric:tabular-nums;">${bnNum(ev.roll)}</td>
+                                            <td style="text-align:left; font-weight:600;">${esc(ev.displayName || ev.name || '—')}</td>
+                                            <td>
+                                                <input type="text" inputmode="decimal" class="quick-mark-input" data-quick-idx="${qIdx}" value="${esc(curVal)}" placeholder="নম্বর..." oninput="onQuickMarkInput(this, ${idx}, '${esc(activeSub.key)}', ${fm})" onkeydown="onQuickMarkKeyDown(event, ${qIdx})" aria-label="${esc(ev.name || ev.roll)} নম্বর">
+                                            </td>
+                                            <td>
+                                                <button type="button" id="quickAbsBtn_${idx}" class="quick-abs-btn ${info.isAbs ? 'is-active' : ''}" onclick="toggleQuickMarkAbsent(${idx}, '${esc(activeSub.key)}', ${fm}, ${qIdx})">A (অনু.)</button>
+                                            </td>
+                                            <td>
+                                                <span id="quickGrade_${idx}" class="quick-grade-badge ${info.cls}">${esc(info.text)}</span>
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="quick-add-row-bar">
+                        <span style="font-size:0.82rem; color:var(--muted);">মোট ${bnNum(indexed.length)} জন শিক্ষার্থী · এন্ট্রি শেষে সংরক্ষণ করুন</span>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-outline btn-sm" onclick="addResultRow()"><i class="fas fa-plus" aria-hidden="true"></i> নতুন শিক্ষার্থী</button>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="saveResultsSheet()"><i class="fas fa-save" aria-hidden="true"></i> সব নম্বর সংরক্ষণ করুন</button>
+                        </div>
+                    </div>
+                ` : `<div class="empty-state"><i class="fas fa-filter" aria-hidden="true"></i><p>নির্বাচিত ফিল্টার অনুযায়ী কোনো শিক্ষার্থী পাওয়া যায়নি।</p></div>`}
+            `;
+            return;
+        }
 
         if (resultSubView === 'marksheet') {
             const list = computed.evaluatedRows.filter(matchesFilter);
@@ -5027,13 +5522,17 @@
         { key: '10', label: 'দশম', aliases: ['10', '১০', '১০ম', 'দশম', 'দাখিল', 'দাখিল দশম', '10th', 'dakhil'] },
         { key: '11', label: 'আলিম ১ম বর্ষ', aliases: ['11', '১১', 'আলিম ১ম', 'আলিম ১ম বর্ষ', 'আলিম প্রথম বর্ষ', 'alim 1st'] },
         { key: '12', label: 'আলিম ২য় বর্ষ', aliases: ['12', '১২', 'আলিম ২য়', 'আলিম ২য় বর্ষ', 'আলিম ২য় বর্ষ', 'আলিম দ্বিতীয় বর্ষ', 'alim 2nd'] },
-        { key: 'fazil_1', label: 'ফাজিল ১ম বর্ষ', aliases: ['ফাজিল ১ম', 'ফাজিল ১ম বর্ষ', 'ফাজিল প্রথম বর্ষ'] },
-        { key: 'fazil_2', label: 'ফাজিল ২য় বর্ষ', aliases: ['ফাজিল ২য়', 'ফাজিল ২য় বর্ষ', 'ফাজিল ২য় বর্ষ'] },
-        { key: 'fazil_3', label: 'ফাজিল ৩য় বর্ষ', aliases: ['ফাজিল ৩য়', 'ফাজিল ৩য় বর্ষ', 'ফাজিল ৩য় বর্ষ'] },
+        { key: 'fazil_1', label: 'ফাজিল ১ম বর্ষ', aliases: ['fazil_1', 'ফাজিল ১ম', 'ফাজিল ১ম বর্ষ', 'ফাজিল প্রথম বর্ষ', 'fazil 1st'] },
+        { key: 'fazil_2', label: 'ফাজিল ২য় বর্ষ', aliases: ['fazil_2', 'ফাজিল ২য়', 'ফাজিল ২য় বর্ষ', 'ফাজিল ২য় বর্ষ', 'fazil 2nd'] },
+        { key: 'fazil_3', label: 'ফাজিল ৩য় বর্ষ', aliases: ['fazil_3', 'ফাজিল ৩য়', 'ফাজিল ৩য় বর্ষ', 'ফাজিল ৩য় বর্ষ', 'fazil 3rd'] },
     ];
 
     function normalizeClassClient(v) {
-        const cleaned = String(v ?? '').replace(/শ্রেণি|শ্রেণী|class/gi, '').replace(/[()]/g, ' ').replace(/\s+/g, ' ').trim();
+        const raw = String(v ?? '').trim();
+        if (raw && state.classMap && Object.prototype.hasOwnProperty.call(state.classMap, raw)) {
+            return raw;
+        }
+        const cleaned = raw.replace(/শ্রেণি|শ্রেণী|class/gi, '').replace(/[()]/g, ' ').replace(/\s+/g, ' ').trim();
         if (!cleaned) return '';
         const low = enNum(cleaned).toLowerCase();
         for (const entry of CLIENT_CLASS_ALIASES) {
@@ -5062,10 +5561,15 @@
             const rNorm = normalizeRollClient(rec.roll);
             const idNorm = String(rec.id || rec.reg || '').trim().toLowerCase();
             const key = rNorm ? `${clsKey || 'unknown'}::${rNorm}` : (idNorm ? `id::${idNorm}` : `uniq::${byKey.size}`);
+            const mappedInfo = clsKey && state.classMap?.[clsKey] ? state.classMap[clsKey] : null;
+            const rawClsName = String(rec.cls || (rec.classId && state.classMap?.[rec.classId]?.name) || '').trim();
+            const formattedCls = mappedInfo
+                ? formatClassLabelClient(mappedInfo.name, clsKey)
+                : (rawClsName ? formatClassLabelClient(rawClsName, clsKey) : '');
             const item = {
                 key,
                 clsKey,
-                cls: String(rec.cls || (rec.classId && state.classMap?.[rec.classId]?.name) || '').trim(),
+                cls: formattedCls,
                 roll: String(rec.roll || '').trim(),
                 id: String(rec.id || '').trim(),
                 reg: String(rec.reg || rec.id || '').trim(),
@@ -5195,7 +5699,11 @@
             });
         });
 
+        const classOrder = new Map(Object.keys(state.classMap || {}).map((k, idx) => [k, idx]));
         unifiedPoolCache = Array.from(byKey.values()).sort((a, b) => {
+            const oa = classOrder.has(a.clsKey) ? classOrder.get(a.clsKey) : 999;
+            const ob = classOrder.has(b.clsKey) ? classOrder.get(b.clsKey) : 999;
+            if (oa !== ob) return oa - ob;
             const ca = String(a.cls || '').localeCompare(String(b.cls || ''), 'bn');
             if (ca !== 0) return ca;
             const na = parseInt(enNum(a.roll), 10);
@@ -5289,15 +5797,34 @@
         const clsSelect = document.getElementById('docClassFilter');
         if (!clsSelect) return;
         const prev = clsSelect.value;
-        const clsMap = new Map();
+        const countByCls = new Map();
+        const extraClsLabels = new Map();
         unifiedPoolCache.forEach((u) => {
-            if (u.clsKey && !clsMap.has(u.clsKey)) {
-                clsMap.set(u.clsKey, u.cls || u.clsKey);
+            if (!u.clsKey) return;
+            countByCls.set(u.clsKey, (countByCls.get(u.clsKey) || 0) + 1);
+            if (!extraClsLabels.has(u.clsKey)) {
+                extraClsLabels.set(u.clsKey, u.cls || u.clsKey);
             }
         });
+
+        const options = [];
+        const seenKeys = new Set();
+        Object.entries(state.classMap || {}).forEach(([k, info]) => {
+            seenKeys.add(k);
+            const lbl = formatClassLabelClient(info.name, k);
+            const cnt = countByCls.get(k) || 0;
+            options.push({ key: k, text: cnt > 0 ? `${lbl} (${bnNum(cnt)} জন)` : lbl });
+        });
+        extraClsLabels.forEach((lbl, k) => {
+            if (!seenKeys.has(k)) {
+                const cnt = countByCls.get(k) || 0;
+                options.push({ key: k, text: cnt > 0 ? `${lbl} (${bnNum(cnt)} জন)` : lbl });
+            }
+        });
+
         clsSelect.innerHTML = '<option value="">-- সকল শ্রেণি (' + bnNum(unifiedPoolCache.length) + ' জন) --</option>' +
-            Array.from(clsMap.entries()).map(([k, lbl]) => `<option value="${esc(k)}">${esc(lbl)}</option>`).join('');
-        if (prev && clsMap.has(prev)) clsSelect.value = prev;
+            options.map((o) => `<option value="${esc(o.key)}">${esc(o.text)}</option>`).join('');
+        if (prev && options.some((o) => o.key === prev)) clsSelect.value = prev;
     }
 
     function onDocClassFilterChange() {

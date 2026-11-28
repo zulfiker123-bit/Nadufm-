@@ -300,7 +300,7 @@
                         <% const _uploadedSet = new Set(typeof uploadedClassIds !== 'undefined' ? uploadedClassIds : []); %>
                         <% Object.entries(classMap).forEach(function([id, info]) {
                             const _cname = String(info.name || '').trim();
-                            const _clsLabel = /(?:শ্রেণি|শ্রেণী)$/.test(_cname) ? _cname : _cname + ' শ্রেণি';
+                            const _clsLabel = /(?:শ্রেণি|শ্রেণী|বর্ষ)$/.test(_cname) ? _cname : _cname + ' শ্রেণি';
                         %>
                             <option value="<%= id %>" <%= (selectedClass === id) ? 'selected' : '' %>><%= _clsLabel %><%= _uploadedSet.has(id) ? ' — ফলাফল সংরক্ষিত' : '' %></option>
                         <% }); %>

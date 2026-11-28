@@ -759,8 +759,11 @@
                 <select id="searchClass" class="search-select">
                     <option value="">-- সকল শ্রেণি / শ্রেণি বাছাই করুন --</option>
                     <% if (typeof classMap !== 'undefined') { %>
-                        <% Object.entries(classMap).forEach(function([k, v]) { %>
-                            <option value="<%= k %>"><%= v.name %> শ্রেণি</option>
+                        <% Object.entries(classMap).forEach(function([k, v]) {
+                            const _cname = String(v.name || '').trim();
+                            const _clsLabel = /(?:শ্রেণি|শ্রেণী|বর্ষ)$/.test(_cname) ? _cname : _cname + ' শ্রেণি';
+                        %>
+                            <option value="<%= k %>"><%= _clsLabel %></option>
                         <% }); %>
                     <% } %>
                 </select>

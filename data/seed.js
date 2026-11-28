@@ -137,10 +137,9 @@ export const allTeachersAndStaff = [
 ];
 
 export const classMap = {
-  '0': { name: 'শিশু', gid: '1191889934' },
   '1': { name: 'প্রথম', gid: '1997005098' },
   '2': { name: 'দ্বিতীয়', gid: '1134761251' },
-  '3': { name: 'তৃতীয়', gid: '1588251736' },
+  '3': { name: 'তৃতীয়', gid: '1588251736' },
   '4': { name: 'চতুর্থ', gid: '1148542445' },
   '5': { name: 'পঞ্চম', gid: '2018051935' },
   '6': { name: 'ষষ্ঠ', gid: '909549955' },
@@ -149,7 +148,10 @@ export const classMap = {
   '9': { name: 'নবম', gid: '462582001' },
   '10': { name: 'দশম', gid: '350912957' },
   '11': { name: 'আলিম ১ম বর্ষ', gid: '1289051084' },
-  '12': { name: 'আলিম ২য় বর্ষ', gid: '153134693' },
+  '12': { name: 'আলিম ২য় বর্ষ', gid: '153134693' },
+  'fazil_1': { name: 'ফাজিল ১ম বর্ষ', gid: '' },
+  'fazil_2': { name: 'ফাজিল ২য় বর্ষ', gid: '' },
+  'fazil_3': { name: 'ফাজিল ৩য় বর্ষ', gid: '' },
 };
 
 export function convertToBengali(input) {

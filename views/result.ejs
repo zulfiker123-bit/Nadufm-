@@ -571,7 +571,7 @@
                         <optgroup label="সকল শ্রেণি">
                             <% Object.entries(classMap).forEach(function([k, v]) {
                                 const _cname = String(v.name || '').trim();
-                                const _clsLbl = /(?:শ্রেণি|শ্রেণী)$/.test(_cname) ? _cname : _cname + ' শ্রেণি';
+                                const _clsLbl = /(?:শ্রেণি|শ্রেণী|বর্ষ)$/.test(_cname) ? _cname : _cname + ' শ্রেণি';
                                 const _isSelectedCls = (_selVal === k) || (!_selVal.startsWith('excel:') && _selKey === k);
                             %>
                                 <option value="<%= k %>" <%= _isSelectedCls ? 'selected' : '' %>><%= _clsLbl %></option>

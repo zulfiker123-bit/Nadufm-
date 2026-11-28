@@ -418,8 +418,11 @@
                     <label for="id_class">শ্রেণি নির্বাচন করুন</label>
                     <select id="id_class" required>
                         <option value="">-- শ্রেণি নির্বাচন করুন --</option>
-                        <% Object.entries(classMap).forEach(function([k, v]) { %>
-                            <option value="<%= k %>"><%= v.name %> শ্রেণি</option>
+                        <% Object.entries(classMap).forEach(function([k, v]) {
+                            const _cname = String(v.name || '').trim();
+                            const _clsLabel = /(?:শ্রেণি|শ্রেণী|বর্ষ)$/.test(_cname) ? _cname : _cname + ' শ্রেণি';
+                        %>
+                            <option value="<%= k %>"><%= _clsLabel %></option>
                         <% }); %>
                     </select>
                 </div>
