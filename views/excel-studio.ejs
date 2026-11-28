@@ -383,6 +383,24 @@
             pointer-events: none;
         }
 
+        .upload-btn-wrap {
+            position: relative;
+            overflow: hidden;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .upload-overlay-input {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 2;
+            font-size: 0;
+        }
+
         .upload-status-box {
             display: none;
             margin-top: 10px;
@@ -839,9 +857,9 @@
         }
 
         .seg-btn.active {
-            background: var(--surface);
-            color: var(--brand-dark);
-            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+            background: var(--brand-strong);
+            color: #ffffff;
+            box-shadow: 0 1px 3px rgba(21, 128, 61, 0.25);
         }
 
         /* Tab 4: A4 Document Studio */
@@ -1325,8 +1343,10 @@
                     </div>
                 </div>
                 <div class="btn-group">
-                    <input type="file" id="studentsFileInput" class="upload-file-input" onchange="uploadExcelFile('students', this.files && this.files[0])">
-                    <label for="studentsFileInput" id="studentsUploadBtn" class="btn btn-primary" style="margin:0;"><i class="fas fa-upload" aria-hidden="true"></i> ফাইল নির্বাচন ও আপলোড</label>
+                    <label id="studentsUploadBtn" class="btn btn-primary upload-btn-wrap" onclick="event.stopPropagation()">
+                        <span class="upload-btn-label"><i class="fas fa-upload" aria-hidden="true"></i> ফাইল নির্বাচন ও আপলোড</span>
+                        <input type="file" id="studentsFileInput" class="upload-overlay-input" accept=".xlsx,.xls,.xlsm,.xlsb,.csv,.tsv,.ods,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain" onclick="event.stopPropagation()" onchange="uploadExcelFile('students', this.files && this.files[0])">
+                    </label>
                 </div>
             </div>
             <div id="studentsUploadStatus" class="upload-status-box"></div>
@@ -1387,11 +1407,6 @@
                 </div>
             </div>
 
-            <div id="perClassFileInputsPool" class="upload-file-input" aria-hidden="true">
-                <% Object.entries((initialState && initialState.classMap) || {}).forEach(([cid]) => { %>
-                    <input type="file" id="classResultFile_<%= cid %>" tabindex="-1" onchange="uploadClassResultExcel('<%= cid %>', this.files && this.files[0], this)">
-                <% }); %>
-            </div>
             <div id="resultsUploadStatus" class="upload-status-box" style="margin-bottom: 10px;"></div>
             <div class="class-upload-grid" id="classResultUploadGrid" aria-label="প্রতি শ্রেণির আলাদা রেজাল্ট Excel আপলোড"></div>
 
@@ -1491,8 +1506,10 @@
                     </div>
                 </div>
                 <div class="btn-group">
-                    <input type="file" id="documentsFileInput" class="upload-file-input" onchange="uploadExcelFile('documents', this.files && this.files[0])">
-                    <label for="documentsFileInput" id="documentsUploadBtn" class="btn btn-primary" style="margin:0;"><i class="fas fa-upload" aria-hidden="true"></i> ফাইল নির্বাচন ও আপলোড</label>
+                    <label id="documentsUploadBtn" class="btn btn-primary upload-btn-wrap" onclick="event.stopPropagation()">
+                        <span class="upload-btn-label"><i class="fas fa-upload" aria-hidden="true"></i> ফাইল নির্বাচন ও আপলোড</span>
+                        <input type="file" id="documentsFileInput" class="upload-overlay-input" accept=".xlsx,.xls,.xlsm,.xlsb,.csv,.tsv,.ods,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain" onclick="event.stopPropagation()" onchange="uploadExcelFile('documents', this.files && this.files[0])">
+                    </label>
                 </div>
             </div>
             <div id="documentsUploadStatus" class="upload-status-box"></div>
@@ -2047,10 +2064,18 @@
             || '';
 
         const evaluated = rows.map((row, idx) => {
-            const roll = mapping.roll ? String(row[mapping.roll] ?? '').trim() : String(idx + 1);
-            const name = mapping.name ? String(row[mapping.name] ?? '').trim() : '';
-            const father = mapping.father ? String(row[mapping.father] ?? '').trim() : '';
-            const studentId = mapping.id ? String(row[mapping.id] ?? '').trim() : '';
+            const roll = String(
+                (mapping.roll ? row[mapping.roll] : undefined) ?? row.roll ?? row['রোল'] ?? ''
+            ).trim() || String(idx + 1);
+            const name = String(
+                (mapping.name ? row[mapping.name] : undefined) ?? row.name ?? row.name_bn ?? row['নাম'] ?? row['শিক্ষার্থীর নাম'] ?? ''
+            ).trim();
+            const father = String(
+                (mapping.father ? row[mapping.father] : undefined) ?? row.father ?? row.father_bn ?? row['পিতার নাম'] ?? row['পিতা'] ?? ''
+            ).trim();
+            const studentId = String(
+                (mapping.id ? row[mapping.id] : undefined) ?? row.id ?? row.reg_no ?? row['আইডি'] ?? ''
+            ).trim();
             const rawGroup = fallbackGroupCol
                 ? String(row[fallbackGroupCol] ?? '').trim()
                 : String(row.group || row['বিভাগ'] || '').trim();
@@ -2321,11 +2346,18 @@
     async function uploadExcelFile(target, droppedFile) {
         const input = document.getElementById(target + 'FileInput');
         const btn = document.getElementById(target + 'UploadBtn');
+        const btnLabel = btn ? btn.querySelector('.upload-btn-label') : null;
         const selectedFile = droppedFile || (input && input.files && input.files[0]);
 
         if (!selectedFile) {
             setUploadStatus(target, 'প্রথমে একটি .xlsx, .xls অথবা .csv ফাইল নির্বাচন করুন।', 'error');
             showToast('প্রথমে একটি .xlsx, .xls অথবা .csv ফাইল নির্বাচন করুন।', true);
+            return;
+        }
+        if (!navigator.onLine) {
+            if (input) input.value = '';
+            setUploadStatus(target, 'অফলাইনে Excel ফাইল আপলোড করা যাবে না। ইন্টারনেট সংযোগ চালু করে আবার চেষ্টা করুন।', 'error');
+            showToast('ইন্টারনেট সংযোগ নেই।', true);
             return;
         }
         if (!isSupportedSpreadsheetFile(selectedFile)) {
@@ -2354,7 +2386,9 @@
         if (btn) {
             btn.style.pointerEvents = 'none';
             btn.style.opacity = '0.7';
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> আপলোড হচ্ছে...';
+        }
+        if (btnLabel) {
+            btnLabel.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> আপলোড হচ্ছে...';
         }
         setUploadStatus(target, `"${selectedFile.name}" আপলোড ও সংরক্ষণ হচ্ছে...`, 'loading');
 
@@ -2364,6 +2398,9 @@
                 body: fd,
                 credentials: 'same-origin',
             });
+            if (res.status === 401) {
+                throw new Error('অ্যাডমিন সেশন শেষ হয়েছে — অনুগ্রহ করে পুনরায় লগইন করে আপলোড করুন।');
+            }
             const rawText = await res.text();
             let data = {};
             try {
@@ -2387,7 +2424,9 @@
             if (btn) {
                 btn.style.pointerEvents = '';
                 btn.style.opacity = '';
-                btn.innerHTML = '<i class="fas fa-upload" aria-hidden="true"></i> ফাইল নির্বাচন ও আপলোড';
+            }
+            if (btnLabel) {
+                btnLabel.innerHTML = '<i class="fas fa-upload" aria-hidden="true"></i> ফাইল নির্বাচন ও আপলোড';
             }
         }
     }
@@ -2487,7 +2526,7 @@
     }
 
     function addSimpleRow(type) {
-        const row = { _id: `row_${Date.now()}` };
+        const row = { _id: `row_${Date.now()}_${Math.random().toString(36).slice(2, 6)}` };
         state[type].columns.forEach((c) => { row[c.key] = ''; });
         const clsFilter = activeClassFilter[type];
         const clsCol = state[type].mapping?.class_name;
@@ -2561,7 +2600,7 @@
                             <tr>
                                 <td>${bnNum(sl + 1)}</td>
                                 ${sheet.columns.map((c) => `
-                                    <td><input class="cell-input" value="${esc(r[c.key] ?? '')}" onchange="updateSimpleCell('${type}', ${i}, '${esc(c.key)}', this.value)"></td>
+                                    <td><input class="cell-input" data-col-key="${esc(c.key)}" value="${esc(r[c.key] ?? '')}" onchange="updateSimpleCell('${type}', ${i}, this.dataset.colKey, this.value)"></td>
                                 `).join('')}
                                 <td style="white-space:nowrap;">
                                     ${type === 'students' ? `
@@ -2750,34 +2789,23 @@
         renderResultsSection();
     }
 
-    function ensureClassFileInput(classId) {
-        const cid = String(classId ?? '6').trim();
-        let inp = document.getElementById('classResultFile_' + cid);
-        if (!inp) {
-            const pool = document.getElementById('perClassFileInputsPool');
-            if (pool) {
-                inp = document.createElement('input');
-                inp.type = 'file';
-                inp.id = 'classResultFile_' + cid;
-                inp.tabIndex = -1;
-                inp.onchange = function () {
-                    uploadClassResultExcel(cid, this.files && this.files[0], this);
-                };
-                pool.appendChild(inp);
-            }
-        }
-        return inp;
-    }
-
     async function uploadClassResultExcel(classId, droppedFile, inputEl) {
         const cid = String(classId ?? '6').trim();
         const inp = inputEl || document.getElementById('classResultFile_' + cid);
         const btn = document.getElementById('classUploadBtn_' + cid);
+        const btnLabel = btn ? btn.querySelector('.upload-btn-label') : null;
         const selectedFile = droppedFile || (inp && inp.files && inp.files[0]);
 
         if (!selectedFile) {
             setUploadStatus('results', 'কোনো ফাইল পাওয়া যায়নি। আবার একটি .xlsx, .xls বা .csv ফাইল নির্বাচন করুন।', 'error');
             showToast('কোনো ফাইল নির্বাচন করা হয়নি।', true);
+            return;
+        }
+
+        if (!navigator.onLine) {
+            if (inp) inp.value = '';
+            setUploadStatus('results', 'অফলাইনে Excel ফাইল আপলোড করা যাবে না। ইন্টারনেট সংযোগ চালু করে আবার চেষ্টা করুন।', 'error');
+            showToast('ইন্টারনেট সংযোগ নেই।', true);
             return;
         }
 
@@ -2809,7 +2837,9 @@
         if (btn) {
             btn.style.pointerEvents = 'none';
             btn.style.opacity = '0.7';
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> আপলোড হচ্ছে...';
+        }
+        if (btnLabel) {
+            btnLabel.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> আপলোড হচ্ছে...';
         }
         const clsLabel = formatClassLabelClient(className, cid);
         setUploadStatus('results', `${clsLabel}: "${selectedFile.name}" আপলোড ও GPA হিসাব হচ্ছে...`, 'loading');
@@ -2821,6 +2851,9 @@
                 body: fd,
                 credentials: 'same-origin',
             });
+            if (res.status === 401) {
+                throw new Error('অ্যাডমিন সেশন শেষ হয়েছে — অনুগ্রহ করে পুনরায় লগইন করে আপলোড করুন।');
+            }
             const rawText = await res.text();
             let data = {};
             try {
@@ -2851,8 +2884,11 @@
             if (latestBtn) {
                 latestBtn.style.pointerEvents = '';
                 latestBtn.style.opacity = '';
+                const latestLabel = latestBtn.querySelector('.upload-btn-label');
                 const hasRows = (getExamForClass(cid)?.rows || []).length > 0;
-                latestBtn.innerHTML = `<i class="fas fa-upload" aria-hidden="true"></i> ${hasRows ? 'নতুন Excel' : 'Excel আপলোড'}`;
+                if (latestLabel) {
+                    latestLabel.innerHTML = `<i class="fas fa-upload" aria-hidden="true"></i> ${hasRows ? 'নতুন Excel' : 'Excel আপলোড'}`;
+                }
             }
         }
     }
@@ -2908,7 +2944,6 @@
         const classEntries = Object.entries(state.classMap || {});
 
         gridEl.innerHTML = classEntries.map(([cid, info]) => {
-            ensureClassFileInput(cid);
             const ex = getExamForClass(cid);
             const clsLabel = formatClassLabelClient(info.name, cid);
             const rowCount = (ex?.rows || []).length;
@@ -2926,8 +2961,9 @@
                     </div>
                     <div class="class-upload-meta">${esc(metaText)}</div>
                     <div class="class-upload-actions" onclick="event.stopPropagation()">
-                        <label for="classResultFile_${esc(cid)}" id="classUploadBtn_${esc(cid)}" class="btn btn-primary btn-sm" onclick="event.stopPropagation()" style="margin:0;">
-                            <i class="fas fa-upload" aria-hidden="true"></i> ${rowCount > 0 ? 'নতুন Excel' : 'Excel আপলোড'}
+                        <label id="classUploadBtn_${esc(cid)}" class="btn btn-primary btn-sm upload-btn-wrap" onclick="event.stopPropagation()">
+                            <span class="upload-btn-label"><i class="fas fa-upload" aria-hidden="true"></i> ${rowCount > 0 ? 'নতুন Excel' : 'Excel আপলোড'}</span>
+                            <input type="file" id="classResultFile_${esc(cid)}" class="upload-overlay-input" accept=".xlsx,.xls,.xlsm,.xlsb,.csv,.tsv,.ods,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain" onclick="event.stopPropagation()" onchange="uploadClassResultExcel('${esc(cid)}', this.files && this.files[0], this)">
                         </label>
                         ${rowCount > 0 ? `
                             <button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation(); selectClassResult('${esc(cid)}')">দেখুন</button>
@@ -3077,7 +3113,7 @@
 
     function addResultRow() {
         const exam = getActiveExam();
-        const row = { _id: `r_${Date.now()}` };
+        const row = { _id: `r_${Date.now()}_${Math.random().toString(36).slice(2, 6)}` };
         exam.columns.forEach((c) => { row[c.key] = ''; });
         exam.rows.push(row);
         markDirty('results', true);
@@ -3402,7 +3438,7 @@
                                                 : sub.isFail)
                                             : false;
                                         const cellStyle = paperFail ? 'color:#b91c1c; font-weight:700;' : '';
-                                        return `<td><input class="cell-input" style="${cellStyle}" value="${esc(exam.rows[idx][c.key] ?? '')}" onchange="updateResultCell(${idx}, '${esc(c.key)}', this.value)"></td>`;
+                                        return `<td><input class="cell-input" data-col-key="${esc(c.key)}" style="${cellStyle}" value="${esc(exam.rows[idx][c.key] ?? '')}" onchange="updateResultCell(${idx}, this.dataset.colKey, this.value)"></td>`;
                                     }).join('')}
                                     <td style="font-weight:700;">${ev.allAbsent ? 'Abs' : bnNum(ev.totalObtained)}</td>
                                     <td style="font-weight:700;">${bnNum(ev.gpa.toFixed(2))}</td>
@@ -3573,15 +3609,15 @@
         { key: '2', label: 'দ্বিতীয়', aliases: ['2', '২', '২য়', '২য়', 'দ্বিতীয়', 'দ্বিতীয়', '2nd'] },
         { key: '3', label: 'তৃতীয়', aliases: ['3', '৩', '৩য়', '৩য়', 'তৃতীয়', 'তৃতীয়', '3rd'] },
         { key: '4', label: 'চতুর্থ', aliases: ['4', '৪', '৪র্থ', 'চতুর্থ', '4th'] },
-        { key: '5', label: 'পঞ্চম', aliases: ['5', '৫', '৫ম', 'পঞ্চম', '5th'] },
+        { key: '5', label: 'পঞ্চম', aliases: ['5', '৫', '৫ম', 'পঞ্চম', '5th', 'এবতেদায়ী সমাপনী', 'এবতেদায়ী সমাপনী'] },
         { key: '6', label: 'ষষ্ঠ', aliases: ['6', '৬', '৬ষ্ঠ', 'ষষ্ঠ', '6th'] },
         { key: '7', label: 'সপ্তম', aliases: ['7', '৭', '৭ম', 'সপ্তম', '7th'] },
-        { key: '8', label: 'অষ্টম', aliases: ['8', '৮', '৮ম', 'অষ্টম', '8th'] },
+        { key: '8', label: 'অষ্টম', aliases: ['8', '৮', '৮ম', 'অষ্টম', 'জেডিসি', 'jdc', '8th'] },
         { key: '9', label: 'নবম', aliases: ['9', '৯', '৯ম', 'নবম', '9th'] },
-        { key: '10', label: 'দশম', aliases: ['10', '১০', '১০ম', 'দশম', 'দাখিল', '10th', 'dakhil'] },
-        { key: '11', label: 'আলিম ১ম বর্ষ', aliases: ['11', '১১', 'আলিম ১ম', 'আলিম ১ম বর্ষ'] },
-        { key: '12', label: 'আলিম ২য় বর্ষ', aliases: ['12', '১২', 'আলিম ২য়', 'আলিম ২য় বর্ষ', 'আলিম ২য় বর্ষ'] },
-        { key: 'fazil_1', label: 'ফাজিল ১ম বর্ষ', aliases: ['ফাজিল ১ম', 'ফাজিল ১ম বর্ষ'] },
+        { key: '10', label: 'দশম', aliases: ['10', '১০', '১০ম', 'দশম', 'দাখিল', 'দাখিল দশম', '10th', 'dakhil'] },
+        { key: '11', label: 'আলিম ১ম বর্ষ', aliases: ['11', '১১', 'আলিম ১ম', 'আলিম ১ম বর্ষ', 'আলিম প্রথম বর্ষ', 'alim 1st'] },
+        { key: '12', label: 'আলিম ২য় বর্ষ', aliases: ['12', '১২', 'আলিম ২য়', 'আলিম ২য় বর্ষ', 'আলিম ২য় বর্ষ', 'আলিম দ্বিতীয় বর্ষ', 'alim 2nd'] },
+        { key: 'fazil_1', label: 'ফাজিল ১ম বর্ষ', aliases: ['ফাজিল ১ম', 'ফাজিল ১ম বর্ষ', 'ফাজিল প্রথম বর্ষ'] },
         { key: 'fazil_2', label: 'ফাজিল ২য় বর্ষ', aliases: ['ফাজিল ২য়', 'ফাজিল ২য় বর্ষ', 'ফাজিল ২য় বর্ষ'] },
         { key: 'fazil_3', label: 'ফাজিল ৩য় বর্ষ', aliases: ['ফাজিল ৩য়', 'ফাজিল ৩য় বর্ষ', 'ফাজিল ৩য় বর্ষ'] },
     ];

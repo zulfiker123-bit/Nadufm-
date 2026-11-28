@@ -120,20 +120,45 @@ let memoryStore = null;
 
 export function loadExcelStore() {
   if (memoryStore) return memoryStore;
+  const def = createDefaultStore();
   try {
     if (fs.existsSync(STORE_PATH)) {
       const raw = fs.readFileSync(STORE_PATH, 'utf8');
       const parsed = JSON.parse(raw);
+      const parsedStudents = (parsed && typeof parsed.students === 'object' && parsed.students) || {};
+      const parsedResults = (parsed && typeof parsed.results === 'object' && parsed.results) || {};
+      const parsedDocs = (parsed && typeof parsed.documents === 'object' && parsed.documents) || {};
       memoryStore = {
-        ...createDefaultStore(),
+        ...def,
         ...parsed,
+        students: {
+          ...def.students,
+          ...parsedStudents,
+          columns: Array.isArray(parsedStudents.columns) ? parsedStudents.columns : def.students.columns,
+          mapping: { ...def.students.mapping, ...(parsedStudents.mapping || {}) },
+          rows: Array.isArray(parsedStudents.rows) ? parsedStudents.rows : [],
+        },
+        results: {
+          ...def.results,
+          ...parsedResults,
+          exams: (parsedResults.exams && typeof parsedResults.exams === 'object' && !Array.isArray(parsedResults.exams))
+            ? parsedResults.exams
+            : def.results.exams,
+        },
+        documents: {
+          ...def.documents,
+          ...parsedDocs,
+          columns: Array.isArray(parsedDocs.columns) ? parsedDocs.columns : def.documents.columns,
+          mapping: { ...def.documents.mapping, ...(parsedDocs.mapping || {}) },
+          rows: Array.isArray(parsedDocs.rows) ? parsedDocs.rows : [],
+        },
       };
       return memoryStore;
     }
   } catch (err) {
     console.warn('Could not read excel-store.json, initializing fresh store:', err.message);
   }
-  memoryStore = createDefaultStore();
+  memoryStore = def;
   return memoryStore;
 }
 
@@ -149,11 +174,12 @@ export function saveExcelStore(store) {
 
 function makeColumnKey(label, index, usedKeys) {
   const base = String(label || '')
+    .normalize('NFC')
     .trim()
     .toLowerCase()
-    .replace(/[^\p{L}\p{N}]+/gu, '_')
+    .replace(/[^\p{L}\p{M}\p{N}]+/gu, '_')
     .replace(/^_+|_+$/g, '')
-    .slice(0, 28) || `col_${index + 1}`;
+    .slice(0, 32) || `col_${index + 1}`;
   let key = base;
   let n = 2;
   while (usedKeys.has(key)) {
@@ -352,6 +378,14 @@ export function detectResultColumns(columns) {
     'mobile', 'মোবাইল', 'ফোন', 'phone',
     'reg', 'reg no', 'registration', 'রেজি', 'রেজি নং', 'রেজিস্ট্রেশন', 'রেজিস্ট্রেশন নং',
     'sl', 'serial', 'ক্রম', 'ক্রমিক', 'ক্রমিক নং', 'মন্তব্য', 'remark', 'remarks', 'note',
+    'মোট', 'মোট নম্বর', 'মোট প্রাপ্ত নম্বর', 'প্রাপ্ত নম্বর', 'পূর্ণমান', 'শতকরা', 'গড়', 'গড়',
+    'total', 'total marks', 'obtained', 'full marks', 'percentage', 'pct',
+    'gpa', 'জিপিএ', 'চূড়ান্ত gpa', 'চূড়ান্ত gpa', 'gpa (৪র্থ ছাড়া)',
+    'grade', 'গ্রেড', 'letter grade', 'lg', 'gp',
+    'merit', 'merit rank', 'মেধাক্রম', 'মেধা', 'স্থান', 'rank', 'position',
+    'result', 'ফলাফল', 'status', 'ফেল বিষয়', 'ফেল বিষয়', 'fail count',
+    'dob', 'জন্ম তারিখ', 'birth', 'blood', 'রক্ত', 'রক্তের গ্রুপ',
+    'address', 'ঠিকানা', 'session', 'শিক্ষাবর্ষ', 'year', 'সাল', 'বর্ষ', 'photo', 'ছবি',
   ]);
   return columns.map((col) => {
     const rawLabel = String(col.label || '');
@@ -376,7 +410,21 @@ export function detectResultColumns(columns) {
       cleanLower.includes('ঐচ্ছিক বিষয়') ||
       cleanLower.includes('optional subject') ||
       cleanLower.includes('4th subject') ||
-      /(?:^|\b)(roll|name|father|mother|class|section|group|department|dept|division|stream|mobile|phone|reg_no|registration)(?:\b|$)/i.test(cleanLower)
+      cleanLower.includes('মোট প্রাপ্ত') ||
+      cleanLower.includes('মোট নম্বর') ||
+      cleanLower.includes('পূর্ণমান') ||
+      cleanLower.includes('শতকরা') ||
+      cleanLower.includes('মেধাক্রম') ||
+      cleanLower.includes('ফেল বিষয়') ||
+      cleanLower.includes('ফেল বিষয়') ||
+      cleanLower.includes('ফলাফল') ||
+      cleanLower.includes('চূড়ান্ত gpa') ||
+      cleanLower.includes('চূড়ান্ত gpa') ||
+      cleanLower.includes('জন্ম তারিখ') ||
+      cleanLower.includes('শিক্ষাবর্ষ') ||
+      cleanLower.includes('রক্তের গ্রুপ') ||
+      cleanLower.includes('ঠিকানা') ||
+      /(?:^|\b)(roll|name|father|mother|class|section|group|department|dept|division|stream|mobile|phone|reg_no|registration|total|obtained|full_marks|percentage|pct|gpa|grade|merit|rank|position|result|status|fail_count|dob|blood|address|session|year|photo)(?:\b|$)/i.test(cleanLower)
     );
     const fullMarks = isInfo ? 0 : extractFullMarksFromLabel(rawLabel);
     const isOptional = !isInfo && /\(\s*(?:4th|৪র্থ|ঐচ্ছিক|optional|opt|অতিরিক্ত|extra)\s*\)/i.test(rawLabel);
@@ -514,10 +562,18 @@ export function computeResultSheet(exam) {
     || '';
 
   const evaluated = rows.map((row, idx) => {
-    const roll = mapping.roll ? String(row[mapping.roll] ?? '').trim() : String(idx + 1);
-    const name = mapping.name ? String(row[mapping.name] ?? '').trim() : '';
-    const father = mapping.father ? String(row[mapping.father] ?? '').trim() : '';
-    const studentId = mapping.id ? String(row[mapping.id] ?? '').trim() : '';
+    const roll = String(
+      (mapping.roll ? row[mapping.roll] : undefined) ?? row.roll ?? row['রোল'] ?? ''
+    ).trim() || String(idx + 1);
+    const name = String(
+      (mapping.name ? row[mapping.name] : undefined) ?? row.name ?? row.name_bn ?? row['নাম'] ?? row['শিক্ষার্থীর নাম'] ?? ''
+    ).trim();
+    const father = String(
+      (mapping.father ? row[mapping.father] : undefined) ?? row.father ?? row.father_bn ?? row['পিতার নাম'] ?? row['পিতা'] ?? ''
+    ).trim();
+    const studentId = String(
+      (mapping.id ? row[mapping.id] : undefined) ?? row.id ?? row.reg_no ?? row['আইডি'] ?? ''
+    ).trim();
     const rawGroup = fallbackGroupCol
       ? String(row[fallbackGroupCol] ?? '').trim()
       : String(row.group || row['বিভাগ'] || '').trim();

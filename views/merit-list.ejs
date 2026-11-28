@@ -442,65 +442,6 @@
             </button>
         </div>
         <div id="meritExportStatus" class="no-print" style="display:none; margin-top:12px; padding:9px 13px; border-radius:9px; font-size:0.88rem; font-weight:600; text-align:center;"></div>
-        <script>
-            function filterMeritGroup(groupKey) {
-                document.querySelectorAll('.merit-group-tab').forEach(function(btn) {
-                    btn.classList.toggle('active', btn.getAttribute('data-group-filter') === groupKey);
-                });
-                document.querySelectorAll('.merit-section-block').forEach(function(sec) {
-                    var g = sec.getAttribute('data-merit-group');
-                    sec.style.display = (groupKey === 'all' || g === groupKey) ? 'block' : 'none';
-                });
-            }
-
-            function setMeritStatus(msg, isErr) {
-                var st = document.getElementById('meritExportStatus');
-                if (!st) return;
-                st.style.display = 'block';
-                st.textContent = msg;
-                st.style.background = isErr ? '#fef2f2' : '#f0fdf4';
-                st.style.color = isErr ? '#b91c1c' : '#15803d';
-                st.style.border = isErr ? '1px solid #fecaca' : '1px solid #bbf7d0';
-            }
-
-            async function downloadMeritPdf() {
-                var el = document.getElementById('meritPrintArea');
-                if (!el) return;
-                try {
-                    if (!window.NadufmExport) throw new Error('এক্সপোর্ট স্ক্রিপ্ট লোড হয়নি।');
-                    await window.NadufmExport.exportElementToA4Pdf({
-                        element: el,
-                        filename: 'merit-list.pdf',
-                        marginMm: [10, 10, 10, 10],
-                        onStatus: setMeritStatus
-                    });
-                } catch (err) {
-                    setMeritStatus(err && err.message ? err.message : 'PDF ডাউনলোড ব্যর্থ হয়েছে।', true);
-                }
-            }
-
-            async function downloadMeritWord() {
-                var el = document.getElementById('meritPrintArea');
-                if (!el) return;
-                var cssText = '@page Section1 { size: 210mm 297mm; margin: 14mm; }' +
-                    'div.Section1 { page: Section1; font-family: "Nikosh", "Kalpurush", Arial, sans-serif; font-size: 13px; color: #0f172a; }' +
-                    'table { width: 100%; border-collapse: collapse; }' +
-                    'th, td { border: 1px solid #cbd5e1; padding: 6px; text-align: center; }' +
-                    'th { background: #14532d; color: #ffffff; }';
-                try {
-                    if (!window.NadufmExport) throw new Error('এক্সপোর্ট স্ক্রিপ্ট লোড হয়নি।');
-                    await window.NadufmExport.exportElementToWord({
-                        element: el,
-                        filename: 'merit-list.doc',
-                        title: 'Merit List',
-                        cssText: cssText,
-                        onStatus: setMeritStatus
-                    });
-                } catch (err) {
-                    setMeritStatus(err && err.message ? err.message : 'Word ডাউনলোড ব্যর্থ হয়েছে।', true);
-                }
-            }
-        </script>
         <% } else if (selectedClass !== '' || selectedExamId !== '') { %>
             <p id="meritOfflineMount" style="text-align: center; color: #b91c1c; font-weight: 600; padding: 24px;">নির্বাচিত শ্রেণির জন্য কোনো মেধা তালিকা পাওয়া যায়নি।</p>
         <% } else { %>
@@ -510,6 +451,64 @@
 </div>
 
 <script>
+    function filterMeritGroup(groupKey) {
+        document.querySelectorAll('.merit-group-tab').forEach(function(btn) {
+            btn.classList.toggle('active', btn.getAttribute('data-group-filter') === groupKey);
+        });
+        document.querySelectorAll('.merit-section-block').forEach(function(sec) {
+            var g = sec.getAttribute('data-merit-group');
+            sec.style.display = (groupKey === 'all' || g === groupKey) ? 'block' : 'none';
+        });
+    }
+
+    function setMeritStatus(msg, isErr) {
+        var st = document.getElementById('meritExportStatus');
+        if (!st) return;
+        st.style.display = 'block';
+        st.textContent = msg;
+        st.style.background = isErr ? '#fef2f2' : '#f0fdf4';
+        st.style.color = isErr ? '#b91c1c' : '#15803d';
+        st.style.border = isErr ? '1px solid #fecaca' : '1px solid #bbf7d0';
+    }
+
+    async function downloadMeritPdf() {
+        var el = document.getElementById('meritPrintArea');
+        if (!el) return;
+        try {
+            if (!window.NadufmExport) throw new Error('এক্সপোর্ট স্ক্রিপ্ট লোড হয়নি।');
+            await window.NadufmExport.exportElementToA4Pdf({
+                element: el,
+                filename: 'merit-list.pdf',
+                marginMm: [10, 10, 10, 10],
+                onStatus: setMeritStatus
+            });
+        } catch (err) {
+            setMeritStatus(err && err.message ? err.message : 'PDF ডাউনলোড ব্যর্থ হয়েছে।', true);
+        }
+    }
+
+    async function downloadMeritWord() {
+        var el = document.getElementById('meritPrintArea');
+        if (!el) return;
+        var cssText = '@page Section1 { size: 210mm 297mm; margin: 14mm; }' +
+            'div.Section1 { page: Section1; font-family: "Nikosh", "Kalpurush", Arial, sans-serif; font-size: 13px; color: #0f172a; }' +
+            'table { width: 100%; border-collapse: collapse; }' +
+            'th, td { border: 1px solid #cbd5e1; padding: 6px; text-align: center; }' +
+            'th { background: #14532d; color: #ffffff; }';
+        try {
+            if (!window.NadufmExport) throw new Error('এক্সপোর্ট স্ক্রিপ্ট লোড হয়নি।');
+            await window.NadufmExport.exportElementToWord({
+                element: el,
+                filename: 'merit-list.doc',
+                title: 'Merit List',
+                cssText: cssText,
+                onStatus: setMeritStatus
+            });
+        } catch (err) {
+            setMeritStatus(err && err.message ? err.message : 'Word ডাউনলোড ব্যর্থ হয়েছে।', true);
+        }
+    }
+
     (function () {
         var form = document.getElementById('meritFilterForm');
         var sel = document.getElementById('meritClassSelect');
@@ -524,11 +523,13 @@
             });
         }
 
-        function buildSectionHtml(sec, selectedName, clsVal) {
+        function buildSectionHtml(sec, selectedName, clsVal, stuClsVal) {
             var total = sec.rows.length;
             var passed = sec.rows.filter(function (r) { return !r.absent && (r.fail === 0 || r.isPromoted); }).length;
             var passPct = total > 0 ? Math.round((passed / total) * 1000) / 10 : 0;
             var embQ = isEmb ? '&embed=1' : '';
+            var clsQ = encodeURIComponent(clsVal || selectedName || '');
+            var stuClsQ = encodeURIComponent(stuClsVal || clsVal || selectedName || '');
             var rank = 1;
             var body = sec.rows.map(function (row) {
                 var dispName = row.displayName || (row.isScience ? (row.name + ' (বিজ্ঞান)') : row.name);
@@ -538,24 +539,32 @@
                 else if (row.fail > 0) statusBadge = '<span class="status-fail">অকৃতকার্য (' + bn(row.fail) + 'টি)</span>';
                 else statusBadge = '<span class="status-pass">উত্তীর্ণ</span>';
 
+                var gpaHtml = bn(Number(row.gpa || 0).toFixed(2));
+                if (row.hasOptionalSubject && Number(row.gpa || 0) > 0) {
+                    gpaHtml += '<div style="font-size:0.74rem; font-weight:500; color:#64748b;">(৪র্থ ছাড়া: ' + bn(Number(row.gpaWithoutOptional || 0).toFixed(2)) + ')</div>';
+                }
+
+                var rollEnc = encodeURIComponent(row.roll || '');
                 return '<tr class="' + (row.absent ? 'absent-row' : '') + '">' +
                     '<td class="rank-num">' + (row.absent ? '—' : bn(row.meritRank || rank++)) + '</td>' +
                     '<td>' + bn(row.roll) + '</td>' +
                     '<td style="text-align:left; font-weight:600;">' + esc(dispName) + '</td>' +
                     '<td style="font-weight:700;">' + (row.absent ? 'Abs' : bn(row.total)) + '</td>' +
-                    '<td style="font-weight:700;">' + bn(Number(row.gpa || 0).toFixed(2)) + '</td>' +
+                    '<td style="font-weight:700;">' + gpaHtml + '</td>' +
                     '<td>' + bn(Math.round(Number(row.pct || 0) * 100) / 100) + '%</td>' +
                     '<td>' + statusBadge + '</td>' +
                     '<td class="no-print"><div class="merit-doc-links">' +
-                        '<a href="/student-search.php?class=' + encodeURIComponent(clsVal) + '&roll=' + encodeURIComponent(row.roll || '') + '&doc=attestation' + embQ + '" class="merit-doc-link alt">সনদ ও তথ্য</a>' +
+                        '<a href="/result.php?class=' + clsQ + '&roll=' + rollEnc + embQ + '" class="merit-doc-link" title="মার্কশিট দেখুন">মার্কশিট</a>' +
+                        '<a href="/student-search.php?class=' + stuClsQ + '&roll=' + rollEnc + '&doc=attestation' + embQ + '" class="merit-doc-link alt" title="তথ্য, আইডি কার্ড, প্রত্যায়ন ও প্রশংসা পত্র">সনদ ও তথ্য</a>' +
                     '</div></td>' +
                 '</tr>';
             }).join('');
 
+            var summaryName = sec.isScienceSection ? ('বিজ্ঞান (' + (selectedName || 'নির্ধারিত শ্রেণি') + ')') : (selectedName || 'নির্ধারিত শ্রেণি');
             return '<div class="merit-section-block" data-merit-group="' + sec.key + '">' +
                 (sec.title ? '<div class="merit-section-heading ' + (sec.isScienceSection ? 'science' : '') + '"><span>' + esc(sec.title) + '</span><span style="font-size:0.86rem;">মোট ' + bn(total) + ' জন</span></div>' : '') +
                 '<div class="merit-summary-bar">' +
-                    '<div class="merit-summary-item"><span class="merit-summary-lbl">' + (sec.isScienceSection ? 'বিভাগ' : 'শ্রেণি') + '</span><span class="merit-summary-val">' + esc(selectedName || 'নির্ধারিত শ্রেণি') + '</span></div>' +
+                    '<div class="merit-summary-item"><span class="merit-summary-lbl">' + (sec.isScienceSection ? 'বিভাগ' : 'শ্রেণি') + '</span><span class="merit-summary-val">' + esc(summaryName) + '</span></div>' +
                     '<div class="merit-summary-item"><span class="merit-summary-lbl">মোট শিক্ষার্থী</span><span class="merit-summary-val">' + bn(total) + ' জন</span></div>' +
                     '<div class="merit-summary-item"><span class="merit-summary-lbl">উত্তীর্ণ / প্রমোটেড</span><span class="merit-summary-val">' + bn(passed) + ' জন</span></div>' +
                     '<div class="merit-summary-item"><span class="merit-summary-lbl">পাসের হার</span><span class="merit-summary-val">' + bn(passPct) + '%</span></div>' +
@@ -570,7 +579,6 @@
             var area = document.getElementById('meritPrintArea');
             if (!area) return;
 
-            // Remove previous rendered sections/messages below form
             Array.from(area.children).forEach(function (ch) {
                 if (!ch.classList.contains('merit-header') && !ch.classList.contains('merit-form')) {
                     ch.remove();
@@ -590,8 +598,9 @@
             if (subEl) subEl.textContent = entry.selectedExamTitle || ('শ্রেণি ভিত্তিক মেধা তালিকা · ' + entry.selectedName);
             var sci = entry.scienceMeritData || [];
             var oth = entry.otherMeritData || [];
+            var hasBothGroups = sci.length > 0 && oth.length > 0;
             var sections = [];
-            if (sci.length && oth.length) {
+            if (hasBothGroups) {
                 sections.push({ key: 'other', title: 'সাধারণ / অন্যান্য বিভাগের মেধা তালিকা', isScienceSection: false, rows: oth });
                 sections.push({ key: 'science', title: 'বিজ্ঞান বিভাগের মেধা তালিকা', isScienceSection: true, rows: sci });
             } else if (sci.length) {
@@ -600,11 +609,24 @@
                 sections.push({ key: 'all', title: '', isScienceSection: false, rows: entry.meritData });
             }
 
+            var tabsHtml = hasBothGroups
+                ? '<div class="merit-group-tabs no-print" role="tablist" aria-label="বিভাগ অনুযায়ী মেধা তালিকা">' +
+                    '<button type="button" class="merit-group-tab active" data-group-filter="all" onclick="filterMeritGroup(\'all\')">উভয় তালিকা (পৃথক)</button>' +
+                    '<button type="button" class="merit-group-tab" data-group-filter="other" onclick="filterMeritGroup(\'other\')">সাধারণ / অন্যান্য বিভাগ (' + bn(oth.length) + ' জন)</button>' +
+                    '<button type="button" class="merit-group-tab" data-group-filter="science" onclick="filterMeritGroup(\'science\')">বিজ্ঞান বিভাগ (' + bn(sci.length) + ' জন)</button>' +
+                  '</div>'
+                : '';
+
+            var stuClsVal = entry.selectedClassKey || clsVal;
             var wrap = document.createElement('div');
-            wrap.innerHTML = sections.map(function (s) { return buildSectionHtml(s, entry.selectedName, clsVal); }).join('') +
+            wrap.innerHTML = tabsHtml +
+                sections.map(function (s) { return buildSectionHtml(s, entry.selectedName, clsVal, stuClsVal); }).join('') +
                 '<div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-top:20px;" class="no-print">' +
-                '<button type="button" onclick="window.print()" class="merit-btn"><span>সরাসরি প্রিন্ট (A4)</span></button>' +
-                '</div>';
+                    '<button type="button" onclick="window.print()" class="merit-btn"><span>সরাসরি প্রিন্ট (A4)</span></button>' +
+                    '<button type="button" onclick="downloadMeritPdf()" class="merit-btn merit-btn-rose"><span>PDF ডাউনলোড</span></button>' +
+                    '<button type="button" onclick="downloadMeritWord()" class="merit-btn merit-btn-blue"><span>Word (.doc)</span></button>' +
+                '</div>' +
+                '<div id="meritExportStatus" class="no-print" style="display:none; margin-top:12px; padding:9px 13px; border-radius:9px; font-size:0.88rem; font-weight:600; text-align:center;"></div>';
             area.appendChild(wrap);
         };
 

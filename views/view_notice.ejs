@@ -11,50 +11,80 @@
     <meta name="application-name" content="Nadu fm">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Nadu fm">
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/fonts.css">
     <style>
-        body { font-family: 'Kalpurush', sans-serif; background: #f0f2f5; }
-        .letterhead { background: white; max-width: 800px; margin: 30px auto; padding: 50px; min-height: 1000px; box-shadow: 0 0 20px rgba(0,0,0,0.1); border-top: 8px solid #059669; position: relative; font-family: 'Nikosh', 'Kalpurush', sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Kalpurush', sans-serif; background: #f0f2f5; color: #1e293b; }
+        .notice-toolbar { display: flex; justify-content: center; gap: 14px; padding: 20px 16px; flex-wrap: wrap; }
+        .notice-btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 22px; border-radius: 999px; font-weight: 700; font-size: 0.95rem; text-decoration: none; border: none; cursor: pointer; font-family: inherit; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.14); transition: background-color 0.15s ease; }
+        .notice-btn-back { background: #475569; color: #ffffff; }
+        .notice-btn-back:hover { background: #334155; }
+        .notice-btn-print { background: #059669; color: #ffffff; }
+        .notice-btn-print:hover { background: #047857; }
+        .letterhead { background: #ffffff; max-width: 800px; margin: 12px auto 30px auto; padding: 48px; min-height: 1000px; box-shadow: 0 0 20px rgba(0,0,0,0.1); border-top: 8px solid #059669; position: relative; font-family: 'Nikosh', 'Kalpurush', sans-serif; display: flex; flex-direction: column; }
         .letterhead * { font-family: 'Nikosh', 'Kalpurush', sans-serif; }
-        .details { line-height: 1.8; font-size: 1.15rem; text-align: justify; white-space: pre-line; margin-top: 30px; color: #1a1a1a; }
-        @media print { .no-print { display: none; } .letterhead { margin: 0; box-shadow: none; border: none; width: 100%; } }
+        .lh-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; border-bottom: 2px solid #065f46; padding-bottom: 20px; margin-bottom: 28px; }
+        .lh-logo { width: 78px; height: 78px; object-fit: contain; flex-shrink: 0; }
+        .lh-spacer { width: 78px; flex-shrink: 0; }
+        .lh-title-wrap { text-align: center; flex: 1; }
+        .lh-title-wrap h1 { font-size: 1.55rem; font-weight: 700; color: #064e3b; line-height: 1.25; }
+        .lh-en { font-size: 0.72rem; color: #475569; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; }
+        .lh-loc { font-size: 0.9rem; color: #047857; font-weight: 600; margin-top: 2px; }
+        .lh-meta { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 32px; color: #334155; font-weight: 700; font-size: 1rem; }
+        .lh-subject-wrap { text-align: center; margin-bottom: 28px; }
+        .lh-subject { font-size: 1.22rem; font-weight: 700; border-bottom: 2px solid #0f172a; display: inline-block; padding-bottom: 4px; color: #0f172a; }
+        .details { line-height: 1.85; font-size: 1.12rem; text-align: justify; white-space: pre-line; margin-top: 8px; color: #1a1a1a; flex: 1; }
+        .lh-sign-wrap { margin-top: 80px; text-align: right; }
+        .lh-sign-box { display: inline-block; text-align: center; }
+        .lh-sign-line { width: 190px; border-top: 1px solid #0f172a; margin-bottom: 6px; }
+        .lh-sign-title { font-weight: 700; font-size: 1.05rem; color: #0f172a; }
+        .lh-sign-sub { font-size: 0.88rem; color: #334155; }
+        @media (max-width: 640px) {
+            .letterhead { margin: 8px 10px 24px 10px; padding: 24px 18px; min-height: auto; }
+            .lh-head { flex-direction: column; text-align: center; }
+            .lh-spacer { display: none; }
+        }
+        @media print {
+            body { background: #ffffff; }
+            .no-print { display: none !important; }
+            .letterhead { margin: 0; max-width: 100%; box-shadow: none; border: none; padding: 14mm 16mm; min-height: 280mm; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="no-print flex justify-center gap-4 py-6">
-        <a href="/index.php" class="bg-gray-600 text-white px-6 py-2 rounded-full font-bold shadow hover:bg-gray-700">← মূল পাতায় যান</a>
-        <button onclick="window.print()" class="bg-emerald-600 text-white px-8 py-2 rounded-full font-bold shadow hover:bg-emerald-700">প্রিন্ট / PDF ডাউনলোড</button>
+    <div class="no-print notice-toolbar">
+        <a href="/index.php" class="notice-btn notice-btn-back">← মূল পাতায় যান</a>
+        <button type="button" onclick="window.print()" class="notice-btn notice-btn-print">প্রিন্ট / PDF ডাউনলোড</button>
     </div>
 
     <div class="letterhead">
-        <div class="flex justify-between items-center border-b-2 border-emerald-800 pb-6 mb-8">
-            <img src="/logo.png" alt="Logo" class="w-20 h-20">
-            <div class="text-center">
-                <h1 class="text-2xl font-bold text-emerald-900 leading-tight">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h1>
-                <p class="text-xs text-gray-600 font-semibold uppercase tracking-widest mt-1">Nalta Ahsania Darul Ulum Fazil Degree Madrasah</p>
-                <p class="text-sm text-emerald-700 font-medium">নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা</p>
+        <div class="lh-head">
+            <img src="/logo.png" alt="Logo" class="lh-logo">
+            <div class="lh-title-wrap">
+                <h1>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h1>
+                <p class="lh-en">Nalta Ahsania Darul Ulum Fazil Degree Madrasah</p>
+                <p class="lh-loc">নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা</p>
             </div>
-            <div class="w-20"></div>
+            <div class="lh-spacer" aria-hidden="true"></div>
         </div>
 
-        <div class="flex justify-between mb-10 text-gray-700 font-bold">
+        <div class="lh-meta">
             <p>স্মারক: <span id="noticeMemo">NADUFM/<%= new Date().getFullYear() %>/<%= noticeId %></span></p>
             <p>তারিখ: <span id="noticeDate"><%= date %></span></p>
         </div>
 
-        <div class="text-center mb-10">
-            <h2 class="text-xl font-bold border-b-2 border-black inline-block pb-1" id="noticeSubject">বিষয়: <%= subject %></h2>
+        <div class="lh-subject-wrap">
+            <h2 class="lh-subject" id="noticeSubject">বিষয়: <%= subject %></h2>
         </div>
 
         <div class="details" id="noticeDetails"><%= description %></div>
 
-        <div class="mt-40 text-right">
-            <div class="inline-block text-center">
-                <div class="w-48 border-t border-black mb-1"></div>
-                <p class="font-bold text-lg">অধ্যক্ষ</p>
-                <p class="text-sm text-gray-700">নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা</p>
+        <div class="lh-sign-wrap">
+            <div class="lh-sign-box">
+                <div class="lh-sign-line"></div>
+                <p class="lh-sign-title">অধ্যক্ষ</p>
+                <p class="lh-sign-sub">নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা</p>
             </div>
         </div>
     </div>
