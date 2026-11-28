@@ -22,6 +22,13 @@ import {
   detectResultColumns,
   computeResultSheet,
   buildExcelBuffer,
+  buildMultiSheetExcelBuffer,
+  listBackups,
+  createBackupSnapshot,
+  restoreBackupSnapshot,
+  restoreBackupFromData,
+  deleteBackupSnapshot,
+  exportPortableBackupObject,
 } from './data/excelStore.js';
 import { loadPortalStore, savePortalStore } from './data/portalStore.js';
 import {
@@ -425,6 +432,7 @@ function serializeExcelState(store) {
     },
     documents: store.documents,
     classMap,
+    backups: listBackups(),
   };
 }
 
@@ -866,8 +874,8 @@ app.all(['/dashboard', '/dashboard.php', '/admin', '/admin.php', '/admin-panel',
     {
       id: 'excel-results',
       category: 'excel',
-      label: 'রেজাল্ট শিট আপলোড ও GPA',
-      meta: `${convertToBengali(excelExamsCount)}টি পরীক্ষার শিট`,
+      label: 'শ্রেণি ভিত্তিক রেজাল্ট শিট ও GPA',
+      meta: `${convertToBengali(excelExamsCount)}টি শ্রেণির শিট · সরাসরি এন্ট্রি ও ব্যাকআপ`,
       icon: 'calculator',
       tone: 'ic-amber',
       src: '/excel-studio.php?embed=1&tab=results&hideTabs=1',
@@ -2140,6 +2148,168 @@ app.post('/api/excel/export', requireAdminApi, verifySameOrigin, (req, res) => {
     res.send(buffer);
   } catch (err) {
     res.status(500).json({ error: err.message || 'এক্সেল এক্সপোর্ট ব্যর্থ হয়েছে।' });
+  }
+});
+
+app.post('/api/excel/results/export-all', requireAdminApi, verifySameOrigin, (req, res) => {
+  try {
+    let body = req.body || {};
+    if (typeof body.payload === 'string') {
+      body = JSON.parse(body.payload);
+    }
+    const store = loadExcelStore();
+    const targetYear = normalizeExamMetaKey(body.year || '২০২৬', '২০২৬');
+    const targetExam = normalizeExamMetaKey(body.examName || 'বার্ষিক পরীক্ষা', 'বার্ষিক পরীক্ষা');
+    const classOrder = new Map(Object.keys(classMap).map((k, idx) => [k, idx]));
+
+    const allExams = Object.values(store.results?.exams || {}).filter((ex) => {
+      if (!ex || !Array.isArray(ex.rows) || ex.rows.length === 0) return false;
+      if (body.scope === 'all_exams') return true;
+      return normalizeExamMetaKey(ex.year || '২০২৬', '২০২৬') === targetYear
+        && normalizeExamMetaKey(ex.examName || 'বার্ষিক পরীক্ষা', 'বার্ষিক পরীক্ষা') === targetExam;
+    });
+
+    allExams.sort((a, b) => {
+      const oa = classOrder.has(String(a.classId || '')) ? classOrder.get(String(a.classId || '')) : 999;
+      const ob = classOrder.has(String(b.classId || '')) ? classOrder.get(String(b.classId || '')) : 999;
+      if (oa !== ob) return oa - ob;
+      return String(a.className || '').localeCompare(String(b.className || ''), 'bn');
+    });
+
+    const summaryHeaders = ['শ্রেণি', 'পরীক্ষা', 'সাল', 'মোট শিক্ষার্থী', 'উত্তীর্ণ', 'প্রমোটেড', 'অকৃতকার্য', 'অনুপস্থিত', 'পাসের হার (%)', 'অবস্থা'];
+    const summaryRows = [];
+    const sheets = [];
+
+    for (const ex of allExams) {
+      const computed = computeResultSheet(ex);
+      const st = computed.stats || {};
+      const clsLabel = formatClassLabel(ex.className || classMap[ex.classId]?.name || 'শ্রেণি', ex.classId);
+      const isBoard = Boolean(st.isBoardExam);
+      summaryRows.push([
+        clsLabel,
+        ex.examName || 'বার্ষিক পরীক্ষা',
+        ex.year || '২০২৬',
+        st.total || 0,
+        st.passed || 0,
+        st.promoted || 0,
+        st.failed || 0,
+        st.absent || 0,
+        st.passRate || 0,
+        ex.published !== false ? 'প্রকাশিত' : 'খসড়া',
+      ]);
+
+      const cols = Array.isArray(ex.columns) ? ex.columns : [];
+      const headers = isBoard
+        ? [...cols.map((c) => c.label), 'বিভাগ', 'মোট প্রাপ্ত নম্বর', 'পূর্ণমান', 'শতকরা (%)', 'GPA (৪র্থ ছাড়া)', 'চূড়ান্ত GPA', 'ফেল বিষয়', 'মেধাক্রম', 'ফলাফল']
+        : [...cols.map((c) => c.label), 'বিভাগ', 'মোট প্রাপ্ত নম্বর', 'পূর্ণমান', 'শতকরা (%)', 'GPA', 'ফেল বিষয়', 'মেধাক্রম', 'ফলাফল'];
+      const rows = computed.meritList.map((m) => [
+        ...cols.map((c) => m.raw?.[c.key] ?? ''),
+        m.groupLabel || 'সাধারণ',
+        m.totalObtained,
+        m.totalFullMarks,
+        m.percentage,
+        ...(isBoard ? [Number(m.gpaWithoutOptional ?? m.gpa).toFixed(2)] : []),
+        m.gpa.toFixed(2),
+        m.failCount,
+        m.meritRank ?? '',
+        m.statusBn,
+      ]);
+
+      sheets.push({
+        name: body.scope === 'all_exams' ? `${clsLabel}_${ex.year || ''}` : clsLabel,
+        headers,
+        rows,
+      });
+    }
+
+    const workbookSheets = [
+      {
+        name: 'সারসংক্ষেপ',
+        headers: summaryHeaders,
+        rows: summaryRows.length ? summaryRows : [['কোনো শ্রেণিতে এখনো ফলাফল এন্ট্রি নেই', '', '', 0, 0, 0, 0, 0, 0, '']],
+      },
+      ...sheets,
+    ];
+
+    const buffer = buildMultiSheetExcelBuffer(workbookSheets);
+    const fname = `complete-result-${Date.now()}.xlsx`;
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${fname}"`);
+    res.send(buffer);
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'কমপ্লিট রেজাল্ট ডাউনলোড ব্যর্থ হয়েছে।' });
+  }
+});
+
+app.get('/api/excel/backups', requireAdminApi, (req, res) => {
+  res.json({ backups: listBackups() });
+});
+
+app.post('/api/excel/backups/create', requireAdminApi, verifySameOrigin, (req, res) => {
+  try {
+    const store = loadExcelStore();
+    const label = String(req.body?.label || '').trim();
+    const { backup, backups } = createBackupSnapshot(store, { label });
+    res.json({
+      message: `ব্যাকআপ সফলভাবে সংরক্ষিত হয়েছে ("${backup.label}")।`,
+      backup,
+      backups,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'ব্যাকআপ তৈরি ব্যর্থ হয়েছে।' });
+  }
+});
+
+app.post('/api/excel/backups/restore/:backupId', requireAdminApi, verifySameOrigin, (req, res) => {
+  try {
+    const { restoredLabel, store, backups } = restoreBackupSnapshot(req.params.backupId);
+    res.json({
+      message: `"${restoredLabel}" থেকে ডেটা সফলভাবে রিস্টোর করা হয়েছে।`,
+      state: serializeExcelState(store),
+      backups,
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message || 'ব্যাকআপ রিস্টোর ব্যর্থ হয়েছে।' });
+  }
+});
+
+app.delete('/api/excel/backups/:backupId', requireAdminApi, verifySameOrigin, (req, res) => {
+  try {
+    const backups = deleteBackupSnapshot(req.params.backupId);
+    res.json({ message: 'ব্যাকআপ মুছে ফেলা হয়েছে।', backups });
+  } catch (err) {
+    res.status(400).json({ error: err.message || 'ব্যাকআপ মুছা যায়নি।' });
+  }
+});
+
+app.get('/api/excel/backup/download', requireAdminApi, (req, res) => {
+  try {
+    const store = loadExcelStore();
+    const payload = exportPortableBackupObject(store);
+    const jsonStr = JSON.stringify(payload, null, 2);
+    const dateStamp = new Date().toISOString().slice(0, 10);
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="nadufm-results-backup-${dateStamp}.json"`);
+    res.send(jsonStr);
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'ব্যাকআপ ফাইল ডাউনলোড ব্যর্থ হয়েছে।' });
+  }
+});
+
+app.post('/api/excel/backup/restore-file', requireAdminApi, verifySameOrigin, (req, res) => {
+  try {
+    let parsedPayload = req.body?.data || req.body;
+    if (typeof parsedPayload === 'string') {
+      parsedPayload = JSON.parse(parsedPayload);
+    }
+    const { restoredLabel, store, backups } = restoreBackupFromData(parsedPayload);
+    res.json({
+      message: `"${restoredLabel}" থেকে সকল রেজাল্ট ও তথ্য রিস্টোর হয়েছে।`,
+      state: serializeExcelState(store),
+      backups,
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message || 'ব্যাকআপ ফাইল রিস্টোর ব্যর্থ হয়েছে।' });
   }
 });
 

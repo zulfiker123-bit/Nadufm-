@@ -116,7 +116,98 @@ function createDefaultStore() {
   };
 }
 
+const BACKUPS_DIR = path.join(__dirname, 'backups');
+const MAX_BACKUP_SNAPSHOTS = 30;
 let memoryStore = null;
+let backupsMetaCache = null;
+
+function ensureBackupsDir() {
+  if (!fs.existsSync(BACKUPS_DIR)) {
+    fs.mkdirSync(BACKUPS_DIR, { recursive: true });
+  }
+}
+
+export function normalizeStoreShape(parsed) {
+  const def = createDefaultStore();
+  const parsedStudents = (parsed && typeof parsed.students === 'object' && parsed.students) || {};
+  const parsedResults = (parsed && typeof parsed.results === 'object' && parsed.results) || {};
+  const parsedDocs = (parsed && typeof parsed.documents === 'object' && parsed.documents) || {};
+  const rawExams = (parsedResults.exams && typeof parsedResults.exams === 'object' && !Array.isArray(parsedResults.exams))
+    ? parsedResults.exams
+    : def.results.exams;
+  const exams = {};
+  for (const [k, ex] of Object.entries(rawExams)) {
+    if (!ex || typeof ex !== 'object') continue;
+    const id = String(ex.id || k);
+    exams[id] = {
+      ...ex,
+      id,
+      columns: Array.isArray(ex.columns) ? ex.columns : [],
+      mapping: (ex.mapping && typeof ex.mapping === 'object') ? ex.mapping : {},
+      rows: Array.isArray(ex.rows) ? ex.rows : [],
+    };
+  }
+  const examIds = Object.keys(exams);
+  const activeExamId = (parsedResults.activeExamId && exams[parsedResults.activeExamId])
+    ? parsedResults.activeExamId
+    : (examIds[0] || def.results.activeExamId);
+
+  return {
+    ...def,
+    ...parsed,
+    students: {
+      ...def.students,
+      ...parsedStudents,
+      columns: Array.isArray(parsedStudents.columns) ? parsedStudents.columns : def.students.columns,
+      mapping: { ...def.students.mapping, ...(parsedStudents.mapping || {}) },
+      rows: Array.isArray(parsedStudents.rows) ? parsedStudents.rows : [],
+    },
+    results: {
+      ...def.results,
+      ...parsedResults,
+      activeExamId,
+      exams: examIds.length ? exams : def.results.exams,
+    },
+    documents: {
+      ...def.documents,
+      ...parsedDocs,
+      columns: Array.isArray(parsedDocs.columns) ? parsedDocs.columns : def.documents.columns,
+      mapping: { ...def.documents.mapping, ...(parsedDocs.mapping || {}) },
+      rows: Array.isArray(parsedDocs.rows) ? parsedDocs.rows : [],
+    },
+  };
+}
+
+function stripComputedFromStore(store) {
+  const cleanExams = {};
+  for (const [id, ex] of Object.entries(store?.results?.exams || {})) {
+    if (!ex || typeof ex !== 'object') continue;
+    const copy = { ...ex };
+    delete copy.computed;
+    cleanExams[id] = copy;
+  }
+  return {
+    students: store.students,
+    results: {
+      activeExamId: store.results?.activeExamId || '',
+      exams: cleanExams,
+    },
+    documents: store.documents,
+  };
+}
+
+export function getStoreBackupStats(store) {
+  const examsList = Object.values(store?.results?.exams || {});
+  const nonEmptyExams = examsList.filter((ex) => Array.isArray(ex.rows) && ex.rows.length > 0);
+  const totalResultRows = nonEmptyExams.reduce((acc, ex) => acc + ex.rows.length, 0);
+  const studentCount = Array.isArray(store?.students?.rows) ? store.students.rows.length : 0;
+  return {
+    examCount: examsList.length,
+    nonEmptyExamCount: nonEmptyExams.length,
+    studentCount,
+    totalResultRows,
+  };
+}
 
 export function loadExcelStore() {
   if (memoryStore) return memoryStore;
@@ -125,34 +216,7 @@ export function loadExcelStore() {
     if (fs.existsSync(STORE_PATH)) {
       const raw = fs.readFileSync(STORE_PATH, 'utf8');
       const parsed = JSON.parse(raw);
-      const parsedStudents = (parsed && typeof parsed.students === 'object' && parsed.students) || {};
-      const parsedResults = (parsed && typeof parsed.results === 'object' && parsed.results) || {};
-      const parsedDocs = (parsed && typeof parsed.documents === 'object' && parsed.documents) || {};
-      memoryStore = {
-        ...def,
-        ...parsed,
-        students: {
-          ...def.students,
-          ...parsedStudents,
-          columns: Array.isArray(parsedStudents.columns) ? parsedStudents.columns : def.students.columns,
-          mapping: { ...def.students.mapping, ...(parsedStudents.mapping || {}) },
-          rows: Array.isArray(parsedStudents.rows) ? parsedStudents.rows : [],
-        },
-        results: {
-          ...def.results,
-          ...parsedResults,
-          exams: (parsedResults.exams && typeof parsedResults.exams === 'object' && !Array.isArray(parsedResults.exams))
-            ? parsedResults.exams
-            : def.results.exams,
-        },
-        documents: {
-          ...def.documents,
-          ...parsedDocs,
-          columns: Array.isArray(parsedDocs.columns) ? parsedDocs.columns : def.documents.columns,
-          mapping: { ...def.documents.mapping, ...(parsedDocs.mapping || {}) },
-          rows: Array.isArray(parsedDocs.rows) ? parsedDocs.rows : [],
-        },
-      };
+      memoryStore = normalizeStoreShape(parsed);
       return memoryStore;
     }
   } catch (err) {
@@ -163,13 +227,184 @@ export function loadExcelStore() {
 }
 
 export function saveExcelStore(store) {
-  memoryStore = store;
+  memoryStore = normalizeStoreShape(store);
   try {
-    fs.writeFileSync(STORE_PATH, JSON.stringify(store, null, 2), 'utf8');
+    fs.writeFileSync(STORE_PATH, JSON.stringify(stripComputedFromStore(memoryStore), null, 2), 'utf8');
   } catch (err) {
     console.warn('Failed to persist excel-store.json:', err.message);
   }
   return memoryStore;
+}
+
+function readBackupMetasFromDisk() {
+  try {
+    ensureBackupsDir();
+    const files = fs.readdirSync(BACKUPS_DIR).filter((f) => f.endsWith('.json'));
+    const metas = [];
+    for (const f of files) {
+      const fullPath = path.join(BACKUPS_DIR, f);
+      try {
+        const stat = fs.statSync(fullPath);
+        const raw = fs.readFileSync(fullPath, 'utf8');
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object' || !parsed.store) continue;
+        const id = String(parsed.id || f.replace(/\.json$/, ''));
+        const stats = parsed.stats || getStoreBackupStats(parsed.store);
+        metas.push({
+          id,
+          label: String(parsed.label || 'ম্যানুয়াল ব্যাকআপ'),
+          createdAt: String(parsed.createdAt || stat.mtime.toISOString()),
+          autoReason: String(parsed.autoReason || ''),
+          examCount: Number(stats.examCount || 0),
+          nonEmptyExamCount: Number(stats.nonEmptyExamCount || 0),
+          studentCount: Number(stats.studentCount || 0),
+          totalResultRows: Number(stats.totalResultRows || 0),
+          sizeKb: Math.max(1, Math.round((stat.size / 1024) * 10) / 10),
+        });
+      } catch {
+        // Skip malformed backup file
+      }
+    }
+    metas.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+    return metas;
+  } catch {
+    return [];
+  }
+}
+
+export function listBackups() {
+  if (!backupsMetaCache) {
+    backupsMetaCache = readBackupMetasFromDisk();
+  }
+  return backupsMetaCache.slice();
+}
+
+function validateBackupId(backupId) {
+  const id = String(backupId || '').trim();
+  if (!/^[a-zA-Z0-9_-]{3,80}$/.test(id)) {
+    throw new Error('অবৈধ ব্যাকআপ আইডি।');
+  }
+  return id;
+}
+
+export function createBackupSnapshot(store, { label = '', autoReason = '' } = {}) {
+  ensureBackupsDir();
+  const now = new Date().toISOString();
+  const id = `bak_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+  const cleanStore = stripComputedFromStore(normalizeStoreShape(store));
+  const stats = getStoreBackupStats(cleanStore);
+  const resolvedLabel = String(label || '').trim()
+    || (autoReason === 'pre-restore'
+      ? 'রিস্টোরের আগের অটো-ব্যাকআপ'
+      : `পূর্ণ রেজাল্ট ও ডেটা ব্যাকআপ (${stats.nonEmptyExamCount} শ্রেণি)`);
+
+  const payload = {
+    version: 1,
+    id,
+    label: resolvedLabel,
+    createdAt: now,
+    autoReason: String(autoReason || ''),
+    stats,
+    store: cleanStore,
+  };
+  const jsonStr = JSON.stringify(payload, null, 2);
+  const filePath = path.join(BACKUPS_DIR, `${id}.json`);
+  fs.writeFileSync(filePath, jsonStr, 'utf8');
+
+  const meta = {
+    id,
+    label: resolvedLabel,
+    createdAt: now,
+    autoReason: payload.autoReason,
+    ...stats,
+    sizeKb: Math.max(1, Math.round((Buffer.byteLength(jsonStr, 'utf8') / 1024) * 10) / 10),
+  };
+
+  const current = listBackups();
+  current.unshift(meta);
+  while (current.length > MAX_BACKUP_SNAPSHOTS) {
+    const removed = current.pop();
+    if (removed && removed.id) {
+      try {
+        const rmPath = path.join(BACKUPS_DIR, `${validateBackupId(removed.id)}.json`);
+        if (fs.existsSync(rmPath)) fs.unlinkSync(rmPath);
+      } catch {
+        // Ignore cleanup failure
+      }
+    }
+  }
+  backupsMetaCache = current;
+  return { backup: meta, backups: listBackups() };
+}
+
+export function restoreBackupSnapshot(backupId) {
+  const id = validateBackupId(backupId);
+  ensureBackupsDir();
+  const filePath = path.join(BACKUPS_DIR, `${id}.json`);
+  if (!fs.existsSync(filePath)) {
+    throw new Error('নির্বাচিত ব্যাকআপটি পাওয়া যায়নি।');
+  }
+  const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  if (!parsed || !parsed.store || typeof parsed.store !== 'object') {
+    throw new Error('ব্যাকআপ ফাইলের গঠন সঠিক নয়।');
+  }
+  const currentStore = loadExcelStore();
+  createBackupSnapshot(currentStore, {
+    label: 'রিস্টোরের আগের অটো-ব্যাকআপ',
+    autoReason: 'pre-restore',
+  });
+  const saved = saveExcelStore(parsed.store);
+  return {
+    restoredLabel: String(parsed.label || id),
+    store: saved,
+    backups: listBackups(),
+  };
+}
+
+export function restoreBackupFromData(parsedPayload) {
+  if (!parsedPayload || typeof parsedPayload !== 'object') {
+    throw new Error('অবৈধ ব্যাকআপ ফাইল।');
+  }
+  const candidateStore = (parsedPayload.store && typeof parsedPayload.store === 'object')
+    ? parsedPayload.store
+    : parsedPayload;
+  if (!candidateStore.results || typeof candidateStore.results !== 'object' || !candidateStore.results.exams) {
+    throw new Error('ব্যাকআপ ফাইলে পরীক্ষার রেজাল্ট ডেটা পাওয়া যায়নি।');
+  }
+  const currentStore = loadExcelStore();
+  createBackupSnapshot(currentStore, {
+    label: 'ফাইল রিস্টোরের আগের অটো-ব্যাকআপ',
+    autoReason: 'pre-restore',
+  });
+  const saved = saveExcelStore(candidateStore);
+  return {
+    restoredLabel: String(parsedPayload.label || 'আপলোডকৃত ব্যাকআপ ফাইল'),
+    store: saved,
+    backups: listBackups(),
+  };
+}
+
+export function deleteBackupSnapshot(backupId) {
+  const id = validateBackupId(backupId);
+  ensureBackupsDir();
+  const filePath = path.join(BACKUPS_DIR, `${id}.json`);
+  if (fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
+  }
+  backupsMetaCache = listBackups().filter((b) => b.id !== id);
+  return listBackups();
+}
+
+export function exportPortableBackupObject(store) {
+  const cleanStore = stripComputedFromStore(normalizeStoreShape(store));
+  const stats = getStoreBackupStats(cleanStore);
+  return {
+    app: 'NADUFM Result & Student Backup',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    stats,
+    store: cleanStore,
+  };
 }
 
 function makeColumnKey(label, index, usedKeys) {
@@ -852,5 +1087,32 @@ export function buildExcelBuffer(headers, dataRows, sheetName = 'Sheet1') {
   const ws = XLSX.utils.aoa_to_sheet(aoa);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 31));
+  return XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+}
+
+export function buildMultiSheetExcelBuffer(sheets = []) {
+  const wb = XLSX.utils.book_new();
+  const usedNames = new Set();
+  const safeList = Array.isArray(sheets) && sheets.length > 0
+    ? sheets
+    : [{ name: 'Sheet1', headers: ['তথ্য'], rows: [['কোনো ডেটা পাওয়া যায়নি']] }];
+
+  for (let i = 0; i < safeList.length; i++) {
+    const s = safeList[i] || {};
+    const rawBase = String(s.name || `Sheet_${i + 1}`)
+      .replace(/[\\/*?:[\]]/g, ' ')
+      .trim() || `Sheet_${i + 1}`;
+    let tabName = rawBase.slice(0, 31);
+    let n = 2;
+    while (usedNames.has(tabName.toLowerCase())) {
+      const suffix = `_${n++}`;
+      tabName = rawBase.slice(0, 31 - suffix.length) + suffix;
+    }
+    usedNames.add(tabName.toLowerCase());
+    const headers = Array.isArray(s.headers) ? s.headers : [];
+    const rows = Array.isArray(s.rows) ? s.rows : [];
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    XLSX.utils.book_append_sheet(wb, ws, tabName);
+  }
   return XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
 }
