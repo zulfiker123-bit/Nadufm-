@@ -3199,7 +3199,21 @@
         return `${clean} (${fm})${isOptional ? ' (4th)' : ''}`;
     }
 
+    let pendingThFocusTarget = null;
+
+    function trackResultHeadPointer(event) {
+        const el = event.target && event.target.closest ? event.target.closest('[data-th-col][data-th-field]') : null;
+        if (el && el.dataset) {
+            pendingThFocusTarget = { colIdx: el.dataset.thCol, field: el.dataset.thField };
+        } else {
+            pendingThFocusTarget = null;
+        }
+    }
+
     function getActiveTableHeadFocus() {
+        if (pendingThFocusTarget) {
+            return pendingThFocusTarget;
+        }
         const activeEl = document.activeElement;
         if (activeEl && activeEl.dataset && activeEl.dataset.thCol !== undefined && activeEl.dataset.thField) {
             return { colIdx: activeEl.dataset.thCol, field: activeEl.dataset.thField };
@@ -3208,12 +3222,14 @@
     }
 
     function syncResultColumnUpdate(nextFocus) {
+        const focusToRestore = pendingThFocusTarget || nextFocus;
+        pendingThFocusTarget = null;
         markDirty('results', true);
         renderClassResultUploadGrid();
         renderResultSubjectsAndMapping();
         renderResultsTableAndStats();
-        if (nextFocus) {
-            const target = document.querySelector(`#resultsTableContainer [data-th-col="${nextFocus.colIdx}"][data-th-field="${nextFocus.field}"]`);
+        if (focusToRestore) {
+            const target = document.querySelector(`#resultsTableContainer [data-th-col="${focusToRestore.colIdx}"][data-th-field="${focusToRestore.field}"]`);
             if (target) target.focus();
         }
     }
@@ -3650,30 +3666,24 @@
         }
 
         container.innerHTML = `
-            <div class="table-wrap">
+            <div class="table-wrap" onmousedown="trackResultHeadPointer(event)">
                 <table class="sheet-table">
                     <thead>
                         <tr>
                             <th>ক্রম</th>
-                            ${exam.columns.map((c, colIdx) => `
+                            ${exam.columns.map((c, colIdx) => c.isSubject ? `
                                 <th>
                                     <div class="th-col-edit">
-                                        <input type="text" class="th-label-input" data-th-col="${colIdx}" data-th-field="label" value="${esc(c.isSubject ? cleanSubTitle(c.label) : c.label)}" onchange="updateResultColLabel(${colIdx}, this.value, this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" title="কলাম বা বিষয়ের নাম ইডিট করুন" aria-label="কলামের নাম">
+                                        <input type="text" class="th-label-input" data-th-col="${colIdx}" data-th-field="label" value="${esc(cleanSubTitle(c.label))}" onchange="updateResultColLabel(${colIdx}, this.value, this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" title="বিষয়ের নাম সংশোধন করুন" aria-label="বিষয়ের নাম">
                                         <div class="th-sub-controls">
-                                            ${c.isSubject ? `
-                                                <label class="th-fm-wrap" title="পূর্ণমান সংশোধন করুন">
-                                                    <span>পূর্ণমান</span>
-                                                    <input type="number" class="th-fm-input" data-th-col="${colIdx}" data-th-field="fm" min="5" max="500" value="${Number(c.fullMarks) || 100}" onchange="updateResultColFM(${colIdx}, this.value, this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" aria-label="${esc(cleanSubTitle(c.label))} পূর্ণমান">
-                                                </label>
-                                                <button type="button" class="th-chip-btn ${c.isOptional ? 'is-opt' : ''}" onmousedown="preserveThChipClick(event)" onclick="toggleResultColOptional(${colIdx}, ${!c.isOptional})" title="৪র্থ / ঐচ্ছিক বিষয় হিসেবে চালু বা বন্ধ করুন">${c.isOptional ? '৪র্থ ✓' : '৪র্থ'}</button>
-                                                <button type="button" class="th-chip-btn" onmousedown="preserveThChipClick(event)" onclick="toggleResultColSubject(${colIdx})" title="সাধারণ তথ্য কলামে রূপান্তর করুন">তথ্য</button>
-                                            ` : `
-                                                <button type="button" class="th-chip-btn" onmousedown="preserveThChipClick(event)" onclick="toggleResultColSubject(${colIdx})" title="বিষয় (নম্বর) কলাম হিসেবে গণ্য করুন">+ বিষয়</button>
-                                            `}
+                                            <label class="th-fm-wrap" title="পূর্ণমান সংশোধন করুন">
+                                                <span>পূর্ণমান</span>
+                                                <input type="number" class="th-fm-input" data-th-col="${colIdx}" data-th-field="fm" min="5" max="500" value="${Number(c.fullMarks) || 100}" onchange="updateResultColFM(${colIdx}, this.value, this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" aria-label="${esc(cleanSubTitle(c.label))} পূর্ণমান">
+                                            </label>
                                         </div>
                                     </div>
                                 </th>
-                            `).join('')}
+                            ` : `<th>${esc(c.label)}</th>`).join('')}
                             <th>মোট</th>
                             <th>GPA</th>
                             <th>মেধাক্রম</th>
@@ -3730,6 +3740,7 @@
     }
 
     async function saveResultsSheet() {
+        flushPendingThInput();
         const btns = [document.getElementById('resultsSaveBtnTop'), document.getElementById('resultsSaveBtnBottom')].filter(Boolean);
         btns.forEach((b) => {
             b.dataset.origHtml = b.innerHTML;
