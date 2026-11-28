@@ -910,6 +910,164 @@
             flex-wrap: wrap;
         }
 
+        .exam-context-bar {
+            background: #f4fbf6;
+            border: 1px solid rgba(21, 128, 61, 0.22);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 12px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 10px 12px;
+            align-items: end;
+        }
+
+        .exam-context-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            grid-column: 1 / -1;
+            padding-top: 8px;
+            border-top: 1px dashed rgba(21, 128, 61, 0.2);
+        }
+
+        .auto-pub-check {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .auto-pub-check input {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--brand-strong);
+            cursor: pointer;
+        }
+
+        .exam-archive-wrap {
+            background: var(--surface-subtle);
+            border: 1px solid var(--border);
+            border-radius: 11px;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+        }
+
+        .exam-archive-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--muted);
+        }
+
+        .exam-archive-pills {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            flex-wrap: wrap;
+        }
+
+        .archive-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 11px;
+            border-radius: 9px;
+            border: 1px solid var(--border-strong);
+            background: #ffffff;
+            color: var(--text);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.14s ease;
+        }
+
+        .archive-pill:hover {
+            border-color: var(--brand-strong);
+            color: var(--brand);
+            background: #f0fdf4;
+        }
+
+        .archive-pill.active {
+            background: linear-gradient(180deg, #1ea34d 0%, #15803d 100%);
+            color: #ffffff;
+            border-color: #146c34;
+        }
+
+        .archive-pill-cnt {
+            font-size: 0.74rem;
+            padding: 1px 6px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.08);
+            color: inherit;
+        }
+
+        .archive-pill.active .archive-pill-cnt {
+            background: rgba(255, 255, 255, 0.22);
+        }
+
+        .pub-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.73rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .pub-badge--live {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .pub-badge--draft {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+
+        .active-publish-bar {
+            border-radius: 12px;
+            padding: 11px 15px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-size: 0.88rem;
+        }
+
+        .active-publish-bar.is-live {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #14532d;
+        }
+
+        .active-publish-bar.is-draft {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #92400e;
+        }
+
+        .is-hidden {
+            display: none !important;
+        }
+
         .stats-section-head {
             display: flex;
             align-items: baseline;
@@ -1818,15 +1976,32 @@
                 </div>
             </div>
 
-            <div class="grid-2" style="margin-bottom: 14px;">
+            <div class="exam-context-bar" aria-label="পরীক্ষা ও শিক্ষাবর্ষ নির্বাচন">
                 <div class="field">
-                    <label>পরীক্ষার নাম (নির্বাচিত শ্রেণির জন্য)</label>
-                    <input type="text" id="examNameInput" oninput="updateExamMeta()">
+                    <label for="examYearSelect">১. শিক্ষাবর্ষ (সাল) নির্বাচন</label>
+                    <select id="examYearSelect" onchange="onExamYearSelectChange()"></select>
+                    <input type="text" id="examYearInput" class="is-hidden" style="margin-top:6px;" placeholder="যেমন: ২০২৬" oninput="onCustomExamMetaInput()">
                 </div>
                 <div class="field">
-                    <label>শিক্ষাবর্ষ</label>
-                    <input type="text" id="examYearInput" oninput="updateExamMeta()">
+                    <label for="examNameSelect">২. পরীক্ষার নাম নির্বাচন</label>
+                    <select id="examNameSelect" onchange="onExamNameSelectChange()"></select>
+                    <input type="text" id="examNameInput" class="is-hidden" style="margin-top:6px;" placeholder="যেমন: অর্ধ-বার্ষিক পরীক্ষা" oninput="onCustomExamMetaInput()">
                 </div>
+                <div class="exam-context-actions">
+                    <label class="auto-pub-check" title="টিক দেওয়া থাকলে Excel আপলোডের পরপরই ফলাফল ওয়েবসাইটে প্রকাশিত হবে; নাহলে খসড়া হিসেবে থাকবে">
+                        <input type="checkbox" id="autoPublishOnUpload">
+                        <span>আপলোডের পর সরাসরি প্রকাশ করুন (টিক না দিলে খসড়া থাকবে)</span>
+                    </label>
+                    <div class="btn-group" id="examGroupPublishControls"></div>
+                </div>
+            </div>
+
+            <div class="exam-archive-wrap" id="examArchiveWrap">
+                <div class="exam-archive-head">
+                    <span><i class="fas fa-history" aria-hidden="true"></i> সংরক্ষিত পরীক্ষা ও আর্কাইভ (১-ক্লিকে সুইচ করুন)</span>
+                    <span id="examArchiveSummary"></span>
+                </div>
+                <div class="exam-archive-pills" id="examArchivePills"></div>
             </div>
 
             <div id="resultsUploadStatus" class="upload-status-box" style="margin-bottom: 10px;"></div>
@@ -1864,6 +2039,8 @@
                 <div class="grid-4" id="resultsMappingGrid"></div>
             </details>
         </div>
+
+        <div id="activeExamPublishBanner" class="active-publish-bar is-draft is-hidden"></div>
 
         <!-- পরিসংখ্যান সেকশন -->
         <div id="resultStatsSection">
@@ -2251,10 +2428,63 @@
         renderAll();
     }
 
+    const DEFAULT_EXAM_YEARS = ['২০২৭', '২০২৬', '২০২৫', '২০২৪', '২০২৩'];
+    const DEFAULT_EXAM_NAMES = [
+        'অর্ধ-বার্ষিক পরীক্ষা',
+        'বার্ষিক পরীক্ষা',
+        'প্রাক-নির্বাচনী পরীক্ষা',
+        'নির্বাচনী পরীক্ষা',
+        '১ম সাময়িক পরীক্ষা',
+        '২য় সাময়িক পরীক্ষা',
+        'মাসিক মূল্যায়ন',
+    ];
+
+    function normExamMetaClient(val, fallback) {
+        return enNum(String(val || fallback || '').trim())
+            .normalize('NFC')
+            .toLowerCase()
+            .replace(/\s+/g, ' ');
+    }
+
+    function getInitialExamContext() {
+        const examsMap = state.results?.exams || {};
+        const active = examsMap[state.results?.activeExamId]
+            || Object.values(examsMap).find((e) => Array.isArray(e.rows) && e.rows.length > 0)
+            || Object.values(examsMap)[0];
+        return {
+            year: String(active?.year || '২০২৬').trim() || '২০২৬',
+            examName: String(active?.examName || 'বার্ষিক পরীক্ষা').trim() || 'বার্ষিক পরীক্ষা',
+        };
+    }
+
+    const _initCtx = getInitialExamContext();
+    let selectedAdminYear = _initCtx.year;
+    let selectedAdminExamName = _initCtx.examName;
+
     function getActiveExam() {
         const id = state.results?.activeExamId;
         const exams = state.results?.exams || {};
-        return exams[id] || Object.values(exams)[0] || ensureClassExamRecord('6');
+        const cur = exams[id];
+        if (
+            cur
+            && normExamMetaClient(cur.year, '২০২৬') === normExamMetaClient(selectedAdminYear, '২০২৬')
+            && normExamMetaClient(cur.examName, 'বার্ষিক পরীক্ষা') === normExamMetaClient(selectedAdminExamName, 'বার্ষিক পরীক্ষা')
+        ) {
+            return cur;
+        }
+        const matchedInCtx = Object.values(exams).find((ex) => (
+            normExamMetaClient(ex.year, '২০২৬') === normExamMetaClient(selectedAdminYear, '২০২৬')
+            && normExamMetaClient(ex.examName, 'বার্ষিক পরীক্ষা') === normExamMetaClient(selectedAdminExamName, 'বার্ষিক পরীক্ষা')
+            && Array.isArray(ex.rows) && ex.rows.length > 0
+        )) || Object.values(exams).find((ex) => (
+            normExamMetaClient(ex.year, '২০২৬') === normExamMetaClient(selectedAdminYear, '২০২৬')
+            && normExamMetaClient(ex.examName, 'বার্ষিক পরীক্ষা') === normExamMetaClient(selectedAdminExamName, 'বার্ষিক পরীক্ষা')
+        ));
+        if (matchedInCtx) {
+            state.results.activeExamId = matchedInCtx.id;
+            return matchedInCtx;
+        }
+        return ensureClassExamRecord('6');
     }
 
     const SCIENCE_SUBJECT_RE_CLIENT = /পদার্থ|রসায়ন|রসায়ন|জীব\s*বিজ্ঞান|জীববিজ্ঞান|উচ্চতর\s*গণিত|physics|chemistry|biology|higher\s*math/i;
@@ -3159,22 +3389,30 @@
         return /(?:শ্রেণি|শ্রেণী)$/.test(raw) ? raw : `${raw} শ্রেণি`;
     }
 
-    function getExamForClass(classId) {
+    function getExamForClass(classId, targetYear, targetExamName) {
         const cid = String(classId || '').trim();
+        const yKey = normExamMetaClient(targetYear !== undefined ? targetYear : selectedAdminYear, '২০২৬');
+        const eKey = normExamMetaClient(targetExamName !== undefined ? targetExamName : selectedAdminExamName, 'বার্ষিক পরীক্ষা');
         const exams = Object.values(state.results?.exams || {});
-        const matching = exams.filter((ex) => String(ex.classId || '').trim() === cid);
+        const matching = exams.filter((ex) => (
+            String(ex.classId || '').trim() === cid
+            && normExamMetaClient(ex.year, '২০২৬') === yKey
+            && normExamMetaClient(ex.examName, 'বার্ষিক পরীক্ষা') === eKey
+        ));
         if (!matching.length) return null;
         return matching.find((ex) => Array.isArray(ex.rows) && ex.rows.length > 0) || matching[0];
     }
 
     function ensureClassExamRecord(classId) {
         const cid = String(classId || '6').trim();
-        let ex = getExamForClass(cid);
+        const year = String(selectedAdminYear || '২০২৬').trim() || '২০২৬';
+        const examName = String(selectedAdminExamName || 'বার্ষিক পরীক্ষা').trim() || 'বার্ষিক পরীক্ষা';
+        let ex = getExamForClass(cid, year, examName);
         if (ex) return ex;
         const className = String(state.classMap?.[cid]?.name || 'ষষ্ঠ').trim();
-        const examName = String(document.getElementById('examNameInput')?.value || 'বার্ষিক পরীক্ষা').trim() || 'বার্ষিক পরীক্ষা';
-        const year = String(document.getElementById('examYearInput')?.value || '২০২৬').trim() || '২০২৬';
-        const examId = `exam_class_${cid}`;
+        if (!state.results.exams) state.results.exams = {};
+        const baseId = `exam_class_${cid}`;
+        const examId = !state.results.exams[baseId] ? baseId : `exam_${cid}_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`;
         ex = {
             id: examId,
             title: `${formatClassLabelClient(className, cid)} — ${examName}`,
@@ -3182,6 +3420,7 @@
             className,
             examName,
             year,
+            published: false,
             passPercent: 33,
             maxPromoteFail: 0,
             promotionLabel: 'বিশেষ বিবেচনায় প্রমোটেড',
@@ -3199,7 +3438,6 @@
             rows: [],
             updatedAt: null,
         };
-        if (!state.results.exams) state.results.exams = {};
         state.results.exams[examId] = ex;
         return ex;
     }
@@ -3208,6 +3446,62 @@
         const ex = ensureClassExamRecord(classId);
         state.results.activeExamId = ex.id;
         selectedInlineMarksheetRowId = '';
+        renderResultsSection();
+    }
+
+    function getExamArchiveGroups() {
+        const map = new Map();
+        const allExams = Object.values(state.results?.exams || {});
+        for (const ex of allExams) {
+            if (!Array.isArray(ex.rows) || ex.rows.length === 0) continue;
+            const y = String(ex.year || '২০২৬').trim() || '২০২৬';
+            const en = String(ex.examName || 'বার্ষিক পরীক্ষা').trim() || 'বার্ষিক পরীক্ষা';
+            const k = `${normExamMetaClient(y, '২০২৬')}||${normExamMetaClient(en, 'বার্ষিক পরীক্ষা')}`;
+            if (!map.has(k)) {
+                map.set(k, {
+                    key: k,
+                    year: y,
+                    examName: en,
+                    exams: [],
+                    totalStudents: 0,
+                    publishedCount: 0,
+                    draftCount: 0,
+                    latestAt: ex.updatedAt || '',
+                });
+            }
+            const grp = map.get(k);
+            grp.exams.push(ex);
+            grp.totalStudents += ex.rows.length;
+            if (ex.published !== false) grp.publishedCount++;
+            else grp.draftCount++;
+            if (String(ex.updatedAt || '') > grp.latestAt) grp.latestAt = String(ex.updatedAt || '');
+        }
+        return Array.from(map.values()).sort((a, b) => {
+            const ya = parseInt(enNum(a.year), 10) || 0;
+            const yb = parseInt(enNum(b.year), 10) || 0;
+            if (yb !== ya) return yb - ya;
+            return String(b.latestAt || '').localeCompare(String(a.latestAt || ''));
+        });
+    }
+
+    function switchExamContext(year, examName, preferredClassId) {
+        selectedAdminYear = String(year || '২০২৬').trim() || '২০২৬';
+        selectedAdminExamName = String(examName || 'বার্ষিক পরীক্ষা').trim() || 'বার্ষিক পরীক্ষা';
+        selectedInlineMarksheetRowId = '';
+
+        const yKey = normExamMetaClient(selectedAdminYear, '২০২৬');
+        const eKey = normExamMetaClient(selectedAdminExamName, 'বার্ষিক পরীক্ষা');
+        const matching = Object.values(state.results?.exams || {}).filter((ex) => (
+            normExamMetaClient(ex.year, '২০২৬') === yKey
+            && normExamMetaClient(ex.examName, 'বার্ষিক পরীক্ষা') === eKey
+        ));
+        const curActive = state.results?.exams?.[state.results?.activeExamId];
+        const targetCid = preferredClassId || curActive?.classId || '6';
+        const chosen = matching.find((ex) => String(ex.classId || '') === String(targetCid) && (ex.rows || []).length > 0)
+            || matching.find((ex) => Array.isArray(ex.rows) && ex.rows.length > 0)
+            || matching.find((ex) => String(ex.classId || '') === String(targetCid))
+            || ensureClassExamRecord(targetCid);
+        state.results.activeExamId = chosen.id;
         renderResultsSection();
     }
 
@@ -3238,20 +3532,23 @@
             return;
         }
 
-        const existing = getExamForClass(cid);
-        const examId = existing?.id || `exam_class_${cid}`;
+        const year = String(selectedAdminYear || '২০২৬').trim() || '২০২৬';
+        const examName = String(selectedAdminExamName || 'বার্ষিক পরীক্ষা').trim() || 'বার্ষিক পরীক্ষা';
+        const existing = getExamForClass(cid, year, examName);
+        const examId = existing?.id || '';
         const className = String(existing?.className || state.classMap?.[cid]?.name || 'ষষ্ঠ').trim();
-        const examName = String(document.getElementById('examNameInput')?.value || existing?.examName || 'বার্ষিক পরীক্ষা').trim();
-        const year = String(document.getElementById('examYearInput')?.value || existing?.year || '২০২৬').trim();
+        const autoPubChecked = Boolean(document.getElementById('autoPublishOnUpload')?.checked);
+        const shouldPublish = autoPubChecked ? true : (existing && (existing.rows || []).length > 0 ? existing.published !== false : false);
 
         const fd = new FormData();
         fd.append('file', selectedFile);
         fd.append('target', 'results');
-        fd.append('examId', examId);
+        if (examId) fd.append('examId', examId);
         fd.append('classId', cid);
         fd.append('className', className);
         fd.append('examName', examName);
         fd.append('year', year);
+        fd.append('published', shouldPublish ? 'true' : 'false');
         fd.append('passPercent', existing?.passPercent || 33);
         fd.append('maxPromoteFail', existing?.maxPromoteFail || 0);
         fd.append('promotionLabel', existing?.promotionLabel || 'বিশেষ বিবেচনায় প্রমোটেড');
@@ -3264,7 +3561,7 @@
             btnLabel.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i> আপলোড হচ্ছে...';
         }
         const clsLabel = formatClassLabelClient(className, cid);
-        setUploadStatus('results', `${clsLabel}: "${selectedFile.name}" আপলোড ও GPA হিসাব হচ্ছে...`, 'loading');
+        setUploadStatus('results', `${clsLabel} (${examName} ${year}): "${selectedFile.name}" আপলোড ও GPA হিসাব হচ্ছে...`, 'loading');
         document.getElementById('resultsUploadStatus')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
         try {
@@ -3295,7 +3592,8 @@
 
             applyState(data.state);
             if (inp) inp.value = '';
-            setUploadStatus('results', `${clsLabel}: ${data.message}`, 'success');
+            const statusHint = shouldPublish ? 'প্রকাশিত হয়েছে' : 'খসড়া হিসেবে সংরক্ষিত হয়েছে — যাচাই করে "প্রকাশ করুন" চাপুন';
+            setUploadStatus('results', `${clsLabel} (${examName} ${year}): ${data.message} (${statusHint})`, 'success');
             showToast(`${clsLabel} — ${data.message}`);
         } catch (err) {
             if (inp) inp.value = '';
@@ -3312,6 +3610,99 @@
                     latestLabel.innerHTML = `<i class="fas fa-upload" aria-hidden="true"></i> ${hasRows ? 'নতুন Excel' : 'Excel আপলোড'}`;
                 }
             }
+        }
+    }
+
+    async function toggleExamPublish(examId, nextPublished, ev) {
+        if (ev) ev.stopPropagation();
+        const ex = state.results?.exams?.[examId];
+        if (!ex || !(ex.rows || []).length) {
+            showToast('প্রকাশ করার আগে Excel ফাইল আপলোড করুন।', true);
+            return;
+        }
+        try {
+            if (window.NadufmOffline) {
+                const res = await window.NadufmOffline.saveMutationOrQueue({
+                    label: (nextPublished ? 'ফলাফল প্রকাশ' : 'খসড়া করা') + ' (' + (ex.className || '') + ')',
+                    url: '/api/excel/results/publish',
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ examId, published: Boolean(nextPublished) }),
+                    optimisticUpdate: () => {
+                        ex.published = Boolean(nextPublished);
+                        persistLocalExcelState();
+                    },
+                });
+                if (res.queued) {
+                    renderResultsSection();
+                    showToast('অফলাইনে সংরক্ষিত হয়েছে — অনলাইনে সিঙ্ক হবে।');
+                    return;
+                }
+                if (res.data && res.data.state) applyState(res.data.state);
+                showToast((res.data && res.data.message) || 'স্ট্যাটাস আপডেট হয়েছে।');
+                return;
+            }
+            const res = await fetch('/api/excel/results/publish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({ examId, published: Boolean(nextPublished) }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'স্ট্যাটাস পরিবর্তন করা যায়নি।');
+            applyState(data.state);
+            showToast(data.message);
+        } catch (err) {
+            showToast(err.message || 'স্ট্যাটাস পরিবর্তন করা যায়নি।', true);
+        }
+    }
+
+    async function publishExamGroup(nextPublished) {
+        try {
+            const payload = {
+                year: selectedAdminYear,
+                examName: selectedAdminExamName,
+                published: Boolean(nextPublished),
+            };
+            if (window.NadufmOffline) {
+                const res = await window.NadufmOffline.saveMutationOrQueue({
+                    label: (nextPublished ? 'সকল শ্রেণি প্রকাশ' : 'সকল শ্রেণি খসড়া') + ' (' + selectedAdminExamName + ' ' + selectedAdminYear + ')',
+                    url: '/api/excel/results/publish',
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    optimisticUpdate: () => {
+                        const yKey = normExamMetaClient(selectedAdminYear, '২০২৬');
+                        const eKey = normExamMetaClient(selectedAdminExamName, 'বার্ষিক পরীক্ষা');
+                        Object.values(state.results?.exams || {}).forEach((ex) => {
+                            if ((ex.rows || []).length && normExamMetaClient(ex.year, '২০২৬') === yKey && normExamMetaClient(ex.examName, 'বার্ষিক পরীক্ষা') === eKey) {
+                                ex.published = Boolean(nextPublished);
+                            }
+                        });
+                        persistLocalExcelState();
+                    },
+                });
+                if (res.queued) {
+                    renderResultsSection();
+                    showToast('অফলাইনে সংরক্ষিত হয়েছে — অনলাইনে সিঙ্ক হবে।');
+                    return;
+                }
+                if (res.data && res.data.state) applyState(res.data.state);
+                showToast((res.data && res.data.message) || 'আপডেট সম্পন্ন হয়েছে।');
+                return;
+            }
+            const res = await fetch('/api/excel/results/publish', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify(payload),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'প্রকাশ করা যায়নি।');
+            applyState(data.state);
+            showToast(data.message);
+        } catch (err) {
+            showToast(err.message || 'প্রকাশ করা যায়নি।', true);
         }
     }
 
@@ -3358,6 +3749,44 @@
         }
     }
 
+    function renderExamArchiveStrip() {
+        const wrap = document.getElementById('examArchiveWrap');
+        const pillsEl = document.getElementById('examArchivePills');
+        const sumEl = document.getElementById('examArchiveSummary');
+        if (!wrap || !pillsEl) return;
+
+        const groups = getExamArchiveGroups();
+        const curKey = `${normExamMetaClient(selectedAdminYear, '২০২৬')}||${normExamMetaClient(selectedAdminExamName, 'বার্ষিক পরীক্ষা')}`;
+
+        if (!groups.length) {
+            if (sumEl) sumEl.textContent = 'এখনো কোনো ফলাফল আপলোড হয়নি';
+            pillsEl.innerHTML = `<span class="archive-pill active">${esc(selectedAdminYear)} · ${esc(selectedAdminExamName)} <span class="archive-pill-cnt">নতুন</span></span>`;
+            return;
+        }
+
+        const totalClasses = groups.reduce((acc, g) => acc + g.exams.length, 0);
+        if (sumEl) sumEl.textContent = `মোট ${bnNum(groups.length)}টি পরীক্ষা · ${bnNum(totalClasses)}টি শ্রেণি`;
+
+        const hasCurInGroups = groups.some((g) => g.key === curKey);
+        let html = groups.map((g) => {
+            const isAct = g.key === curKey;
+            const statusText = g.draftCount === 0
+                ? 'প্রকাশিত'
+                : (g.publishedCount === 0 ? 'খসড়া' : `${bnNum(g.publishedCount)}/${bnNum(g.exams.length)} প্রকাশিত`);
+            return `
+                <button type="button" class="archive-pill ${isAct ? 'active' : ''}" onclick="switchExamContext('${esc(g.year)}', '${esc(g.examName)}')">
+                    <span>${esc(g.year)} · ${esc(g.examName)}</span>
+                    <span class="archive-pill-cnt">${bnNum(g.exams.length)} শ্রেণি · ${statusText}</span>
+                </button>
+            `;
+        }).join('');
+
+        if (!hasCurInGroups) {
+            html = `<button type="button" class="archive-pill active">${esc(selectedAdminYear)} · ${esc(selectedAdminExamName)} <span class="archive-pill-cnt">নতুন খালি সেশন</span></button>` + html;
+        }
+        pillsEl.innerHTML = html;
+    }
+
     function renderClassResultUploadGrid() {
         const gridEl = document.getElementById('classResultUploadGrid');
         if (!gridEl) return;
@@ -3370,16 +3799,22 @@
             const clsLabel = formatClassLabelClient(info.name, cid);
             const rowCount = (ex?.rows || []).length;
             const isSelected = activeCid === String(cid);
-            let metaText = 'এখনো Excel আপলোড হয়নি';
+            const isPub = rowCount > 0 && ex.published !== false;
+            let metaText = `${selectedAdminExamName} (${selectedAdminYear}) — এখনো Excel আপলোড হয়নি`;
             if (rowCount > 0) {
                 const computed = recomputeExamClient(ex);
                 metaText = `${bnNum(rowCount)} জন শিক্ষার্থী · পাস ${bnNum(computed.stats.passRate)}%`;
             }
+            const statusBadge = rowCount > 0
+                ? (isPub
+                    ? '<span class="pub-badge pub-badge--live"><i class="fas fa-check-circle" aria-hidden="true"></i> প্রকাশিত</span>'
+                    : '<span class="pub-badge pub-badge--draft"><i class="fas fa-clock" aria-hidden="true"></i> খসড়া</span>')
+                : '<span class="class-upload-meta">খালি</span>';
             return `
                 <div class="class-upload-row ${isSelected ? 'is-selected' : ''}" data-class-id="${esc(cid)}" onclick="selectClassResult('${esc(cid)}')">
                     <div class="class-upload-top">
                         <span class="class-upload-title">${esc(clsLabel)}</span>
-                        <span class="class-upload-meta">${rowCount > 0 ? bnNum(rowCount) + ' জন' : 'খালি'}</span>
+                        ${statusBadge}
                     </div>
                     <div class="class-upload-meta">${esc(metaText)}</div>
                     <div class="class-upload-actions" onclick="event.stopPropagation()">
@@ -3388,8 +3823,9 @@
                             <input type="file" id="classResultFile_${esc(cid)}" class="upload-overlay-input" accept=".xlsx,.xls,.xlsm,.xlsb,.csv,.tsv,.ods,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain" onclick="event.stopPropagation()" onchange="uploadClassResultExcel('${esc(cid)}', this.files && this.files[0], this)">
                         </label>
                         ${rowCount > 0 ? `
+                            <button type="button" class="btn btn-sm ${isPub ? 'btn-amber' : 'btn-outline'}" style="${!isPub ? 'border-color:#15803d; color:#15803d; background:#f0fdf4;' : ''}" onclick="toggleExamPublish('${esc(ex.id)}', ${isPub ? 'false' : 'true'}, event)" title="${isPub ? 'ওয়েবসাইট থেকে লুকিয়ে খসড়া করুন' : 'শিক্ষার্থী ও অভিভাবকদের জন্য প্রকাশ করুন'}">${isPub ? 'খসড়া করুন' : 'প্রকাশ করুন'}</button>
                             <button type="button" class="btn btn-outline btn-sm" onclick="event.stopPropagation(); selectClassResult('${esc(cid)}')">দেখুন</button>
-                            <button type="button" class="btn btn-danger-outline btn-sm" onclick="clearClassResult('${esc(cid)}', event)" title="এই শ্রেণির রেজাল্ট মুছুন"><i class="fas fa-trash" aria-hidden="true"></i></button>
+                            <button type="button" class="btn btn-danger-outline btn-sm" onclick="clearClassResult('${esc(cid)}', event)" title="এই পরীক্ষার এই শ্রেণির রেজাল্ট মুছুন"><i class="fas fa-trash" aria-hidden="true"></i></button>
                         ` : ''}
                     </div>
                 </div>
@@ -3414,26 +3850,154 @@
         });
     }
 
+    function renderActivePublishBanner() {
+        const banner = document.getElementById('activeExamPublishBanner');
+        if (!banner) return;
+        const exam = getActiveExam();
+        const rowCount = (exam?.rows || []).length;
+        if (!exam || rowCount === 0) {
+            banner.classList.add('is-hidden');
+            return;
+        }
+        const isPub = exam.published !== false;
+        const clsLabel = formatClassLabelClient(exam.className, exam.classId);
+        const y = exam.year || selectedAdminYear || '২০২৬';
+        const en = exam.examName || selectedAdminExamName || 'বার্ষিক পরীক্ষা';
+        banner.classList.remove('is-hidden', 'is-live', 'is-draft');
+        banner.classList.add(isPub ? 'is-live' : 'is-draft');
+        banner.innerHTML = isPub
+            ? `<div><strong><i class="fas fa-globe" aria-hidden="true"></i> প্রকাশিত:</strong> ${esc(clsLabel)} · ${esc(en)} (${esc(y)}) — শিক্ষার্থী ও অভিভাবকরা ওয়েবসাইটে ফলাফল দেখতে পাচ্ছে।</div>
+               <button type="button" class="btn btn-outline btn-sm" onclick="toggleExamPublish('${esc(exam.id)}', false)"><i class="fas fa-eye-slash" aria-hidden="true"></i> খসড়া অবস্থায় নিন</button>`
+            : `<div><strong><i class="fas fa-lock" aria-hidden="true"></i> খসড়া (অপ্রকাশিত):</strong> ${esc(clsLabel)} · ${esc(en)} (${esc(y)}) — এখন কেবল অ্যাডমিন দেখতে পাচ্ছেন। যাচাই শেষে প্রকাশ করুন।</div>
+               <button type="button" class="btn btn-primary btn-sm" onclick="toggleExamPublish('${esc(exam.id)}', true)"><i class="fas fa-bullhorn" aria-hidden="true"></i> এখনই প্রকাশ করুন</button>`;
+    }
+
     function renderExamMetaInputs() {
         const active = getActiveExam();
         const clsLabel = formatClassLabelClient(active?.className, active?.classId);
         const advLbl = document.getElementById('advConfigClassLabel');
-        if (advLbl) advLbl.textContent = clsLabel;
-        document.getElementById('examNameInput').value = active?.examName || 'বার্ষিক পরীক্ষা';
-        document.getElementById('examYearInput').value = active?.year || '২০২৬';
+        if (advLbl) advLbl.textContent = `${clsLabel} (${selectedAdminExamName} ${selectedAdminYear})`;
+
+        // Populate Year select
+        const yearSel = document.getElementById('examYearSelect');
+        const yearInp = document.getElementById('examYearInput');
+        const storedYears = Object.values(state.results?.exams || {}).map((e) => String(e.year || '').trim()).filter(Boolean);
+        const yearOptions = Array.from(new Set([...DEFAULT_EXAM_YEARS, ...storedYears]));
+        if (yearSel) {
+            const matchedYear = yearOptions.find((y) => normExamMetaClient(y) === normExamMetaClient(selectedAdminYear));
+            yearSel.innerHTML = yearOptions.map((y) => `<option value="${esc(y)}">${esc(y)}</option>`).join('')
+                + '<option value="__custom__">+ কাস্টম সাল লিখুন...</option>';
+            if (matchedYear) {
+                yearSel.value = matchedYear;
+                yearInp?.classList.add('is-hidden');
+            } else {
+                yearSel.value = '__custom__';
+                if (yearInp) {
+                    yearInp.value = selectedAdminYear;
+                    yearInp.classList.remove('is-hidden');
+                }
+            }
+        }
+
+        // Populate Exam Name select
+        const nameSel = document.getElementById('examNameSelect');
+        const nameInp = document.getElementById('examNameInput');
+        const storedNames = Object.values(state.results?.exams || {}).map((e) => String(e.examName || '').trim()).filter(Boolean);
+        const nameOptions = Array.from(new Set([...DEFAULT_EXAM_NAMES, ...storedNames]));
+        if (nameSel) {
+            const matchedName = nameOptions.find((n) => normExamMetaClient(n) === normExamMetaClient(selectedAdminExamName));
+            nameSel.innerHTML = nameOptions.map((n) => `<option value="${esc(n)}">${esc(n)}</option>`).join('')
+                + '<option value="__custom__">+ কাস্টম পরীক্ষার নাম...</option>';
+            if (matchedName) {
+                nameSel.value = matchedName;
+                nameInp?.classList.add('is-hidden');
+            } else {
+                nameSel.value = '__custom__';
+                if (nameInp) {
+                    nameInp.value = selectedAdminExamName;
+                    nameInp.classList.remove('is-hidden');
+                }
+            }
+        }
+
+        // Group Bulk Publish buttons
+        const groupCtrls = document.getElementById('examGroupPublishControls');
+        if (groupCtrls) {
+            const yKey = normExamMetaClient(selectedAdminYear, '২০২৬');
+            const eKey = normExamMetaClient(selectedAdminExamName, 'বার্ষিক পরীক্ষা');
+            const ctxExams = Object.values(state.results?.exams || {}).filter((ex) => (
+                Array.isArray(ex.rows) && ex.rows.length > 0
+                && normExamMetaClient(ex.year, '২০২৬') === yKey
+                && normExamMetaClient(ex.examName, 'বার্ষিক পরীক্ষা') === eKey
+            ));
+            if (ctxExams.length > 0) {
+                const draftCnt = ctxExams.filter((ex) => ex.published === false).length;
+                const pubCnt = ctxExams.length - draftCnt;
+                groupCtrls.innerHTML =
+                    (draftCnt > 0 ? `<button type="button" class="btn btn-primary btn-sm" onclick="publishExamGroup(true)"><i class="fas fa-bullhorn" aria-hidden="true"></i> সকল শ্রেণি প্রকাশ করুন (${bnNum(ctxExams.length)})</button>` : '')
+                    + (pubCnt > 0 ? `<button type="button" class="btn btn-outline btn-sm" onclick="publishExamGroup(false)"><i class="fas fa-eye-slash" aria-hidden="true"></i> সব খসড়া করুন</button>` : '');
+            } else {
+                groupCtrls.innerHTML = '<span style="font-size:0.8rem; color:var(--muted);">নিচের যেকোনো শ্রেণির কার্ডে Excel আপলোড করুন</span>';
+            }
+        }
+
         document.getElementById('examPassPercent').value = active?.passPercent || 33;
         document.getElementById('examMaxPromoteFail').value = String(active?.maxPromoteFail ?? 0);
         document.getElementById('examPromoLabel').value = active?.promotionLabel || 'বিশেষ বিবেচনায় প্রমোটেড';
     }
 
-    function updateExamMeta() {
+    function onExamYearSelectChange() {
+        const yearSel = document.getElementById('examYearSelect');
+        const yearInp = document.getElementById('examYearInput');
+        if (!yearSel) return;
+        if (yearSel.value === '__custom__') {
+            yearInp?.classList.remove('is-hidden');
+            if (yearInp) {
+                yearInp.value = selectedAdminYear;
+                yearInp.focus();
+            }
+            return;
+        }
+        yearInp?.classList.add('is-hidden');
+        switchExamContext(yearSel.value, selectedAdminExamName);
+    }
+
+    function onExamNameSelectChange() {
+        const nameSel = document.getElementById('examNameSelect');
+        const nameInp = document.getElementById('examNameInput');
+        if (!nameSel) return;
+        if (nameSel.value === '__custom__') {
+            nameInp?.classList.remove('is-hidden');
+            if (nameInp) {
+                nameInp.value = selectedAdminExamName;
+                nameInp.focus();
+            }
+            return;
+        }
+        nameInp?.classList.add('is-hidden');
+        switchExamContext(selectedAdminYear, nameSel.value);
+    }
+
+    function onCustomExamMetaInput() {
+        const yearSel = document.getElementById('examYearSelect');
+        const yearInp = document.getElementById('examYearInput');
+        const nameSel = document.getElementById('examNameSelect');
+        const nameInp = document.getElementById('examNameInput');
+        const nextY = (yearSel?.value === '__custom__' ? yearInp?.value : yearSel?.value) || selectedAdminYear;
+        const nextN = (nameSel?.value === '__custom__' ? nameInp?.value : nameSel?.value) || selectedAdminExamName;
+        if (String(nextY).trim()) selectedAdminYear = String(nextY).trim();
+        if (String(nextN).trim()) selectedAdminExamName = String(nextN).trim();
         const exam = getActiveExam();
-        if (!exam) return;
-        exam.examName = document.getElementById('examNameInput').value;
-        exam.year = document.getElementById('examYearInput').value;
-        const clsLabel = formatClassLabelClient(exam.className, exam.classId);
-        exam.title = `${clsLabel} — ${String(exam.examName || 'বার্ষিক পরীক্ষা').trim()}`;
-        markDirty('results', true);
+        if (exam && (exam.rows || []).length > 0) {
+            exam.year = selectedAdminYear;
+            exam.examName = selectedAdminExamName;
+            const clsLabel = formatClassLabelClient(exam.className, exam.classId);
+            exam.title = `${clsLabel} — ${selectedAdminExamName}`;
+            markDirty('results', true);
+        }
+        renderExamArchiveStrip();
+        renderClassResultUploadGrid();
+        renderActivePublishBanner();
         renderResultsTableAndStats();
     }
 
@@ -3737,7 +4301,8 @@
             const ex = getExamForClass(cid);
             const cnt = (ex?.rows || []).length;
             const clsLabel = formatClassLabelClient(info.name, cid);
-            const suffix = cnt > 0 ? ` (${bnNum(cnt)} জন)` : '';
+            const pubSuffix = cnt > 0 ? (ex.published !== false ? ' · প্রকাশিত' : ' · খসড়া') : '';
+            const suffix = cnt > 0 ? ` (${bnNum(cnt)} জন${pubSuffix})` : '';
             return `<option value="${esc(cid)}" ${String(cid) === activeCid ? 'selected' : ''}>${esc(clsLabel + suffix)}</option>`;
         }).join('');
         sel.value = activeCid;
@@ -3765,15 +4330,21 @@
         renderResultsTableClassSelect();
 
         const titleEl = document.getElementById('statsSelectedClassTitle');
-        if (titleEl) titleEl.textContent = clsLabel;
+        if (titleEl) titleEl.textContent = `${clsLabel} — ${exam?.examName || selectedAdminExamName} (${exam?.year || selectedAdminYear})`;
 
-        const allExams = Object.values(state.results?.exams || {}).filter((ex) => Array.isArray(ex.rows) && ex.rows.length > 0);
+        const yKey = normExamMetaClient(selectedAdminYear, '২০২৬');
+        const eKey = normExamMetaClient(selectedAdminExamName, 'বার্ষিক পরীক্ষা');
+        const ctxExams = Object.values(state.results?.exams || {}).filter((ex) => (
+            Array.isArray(ex.rows) && ex.rows.length > 0
+            && normExamMetaClient(ex.year, '২০২৬') === yKey
+            && normExamMetaClient(ex.examName, 'বার্ষিক পরীক্ষা') === eKey
+        ));
         const overallEl = document.getElementById('statsOverallSummary');
         if (overallEl) {
-            const totalUploadedStudents = allExams.reduce((acc, ex) => acc + ex.rows.length, 0);
-            overallEl.textContent = allExams.length > 0
-                ? `সকল শ্রেণি (${bnNum(allExams.length)}টি): মোট ${bnNum(totalUploadedStudents)} জন`
-                : 'এখনো কোনো শ্রেণির ফলাফল আপলোড হয়নি';
+            const totalUploadedStudents = ctxExams.reduce((acc, ex) => acc + ex.rows.length, 0);
+            overallEl.textContent = ctxExams.length > 0
+                ? `${selectedAdminExamName} (${selectedAdminYear}) — ${bnNum(ctxExams.length)}টি শ্রেণি, মোট ${bnNum(totalUploadedStudents)} জন`
+                : `${selectedAdminExamName} (${selectedAdminYear}) — এখনো কোনো শ্রেণির ফলাফল আপলোড হয়নি`;
         }
 
         document.getElementById('resultStatsBar').innerHTML = `
@@ -4052,8 +4623,10 @@
     }
 
     function renderResultsSection() {
-        renderClassResultUploadGrid();
         renderExamMetaInputs();
+        renderExamArchiveStrip();
+        renderClassResultUploadGrid();
+        renderActivePublishBanner();
         renderResultSubjectsAndMapping();
         renderResultsTableAndStats();
     }

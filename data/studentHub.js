@@ -249,6 +249,7 @@ export function getUnifiedStudents(excelStore, portalStore) {
   });
   for (const exam of exams) {
     if (!Array.isArray(exam.rows) || exam.rows.length === 0) continue;
+    if (exam.published === false) continue;
     const computed = computeResultSheet(exam);
     const examClassName = exam.className || (classMap[exam.classId]?.name || '');
     const examTitle = exam.title || `${exam.examName || 'বার্ষিক পরীক্ষা'} (${exam.year || '২০২৬'})`;
@@ -343,7 +344,7 @@ export function getClassesAndRolls(excelStore, portalStore, classParam = '') {
     if (rawClass.startsWith('excel:')) {
       const eid = rawClass.slice(6);
       const ex = excelStore?.results?.exams?.[eid];
-      if (ex && Array.isArray(ex.rows)) {
+      if (ex && Array.isArray(ex.rows) && ex.published !== false) {
         const { evaluatedRows } = computeResultSheet(ex);
         rolls = evaluatedRows
           .filter((r) => String(r.roll || '').trim() !== '')

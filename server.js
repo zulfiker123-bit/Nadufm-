@@ -363,15 +363,27 @@ function buildCsvSyntheticExam(classId, className, csvRows) {
   };
 }
 
-function getUploadedExamsSummary(store) {
+function normalizeExamMetaKey(val, fallback = '') {
+  const s = bnToEnNumber(String(val || fallback || '').trim())
+    .normalize('NFC')
+    .toLowerCase()
+    .replace(/\s+/g, ' ');
+  return s;
+}
+
+function isExamPublished(ex) {
+  return Boolean(ex && Array.isArray(ex.rows) && ex.rows.length > 0 && ex.published !== false);
+}
+
+function getUploadedExamsSummary(store, { includeDrafts = false } = {}) {
   const exams = (store.results && store.results.exams) || {};
   return Object.values(exams)
-    .filter((ex) => Array.isArray(ex.rows) && ex.rows.length > 0)
+    .filter((ex) => Array.isArray(ex.rows) && ex.rows.length > 0 && (includeDrafts || ex.published !== false))
     .map((ex) => {
       const className = String(ex.className || (ex.classId && classMap[ex.classId]?.name) || '').trim();
       const classLabel = formatClassLabel(className, ex.classId);
       const examName = String(ex.examName || 'বার্ষিক পরীক্ষা').trim();
-      const year = String(ex.year || '').trim();
+      const year = String(ex.year || '২০২৬').trim();
       const dropdownLabel = `${classLabel} — ${examName}${year ? ` (${year})` : ''}`;
       return {
         id: ex.id,
@@ -382,8 +394,16 @@ function getUploadedExamsSummary(store) {
         classLabel,
         examName,
         year: year || '২০২৬',
+        published: ex.published !== false,
         rowCount: ex.rows.length,
+        updatedAt: ex.updatedAt || null,
       };
+    })
+    .sort((a, b) => {
+      const ya = parseInt(bnToEnNumber(a.year), 10) || 0;
+      const yb = parseInt(bnToEnNumber(b.year), 10) || 0;
+      if (yb !== ya) return yb - ya;
+      return String(b.updatedAt || '').localeCompare(String(a.updatedAt || ''));
     });
 }
 
@@ -474,7 +494,7 @@ app.get('/api/offline/bootstrap', (req, res) => {
 
   const meritByClass = {};
   for (const ex of Object.values(excelStore.results?.exams || {})) {
-    if (!Array.isArray(ex.rows) || ex.rows.length === 0) continue;
+    if (!isExamPublished(ex)) continue;
     const computed = computeResultSheet(ex);
     const selectedName = formatClassLabel(ex.className, ex.classId);
     const exName = String(ex.examName || 'বার্ষিক পরীক্ষা').trim();
@@ -701,19 +721,24 @@ app.get(['/merit-list', '/merit-list.php'], async (req, res) => {
   let otherMeritData = [];
   let sourceType = 'csv';
 
-  // Prefer explicit exam_id, or uploaded Excel sheet matching class_id / normalized className
+  // Prefer explicit exam_id, or uploaded published Excel sheet matching class_id / normalized className
+  const viewerIsAdmin = Boolean(getValidAdminSession(req));
   let matchedExcelExam = null;
   if (selectedExamId && excelStore.results?.exams?.[selectedExamId]) {
-    matchedExcelExam = excelStore.results.exams[selectedExamId];
+    const candidate = excelStore.results.exams[selectedExamId];
+    if (isExamPublished(candidate) || (viewerIsAdmin && Array.isArray(candidate.rows) && candidate.rows.length > 0)) {
+      matchedExcelExam = candidate;
+    }
   } else if (selectedClass.startsWith('excel:')) {
     const eid = selectedClass.slice(6);
-    if (excelStore.results?.exams?.[eid]) {
-      matchedExcelExam = excelStore.results.exams[eid];
+    const candidate = excelStore.results?.exams?.[eid];
+    if (candidate && (isExamPublished(candidate) || (viewerIsAdmin && Array.isArray(candidate.rows) && candidate.rows.length > 0))) {
+      matchedExcelExam = candidate;
     }
   } else if (selectedClass !== '') {
     const normSel = normalizeClassInput(selectedClass);
     matchedExcelExam = Object.values(excelStore.results?.exams || {}).find((ex) => {
-      if (!Array.isArray(ex.rows) || ex.rows.length === 0) return false;
+      if (!isExamPublished(ex)) return false;
       if (String(ex.classId) === selectedClass) return true;
       const exNorm = normalizeClassInput(ex.className || ex.classId || '');
       return Boolean(normSel.key && exNorm.key && normSel.key === exNorm.key);
@@ -1626,22 +1651,53 @@ app.post('/api/excel/upload', requireAdminApi, verifySameOrigin, (req, res) => {
       const classId = (req.body.classId !== undefined && String(req.body.classId).trim() !== '')
         ? String(req.body.classId).trim()
         : '6';
+      const requestedClassName = String(req.body.className || (classMap[classId]?.name || 'ষষ্ঠ')).trim();
+      const requestedExamName = String(req.body.examName || 'বার্ষিক পরীক্ষা').trim() || 'বার্ষিক পরীক্ষা';
+      const requestedYear = String(req.body.year || '২০২৬').trim() || '২০২৬';
+      const reqExamKey = normalizeExamMetaKey(requestedExamName, 'বার্ষিক পরীক্ষা');
+      const reqYearKey = normalizeExamMetaKey(requestedYear, '২০২৬');
+
       let examId = String(req.body.examId || '').trim();
-      if (!examId) {
-        const matchedExisting = Object.values(store.results.exams || {}).find(
-          (ex) => String(ex.classId ?? '') === classId
-        );
-        examId = matchedExisting?.id || `exam_class_${classId}`;
+      if (examId && store.results.exams?.[examId]) {
+        const cur = store.results.exams[examId];
+        const sameSlot = String(cur.classId ?? '') === classId
+          && normalizeExamMetaKey(cur.examName, 'বার্ষিক পরীক্ষা') === reqExamKey
+          && normalizeExamMetaKey(cur.year, '২০২৬') === reqYearKey;
+        if (!sameSlot) {
+          examId = '';
+        }
+      } else {
+        examId = '';
       }
+
+      if (!examId) {
+        const matchedExisting = Object.values(store.results.exams || {}).find((ex) => (
+          String(ex.classId ?? '') === classId
+          && normalizeExamMetaKey(ex.examName, 'বার্ষিক পরীক্ষা') === reqExamKey
+          && normalizeExamMetaKey(ex.year, '২০২৬') === reqYearKey
+        ));
+        if (matchedExisting) {
+          examId = matchedExisting.id;
+        } else if (!store.results.exams?.[`exam_class_${classId}`]) {
+          examId = `exam_class_${classId}`;
+        } else {
+          examId = `exam_${classId}_${Date.now()}`;
+        }
+      }
+
       const existing = store.results.exams[examId] || {};
       const detectedCols = detectResultColumns(parsed.columns);
       const mappingGuess = autoDetectStudentMapping(parsed.columns);
       const resolvedClassId = (req.body.classId !== undefined && String(req.body.classId).trim() !== '')
         ? String(req.body.classId).trim()
         : String(existing.classId ?? classId);
-      const className = String(req.body.className || existing.className || (classMap[resolvedClassId]?.name || 'ষষ্ঠ')).trim();
-      const examName = String(req.body.examName || existing.examName || 'বার্ষিক পরীক্ষা').trim();
-      const year = String(req.body.year || existing.year || '২০২৬').trim();
+      const className = String(req.body.className || existing.className || requestedClassName || 'ষষ্ঠ').trim();
+      const examName = requestedExamName;
+      const year = requestedYear;
+      const hasPublishedField = req.body.published !== undefined && String(req.body.published).trim() !== '';
+      const resolvedPublished = hasPublishedField
+        ? (String(req.body.published).toLowerCase() === 'true' || req.body.published === true || String(req.body.published) === '1')
+        : (existing.id && existing.published !== undefined ? Boolean(existing.published) : false);
 
       store.results.exams[examId] = {
         id: examId,
@@ -1650,6 +1706,8 @@ app.post('/api/excel/upload', requireAdminApi, verifySameOrigin, (req, res) => {
         className,
         examName,
         year,
+        published: resolvedPublished,
+        publishedAt: resolvedPublished ? (existing.publishedAt || now) : null,
         passPercent: Number(req.body.passPercent || existing.passPercent || 33),
         maxPromoteFail: Number(req.body.maxPromoteFail ?? existing.maxPromoteFail ?? 0),
         promotionLabel: String(req.body.promotionLabel || existing.promotionLabel || 'বিশেষ বিবেচনায় প্রমোটেড'),
@@ -1729,6 +1787,8 @@ app.post('/api/excel/results/create', requireAdminApi, verifySameOrigin, (req, r
     className,
     examName,
     year,
+    published: Boolean(req.body.published),
+    publishedAt: req.body.published ? new Date().toISOString() : null,
     passPercent: 33,
     maxPromoteFail: 0,
     promotionLabel: 'বিশেষ বিবেচনায় প্রমোটেড',
@@ -1757,6 +1817,7 @@ app.post('/api/excel/results/save', requireAdminApi, verifySameOrigin, (req, res
   if (!exam || !exam.id || !Array.isArray(exam.columns) || !Array.isArray(exam.rows)) {
     return res.status(400).json({ error: 'সঠিক রেজাল্ট শিট ডেটা প্রদান করুন।' });
   }
+  const existing = store.results.exams?.[exam.id] || {};
   const sanitizedColumns = exam.columns.map((c, idx) => {
     const isSubject = Boolean(c?.isSubject);
     const rawFm = Number(c?.fullMarks);
@@ -1769,18 +1830,74 @@ app.post('/api/excel/results/save', requireAdminApi, verifySameOrigin, (req, res
       isOptional: isSubject && Boolean(c?.isOptional),
     };
   });
+  const now = new Date().toISOString();
+  const resolvedPublished = exam.published !== undefined
+    ? Boolean(exam.published)
+    : (existing.published !== undefined ? Boolean(existing.published) : true);
   store.results.exams[exam.id] = {
     ...exam,
+    published: resolvedPublished,
+    publishedAt: resolvedPublished ? (exam.publishedAt || existing.publishedAt || now) : null,
     columns: sanitizedColumns,
     passPercent: Number(exam.passPercent) > 0 ? Number(exam.passPercent) : 33,
     maxPromoteFail: Number(exam.maxPromoteFail) || 0,
     promotionLabel: String(exam.promotionLabel || 'বিশেষ বিবেচনায় প্রমোটেড'),
-    updatedAt: new Date().toISOString(),
+    updatedAt: now,
   };
   store.results.activeExamId = exam.id;
   saveExcelStore(store);
   res.json({
     message: 'রেজাল্ট শিট, GPA ও মেধা তালিকা সংরক্ষণ করা হয়েছে।',
+    state: serializeExcelState(store),
+  });
+});
+
+app.post('/api/excel/results/publish', requireAdminApi, verifySameOrigin, (req, res) => {
+  const store = loadExcelStore();
+  const b = req.body || {};
+  const published = Boolean(b.published);
+  const now = new Date().toISOString();
+  let updatedCount = 0;
+
+  if (b.examId) {
+    const ex = store.results.exams?.[String(b.examId)];
+    if (!ex) {
+      return res.status(404).json({ error: 'নির্বাচিত রেজাল্ট শিট পাওয়া যায়নি।' });
+    }
+    ex.published = published;
+    ex.publishedAt = published ? now : null;
+    ex.updatedAt = now;
+    store.results.activeExamId = ex.id;
+    updatedCount = 1;
+  } else if (b.examName || b.year) {
+    const targetExamKey = normalizeExamMetaKey(b.examName, 'বার্ষিক পরীক্ষা');
+    const targetYearKey = normalizeExamMetaKey(b.year, '২০২৬');
+    for (const ex of Object.values(store.results.exams || {})) {
+      if (!Array.isArray(ex.rows) || ex.rows.length === 0) continue;
+      if (
+        normalizeExamMetaKey(ex.examName, 'বার্ষিক পরীক্ষা') === targetExamKey
+        && normalizeExamMetaKey(ex.year, '২০২৬') === targetYearKey
+      ) {
+        ex.published = published;
+        ex.publishedAt = published ? now : null;
+        ex.updatedAt = now;
+        updatedCount++;
+      }
+    }
+    if (updatedCount === 0) {
+      return res.status(400).json({ error: 'এই পরীক্ষা ও শিক্ষাবর্ষে কোনো আপলোডকৃত শ্রেণি পাওয়া যায়নি।' });
+    }
+  } else {
+    return res.status(400).json({ error: 'প্রকাশের জন্য পরীক্ষা নির্বাচন করুন।' });
+  }
+
+  saveExcelStore(store);
+  res.json({
+    ok: true,
+    updatedCount,
+    message: published
+      ? `${convertToBengali(updatedCount)}টি শ্রেণির ফলাফল প্রকাশ করা হয়েছে।`
+      : `${convertToBengali(updatedCount)}টি শ্রেণির ফলাফল খসড়া অবস্থায় রাখা হয়েছে।`,
     state: serializeExcelState(store),
   });
 });
@@ -2160,14 +2277,18 @@ app.all(['/result', '/result.php', '/view_result.php'], async (req, res) => {
     const normCls = normalizeClassInput(strippedClass);
     selectedClassKey = normCls.key || '';
 
-    // 1) Check uploaded Excel result sheet first
+    // 1) Check uploaded published Excel result sheet first
+    const viewerIsAdminResult = Boolean(getValidAdminSession(req));
     let matchedExcelExam = null;
     if (searchClass.startsWith('excel:')) {
       const eid = searchClass.slice(6);
-      matchedExcelExam = excelStore.results?.exams?.[eid] || null;
+      const candidate = excelStore.results?.exams?.[eid] || null;
+      if (candidate && (isExamPublished(candidate) || (viewerIsAdminResult && Array.isArray(candidate.rows) && candidate.rows.length > 0))) {
+        matchedExcelExam = candidate;
+      }
     } else {
       matchedExcelExam = Object.values(excelStore.results?.exams || {}).find((ex) => {
-        if (!Array.isArray(ex.rows) || ex.rows.length === 0) return false;
+        if (!isExamPublished(ex)) return false;
         if (String(ex.classId) === searchClass) return true;
         const exCls = normalizeClassInput(ex.className || ex.classId || '');
         return Boolean(normCls.key && exCls.key && normCls.key === exCls.key);
