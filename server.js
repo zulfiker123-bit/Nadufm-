@@ -1371,8 +1371,21 @@ app.post('/api/excel/results/save', requireAdminApi, verifySameOrigin, (req, res
   if (!exam || !exam.id || !Array.isArray(exam.columns) || !Array.isArray(exam.rows)) {
     return res.status(400).json({ error: 'সঠিক রেজাল্ট শিট ডেটা প্রদান করুন।' });
   }
+  const sanitizedColumns = exam.columns.map((c, idx) => {
+    const isSubject = Boolean(c?.isSubject);
+    const rawFm = Number(c?.fullMarks);
+    const fullMarks = isSubject ? (rawFm >= 5 && rawFm <= 500 ? rawFm : 100) : 0;
+    return {
+      key: String(c?.key || `col_${idx + 1}`),
+      label: String(c?.label || `কলাম ${idx + 1}`).trim() || `কলাম ${idx + 1}`,
+      isSubject,
+      fullMarks,
+      isOptional: isSubject && Boolean(c?.isOptional),
+    };
+  });
   store.results.exams[exam.id] = {
     ...exam,
+    columns: sanitizedColumns,
     passPercent: Number(exam.passPercent) > 0 ? Number(exam.passPercent) : 33,
     maxPromoteFail: Number(exam.maxPromoteFail) || 0,
     promotionLabel: String(exam.promotionLabel || 'বিশেষ বিবেচনায় প্রমোটেড'),

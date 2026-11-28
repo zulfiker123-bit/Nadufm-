@@ -510,7 +510,7 @@
 
         .subject-marks-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(265px, 1fr));
             gap: 10px;
             margin-bottom: 12px;
         }
@@ -518,25 +518,35 @@
         .subject-mark-item {
             border: 1px solid var(--border);
             border-radius: 9px;
-            padding: 9px 11px;
+            padding: 8px 10px;
             background: var(--surface-subtle);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 8px;
+            gap: 6px;
         }
 
-        .subject-mark-item span {
-            font-size: 0.85rem;
+        .subject-mark-item .sub-name-input {
+            flex: 1;
+            min-width: 105px;
+            height: 32px;
+            padding: 3px 7px;
+            border: 1px solid var(--border-strong);
+            border-radius: 6px;
+            font-size: 0.84rem;
             font-weight: 600;
             color: var(--text);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            background: var(--surface);
+            font-family: inherit;
+        }
+
+        .subject-mark-item .sub-name-input:focus {
+            outline: none;
+            border-color: var(--brand-strong);
         }
 
         .subject-mark-item input[type="number"] {
-            width: 68px;
+            width: 64px;
             height: 32px;
             padding: 2px 6px;
             border: 1px solid var(--border-strong);
@@ -544,6 +554,99 @@
             text-align: center;
             font-size: 0.84rem;
             background: var(--surface);
+        }
+
+        .th-col-edit {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            min-width: 108px;
+        }
+
+        .th-label-input {
+            width: 100%;
+            min-width: 96px;
+            padding: 4px 6px;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            font-size: 0.84rem;
+            font-weight: 600;
+            text-align: center;
+            font-family: inherit;
+        }
+
+        .th-label-input:focus {
+            outline: none;
+            background: #ffffff;
+            color: #0f172a;
+            border-color: #ffffff;
+        }
+
+        .th-sub-controls {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .th-fm-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.92);
+        }
+
+        .th-fm-input {
+            width: 48px;
+            height: 22px;
+            padding: 0 3px;
+            border: 1px solid rgba(255, 255, 255, 0.34);
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.14);
+            color: #ffffff;
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            font-family: inherit;
+        }
+
+        .th-fm-input:focus {
+            outline: none;
+            background: #ffffff;
+            color: #0f172a;
+            border-color: #ffffff;
+        }
+
+        .th-chip-btn {
+            border: 1px solid rgba(255, 255, 255, 0.32);
+            background: rgba(255, 255, 255, 0.12);
+            color: rgba(255, 255, 255, 0.92);
+            border-radius: 5px;
+            font-size: 0.69rem;
+            font-weight: 700;
+            padding: 1px 6px;
+            height: 22px;
+            cursor: pointer;
+            line-height: 1;
+            font-family: inherit;
+        }
+
+        .th-chip-btn:hover {
+            background: rgba(255, 255, 255, 0.24);
+            color: #ffffff;
+        }
+
+        .th-chip-btn.is-opt {
+            background: #facc15;
+            color: #713f12;
+            border-color: #fde047;
         }
 
         /* High-Density Data Table */
@@ -1436,7 +1539,7 @@
                     <button type="button" class="btn btn-amber btn-sm" onclick="bulkPromoteFailed(true)"><i class="fas fa-check-double" aria-hidden="true"></i> সকল ফেলকৃত প্রমোট করুন</button>
                     <button type="button" class="btn btn-outline btn-sm" onclick="bulkPromoteFailed(null)"><i class="fas fa-undo" aria-hidden="true"></i> প্রমোশন রিসেট</button>
                 </div>
-                <div style="font-weight:700; font-size:0.84rem; color:var(--brand); margin-bottom:8px;">বিষয়সমূহের পূর্ণমান:</div>
+                <div style="font-weight:700; font-size:0.84rem; color:var(--brand); margin-bottom:8px;">বিষয়সমূহের নাম ও পূর্ণমান:</div>
                 <div class="subject-marks-grid" id="resultsSubjectsGrid"></div>
                 <div style="font-weight:700; font-size:0.84rem; color:var(--brand); margin:8px 0;">কলাম ফিল্ড ম্যাপিং:</div>
                 <div class="grid-4" id="resultsMappingGrid"></div>
@@ -3066,9 +3169,9 @@
             subGridEl.innerHTML = subCols.length
                 ? subCols.map(({ col, idx }) => `
                     <div class="subject-mark-item">
-                        <span title="${esc(col.label)}">${esc(cleanSubTitle(col.label))}</span>
-                        <input type="number" min="5" max="500" value="${Number(col.fullMarks) || 100}" onchange="updateResultColFM(${idx}, this.value)" aria-label="${esc(col.label)} পূর্ণমান">
-                        <label style="display:inline-flex; align-items:center; gap:3px; font-size:0.74rem; color:#475569; cursor:pointer; margin-left:4px;" title="৪র্থ / ঐচ্ছিক বিষয় হিসেবে চিহ্নিত করুন">
+                        <input type="text" class="sub-name-input" value="${esc(cleanSubTitle(col.label))}" onchange="updateResultColLabel(${idx}, this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" title="বিষয়ের নাম সংশোধন করুন" aria-label="${esc(col.label)} বিষয় নাম">
+                        <input type="number" min="5" max="500" value="${Number(col.fullMarks) || 100}" onchange="updateResultColFM(${idx}, this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" aria-label="${esc(col.label)} পূর্ণমান">
+                        <label style="display:inline-flex; align-items:center; gap:3px; font-size:0.74rem; color:#475569; cursor:pointer; margin-left:2px; white-space:nowrap;" title="৪র্থ / ঐচ্ছিক বিষয় হিসেবে চিহ্নিত করুন">
                             <input type="checkbox" ${col.isOptional ? 'checked' : ''} onchange="toggleResultColOptional(${idx}, this.checked)"> ৪র্থ
                         </label>
                     </div>
@@ -3089,18 +3192,154 @@
         }
     }
 
-    function updateResultColFM(idx, val) {
-        const exam = getActiveExam();
-        exam.columns[idx].fullMarks = Number(val) > 0 ? Number(val) : 100;
+    function formatSubjectColLabelClient(baseTitle, fullMarks, isOptional) {
+        const clean = String(baseTitle || '').trim();
+        if (!clean) return '';
+        const fm = Number(fullMarks) > 0 ? Number(fullMarks) : 100;
+        return `${clean} (${fm})${isOptional ? ' (4th)' : ''}`;
+    }
+
+    function getActiveTableHeadFocus() {
+        const activeEl = document.activeElement;
+        if (activeEl && activeEl.dataset && activeEl.dataset.thCol !== undefined && activeEl.dataset.thField) {
+            return { colIdx: activeEl.dataset.thCol, field: activeEl.dataset.thField };
+        }
+        return null;
+    }
+
+    function syncResultColumnUpdate(nextFocus) {
         markDirty('results', true);
+        renderClassResultUploadGrid();
+        renderResultSubjectsAndMapping();
         renderResultsTableAndStats();
+        if (nextFocus) {
+            const target = document.querySelector(`#resultsTableContainer [data-th-col="${nextFocus.colIdx}"][data-th-field="${nextFocus.field}"]`);
+            if (target) target.focus();
+        }
+    }
+
+    function applyColLabelMut(col, rawVal) {
+        if (!col) return false;
+        const trimmed = String(rawVal ?? '').trim();
+        if (!trimmed) return false;
+        if (!col.isSubject) {
+            col.label = trimmed;
+        } else {
+            const fmMatch = enNum(trimmed).match(/\((\d+(?:\.\d+)?)\)/);
+            if (fmMatch) {
+                const parsedFm = parseFloat(fmMatch[1]);
+                if (parsedFm >= 5 && parsedFm <= 500) col.fullMarks = parsedFm;
+            }
+            if (/\(\s*(?:4th|৪র্থ|ঐচ্ছিক|optional|opt|অতিরিক্ত|extra)\s*\)/i.test(trimmed)) {
+                col.isOptional = true;
+            }
+            const baseTitle = trimmed.replace(/\s*\([^)]*\)/g, '').trim() || cleanSubTitle(col.label) || trimmed;
+            col.fullMarks = Number(col.fullMarks) > 0 ? Number(col.fullMarks) : 100;
+            col.label = formatSubjectColLabelClient(baseTitle, col.fullMarks, col.isOptional);
+        }
+        return true;
+    }
+
+    function applyColFmMut(col, val) {
+        if (!col) return;
+        const parsed = parseFloat(enNum(String(val ?? '')));
+        const fm = (!Number.isNaN(parsed) && parsed >= 5 && parsed <= 500) ? parsed : 100;
+        col.fullMarks = fm;
+        if (col.isSubject) {
+            const baseTitle = String(col.label || '').replace(/\s*\([^)]*\)/g, '').trim() || cleanSubTitle(col.label) || col.label;
+            col.label = formatSubjectColLabelClient(baseTitle, fm, col.isOptional);
+        }
+    }
+
+    function preserveThChipClick(e) {
+        const ae = document.activeElement;
+        if (ae && ae.dataset && ae.dataset.thCol !== undefined && ae.dataset.thField) {
+            e.preventDefault();
+        }
+    }
+
+    function flushPendingThInput() {
+        const ae = document.activeElement;
+        if (!ae || !ae.dataset || ae.dataset.thCol === undefined || !ae.dataset.thField) return;
+        const exam = getActiveExam();
+        const cIdx = Number(ae.dataset.thCol);
+        const col = exam?.columns?.[cIdx];
+        if (!col) return;
+        if (ae.dataset.thField === 'label') {
+            applyColLabelMut(col, ae.value);
+        } else if (ae.dataset.thField === 'fm') {
+            applyColFmMut(col, ae.value);
+        }
+        ae.dataset.flushed = '1';
+    }
+
+    function updateResultColLabel(idx, rawVal, el) {
+        if (el && el.dataset && el.dataset.flushed === '1') {
+            delete el.dataset.flushed;
+            return;
+        }
+        const exam = getActiveExam();
+        const col = exam.columns[idx];
+        if (!col) return;
+        const nextFocus = getActiveTableHeadFocus();
+        if (!applyColLabelMut(col, rawVal)) {
+            renderResultSubjectsAndMapping();
+            renderResultsTableAndStats();
+            return;
+        }
+        syncResultColumnUpdate(nextFocus);
+    }
+
+    function updateResultColFM(idx, val, el) {
+        if (el && el.dataset && el.dataset.flushed === '1') {
+            delete el.dataset.flushed;
+            return;
+        }
+        const exam = getActiveExam();
+        const col = exam.columns[idx];
+        if (!col) return;
+        const nextFocus = getActiveTableHeadFocus();
+        applyColFmMut(col, val);
+        syncResultColumnUpdate(nextFocus);
     }
 
     function toggleResultColOptional(idx, checked) {
+        flushPendingThInput();
         const exam = getActiveExam();
-        exam.columns[idx].isOptional = Boolean(checked);
-        markDirty('results', true);
-        renderResultsTableAndStats();
+        const col = exam.columns[idx];
+        if (!col) return;
+        const nextFocus = getActiveTableHeadFocus();
+        col.isOptional = Boolean(checked);
+        if (col.isSubject) {
+            const baseTitle = String(col.label || '').replace(/\s*\([^)]*\)/g, '').trim() || cleanSubTitle(col.label) || col.label;
+            col.label = formatSubjectColLabelClient(baseTitle, col.fullMarks, col.isOptional);
+        }
+        syncResultColumnUpdate(nextFocus);
+    }
+
+    function toggleResultColSubject(idx) {
+        flushPendingThInput();
+        const exam = getActiveExam();
+        const col = exam.columns[idx];
+        if (!col) return;
+        col.isSubject = !col.isSubject;
+        if (col.isSubject) {
+            const matchFm = enNum(String(col.label || '')).match(/\((\d+(?:\.\d+)?)\)/);
+            const fallbackFm = matchFm ? parseFloat(matchFm[1]) : 100;
+            col.fullMarks = Number(col.fullMarks) > 0 ? Number(col.fullMarks) : (fallbackFm >= 5 && fallbackFm <= 500 ? fallbackFm : 100);
+            const baseTitle = String(col.label || '').replace(/\s*\([^)]*\)/g, '').trim() || col.label;
+            col.label = formatSubjectColLabelClient(baseTitle, col.fullMarks, col.isOptional);
+            if (exam.mapping) {
+                Object.keys(exam.mapping).forEach((mk) => {
+                    if (exam.mapping[mk] === col.key) exam.mapping[mk] = '';
+                });
+            }
+        } else {
+            col.fullMarks = 0;
+            col.isOptional = false;
+            col.label = cleanSubTitle(col.label) || col.label;
+        }
+        syncResultColumnUpdate(null);
     }
 
     function updateResultMapping(fieldKey, colKey) {
@@ -3416,7 +3655,25 @@
                     <thead>
                         <tr>
                             <th>ক্রম</th>
-                            ${exam.columns.map((c) => `<th>${c.isSubject ? `${esc(cleanSubTitle(c.label))} (${bnNum(c.fullMarks || 100)})` : esc(c.label)}</th>`).join('')}
+                            ${exam.columns.map((c, colIdx) => `
+                                <th>
+                                    <div class="th-col-edit">
+                                        <input type="text" class="th-label-input" data-th-col="${colIdx}" data-th-field="label" value="${esc(c.isSubject ? cleanSubTitle(c.label) : c.label)}" onchange="updateResultColLabel(${colIdx}, this.value, this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" title="কলাম বা বিষয়ের নাম ইডিট করুন" aria-label="কলামের নাম">
+                                        <div class="th-sub-controls">
+                                            ${c.isSubject ? `
+                                                <label class="th-fm-wrap" title="পূর্ণমান সংশোধন করুন">
+                                                    <span>পূর্ণমান</span>
+                                                    <input type="number" class="th-fm-input" data-th-col="${colIdx}" data-th-field="fm" min="5" max="500" value="${Number(c.fullMarks) || 100}" onchange="updateResultColFM(${colIdx}, this.value, this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}" aria-label="${esc(cleanSubTitle(c.label))} পূর্ণমান">
+                                                </label>
+                                                <button type="button" class="th-chip-btn ${c.isOptional ? 'is-opt' : ''}" onmousedown="preserveThChipClick(event)" onclick="toggleResultColOptional(${colIdx}, ${!c.isOptional})" title="৪র্থ / ঐচ্ছিক বিষয় হিসেবে চালু বা বন্ধ করুন">${c.isOptional ? '৪র্থ ✓' : '৪র্থ'}</button>
+                                                <button type="button" class="th-chip-btn" onmousedown="preserveThChipClick(event)" onclick="toggleResultColSubject(${colIdx})" title="সাধারণ তথ্য কলামে রূপান্তর করুন">তথ্য</button>
+                                            ` : `
+                                                <button type="button" class="th-chip-btn" onmousedown="preserveThChipClick(event)" onclick="toggleResultColSubject(${colIdx})" title="বিষয় (নম্বর) কলাম হিসেবে গণ্য করুন">+ বিষয়</button>
+                                            `}
+                                        </div>
+                                    </div>
+                                </th>
+                            `).join('')}
                             <th>মোট</th>
                             <th>GPA</th>
                             <th>মেধাক্রম</th>
