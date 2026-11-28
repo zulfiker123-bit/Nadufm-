@@ -216,7 +216,7 @@ function requireAdminApi(req, res, next) {
   next();
 }
 
-app.get('/admin-login', (req, res) => {
+app.get(['/admin-login', '/admin-login.php'], (req, res) => {
   const nextUrl = getSafeNextUrl(req.query.next);
   if (getValidAdminSession(req)) {
     return res.redirect(nextUrl);
@@ -228,7 +228,7 @@ app.get('/admin-login', (req, res) => {
   });
 });
 
-app.post('/admin-login', verifySameOrigin, (req, res) => {
+app.post(['/admin-login', '/admin-login.php'], verifySameOrigin, (req, res) => {
   const nextUrl = getSafeNextUrl(req.body?.next || req.query.next);
   const isEmbedded = req.query.embed === '1' || nextUrl.includes('embed=1');
   const wantsJson = String(req.headers.accept || '').includes('application/json')
@@ -279,7 +279,7 @@ app.post('/admin-login', verifySameOrigin, (req, res) => {
   return res.redirect(nextUrl);
 });
 
-app.post('/admin-logout', verifySameOrigin, (req, res) => {
+app.post(['/admin-logout', '/admin-logout.php'], verifySameOrigin, (req, res) => {
   const cookies = parseCookies(req.headers.cookie);
   const sid = cookies[ADMIN_COOKIE_NAME];
   if (sid) {
@@ -759,12 +759,19 @@ app.get(['/merit-list', '/merit-list.php'], async (req, res) => {
     }
   }
 
+  const resolvedMeritClassKey = matchedExcelExam?.classId
+    ? String(matchedExcelExam.classId)
+    : (Object.prototype.hasOwnProperty.call(classMap, selectedClass)
+      ? selectedClass
+      : (normalizeClassInput(selectedClass.replace(/^excel:(?:exam_class_)?/i, '')).key || ''));
+
   res.render('merit-list', {
     pageTitle: 'শ্রেণি ভিত্তিক মেধা তালিকা - নলতা আহছানিয়া দারুল উলুম ফাজিল মাদ্রাসা',
     classMap,
     uploadedExams,
     uploadedClassIds,
     selectedClass,
+    selectedClassKey: resolvedMeritClassKey,
     selectedExamId: matchedExcelExam ? matchedExcelExam.id : selectedExamId,
     selectedName,
     selectedExamTitle,
@@ -1088,16 +1095,22 @@ app.get(['/admin-admissions', '/admin-admissions.php'], requireAdminPage, (req, 
 app.post('/api/portal/admissions', (req, res) => {
   const portal = loadPortalStore();
   const b = req.body || {};
+  const addrParts = [String(b.village || '').trim(), String(b.union || '').trim(), String(b.upazila || '').trim(), String(b.district || '').trim()].filter(Boolean);
   const item = {
     id: `adm_${Date.now()}`,
     roll_no: String(b.roll_no || '').trim(),
     id_no: String(b.id_no || '').trim(),
+    birth_reg: String(b.birth_reg || '').trim(),
+    dob: String(b.dob || '').trim(),
+    blood_group: String(b.blood_group || '').trim(),
+    gender: String(b.gender || '').trim(),
     name_bn: String(b.name_bn || '').trim(),
     name_en: String(b.name_en || '').trim(),
     student_class: String(b.student_class || '').trim(),
     father_bn: String(b.father_bn || '').trim(),
     mother_bn: String(b.mother_bn || '').trim(),
     mobile: String(b.mobile || '').trim(),
+    address: addrParts.join(', '),
     photo: String(b.base64 || ''),
     createdAt: new Date().toISOString(),
   };
@@ -1700,7 +1713,9 @@ app.all(['/result', '/result.php', '/view_result.php'], async (req, res) => {
   const uploadedExams = getUploadedExamsSummary(excelStore);
   let studentResult = null;
   let selectedClassName = '';
-  let selectedClassValue = '';
+  let selectedClassValue = String(req.query.class || '');
+  let selectedClassKey = '';
+  let searchedRoll = String(req.query.roll || '').trim();
   let selectedExamTitle = '';
   let searchError = '';
 
@@ -1714,9 +1729,12 @@ app.all(['/result', '/result.php', '/view_result.php'], async (req, res) => {
     const searchRollRaw = (hasPostSearch
       ? String(req.body.roll_number || '')
       : String(req.query.roll || '')).trim();
+    searchedRoll = searchRollRaw;
     const searchRollNorm = normalizeRollKey(searchRollRaw);
     selectedClassValue = searchClass;
-    const normCls = normalizeClassInput(searchClass);
+    const strippedClass = searchClass.replace(/^excel:(?:exam_class_)?/i, '');
+    const normCls = normalizeClassInput(strippedClass);
+    selectedClassKey = normCls.key || '';
 
     // 1) Check uploaded Excel result sheet first
     let matchedExcelExam = null;
@@ -1734,6 +1752,7 @@ app.all(['/result', '/result.php', '/view_result.php'], async (req, res) => {
 
     if (matchedExcelExam && Array.isArray(matchedExcelExam.rows) && matchedExcelExam.rows.length > 0) {
       selectedClassName = matchedExcelExam.className || (classMap[matchedExcelExam.classId]?.name || '');
+      selectedClassKey = String(matchedExcelExam.classId || selectedClassKey || '');
       selectedExamTitle = matchedExcelExam.title || `${matchedExcelExam.examName || 'বার্ষিক পরীক্ষা'} (${matchedExcelExam.year || '২০২৬'})`;
       const { evaluatedRows } = computeResultSheet(matchedExcelExam);
       const found = evaluatedRows.find(
@@ -1863,6 +1882,12 @@ app.all(['/result', '/result.php', '/view_result.php'], async (req, res) => {
     if (!studentResult) {
       searchError = 'দুঃখিত! এই রোল নম্বরের কোনো ফলাফল পাওয়া যায়নি।';
     }
+    if (csvClassKey && !selectedClassKey) {
+      selectedClassKey = csvClassKey;
+    }
+  } else if (selectedClassValue) {
+    const preNorm = normalizeClassInput(selectedClassValue.replace(/^excel:(?:exam_class_)?/i, ''));
+    selectedClassKey = preNorm.key || '';
   }
 
   res.render('result', {
@@ -1872,6 +1897,8 @@ app.all(['/result', '/result.php', '/view_result.php'], async (req, res) => {
     studentResult,
     selectedClassName,
     selectedClassValue,
+    selectedClassKey,
+    searchedRoll,
     selectedExamTitle,
     searchError,
     convertToBengali,

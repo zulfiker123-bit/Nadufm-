@@ -336,8 +336,6 @@
     </div>
 </div>
 
-<script src="/vendor/html2pdf.bundle.min.js" defer></script>
-<script src="/doc-export.js" defer></script>
 <script src="/student-picker.js"></script>
 <script>
     const scriptURL = 'https://script.google.com/macros/s/AKfycbxZR0c6PLITftRWpUKe0usjXg-orylIVmTxQ0lYwolDKx1G84wIb_sg8RxDqAoVg7Wh1g/exec';
@@ -483,13 +481,19 @@
         const params = new URLSearchParams(window.location.search);
         const initCls = params.get('class');
         const initRoll = params.get('roll');
+        let resolvedCls = '';
         if (initCls) {
-            admitClassEl.value = initCls;
-            if (ctrl) ctrl.loadRollsForClass(initCls);
+            resolvedCls = pickerLib.resolveClassOptionValue(admitClassEl, initCls);
+            if (resolvedCls) {
+                admitClassEl.value = resolvedCls;
+                if (ctrl) ctrl.loadRollsForClass(resolvedCls);
+            } else if (ctrl) {
+                ctrl.loadRollsForClass(initCls);
+            }
         }
         if (initRoll) {
             admitRollEl.value = initRoll;
-            performAdmitLookup(initCls || admitClassEl.value, initRoll);
+            performAdmitLookup(resolvedCls || admitClassEl.value || initCls || '', initRoll);
         }
     });
 </script>

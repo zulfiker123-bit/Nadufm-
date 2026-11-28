@@ -549,8 +549,6 @@
     </div>
 </div>
 
-<script src="/vendor/html2pdf.bundle.min.js" defer></script>
-<script src="/doc-export.js" defer></script>
 <script src="/student-picker.js"></script>
 <script>
     (function () {
@@ -673,13 +671,19 @@
             const params = new URLSearchParams(window.location.search);
             const initCls = params.get('class');
             const initRoll = params.get('roll');
+            let resolvedCls = '';
             if (initCls) {
-                classEl.value = initCls;
-                if (ctrl) ctrl.loadRollsForClass(initCls);
+                resolvedCls = pickerLib.resolveClassOptionValue(classEl, initCls);
+                if (resolvedCls) {
+                    classEl.value = resolvedCls;
+                    if (ctrl) ctrl.loadRollsForClass(resolvedCls);
+                } else if (ctrl) {
+                    ctrl.loadRollsForClass(initCls);
+                }
             }
             if (initRoll) {
                 rollEl.value = initRoll;
-                fetchAndShowIdCard(initCls || classEl.value, initRoll);
+                fetchAndShowIdCard(resolvedCls || classEl.value || initCls || '', initRoll);
             }
         });
     })();

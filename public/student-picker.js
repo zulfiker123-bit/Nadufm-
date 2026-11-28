@@ -235,11 +235,80 @@
         };
     }
 
+    const CLASS_OPTION_ALIASES = [
+        { key: '0', aliases: ['0', 'শিশু', 'nursery', 'play', 'kg', 'shishu'] },
+        { key: '1', aliases: ['1', '১', '১ম', 'প্রথম', '1st', 'one', 'first'] },
+        { key: '2', aliases: ['2', '২', '২য়', '২য়', 'দ্বিতীয়', 'দ্বিতীয়', '2nd', 'two', 'second'] },
+        { key: '3', aliases: ['3', '৩', '৩য়', '৩য়', 'তৃতীয়', 'তৃতীয়', '3rd', 'three', 'third'] },
+        { key: '4', aliases: ['4', '৪', '৪র্থ', 'চতুর্থ', '4th', 'four', 'fourth'] },
+        { key: '5', aliases: ['5', '৫', '৫ম', 'পঞ্চম', '5th', 'five', 'fifth', 'এবতেদায়ী সমাপনী'] },
+        { key: '6', aliases: ['6', '৬', '৬ষ্ঠ', 'ষষ্ঠ', '6th', 'six', 'sixth'] },
+        { key: '7', aliases: ['7', '৭', '৭ম', 'সপ্তম', '7th', 'seven', 'seventh'] },
+        { key: '8', aliases: ['8', '৮', '৮ম', 'অষ্টম', '8th', 'eight', 'eighth', 'জেডিসি', 'jdc'] },
+        { key: '9', aliases: ['9', '৯', '৯ম', 'নবম', '9th', 'nine', 'ninth'] },
+        { key: '10', aliases: ['10', '১০', '১০ম', 'দশম', 'দাখিল', '10th', 'ten', 'tenth', 'dakhil', 'দাখিল দশম'] },
+        { key: '11', aliases: ['11', '১১', '১১শ', 'আলিম ১ম', 'আলিম ১ম বর্ষ', 'আলিম প্রথম বর্ষ', 'alim 1st', 'alim 1st year'] },
+        { key: '12', aliases: ['12', '১২', '১২শ', 'আলিম ২য়', 'আলিম ২য় বর্ষ', 'আলিম ২য় বর্ষ', 'আলিম ২য়', 'আলিম দ্বিতীয় বর্ষ', 'alim 2nd', 'alim 2nd year'] },
+        { key: 'fazil_1', aliases: ['ফাজিল ১ম', 'ফাজিল ১ম বর্ষ', 'fazil 1st', 'fazil 1st year'] },
+        { key: 'fazil_2', aliases: ['ফাজিল ২য়', 'ফাজিল ২য় বর্ষ', 'ফাজিল ২য় বর্ষ', 'fazil 2nd', 'fazil 2nd year'] },
+        { key: 'fazil_3', aliases: ['ফাজিল ৩য়', 'ফাজিল ৩য় বর্ষ', 'ফাজিল ৩য় বর্ষ', 'fazil 3rd', 'fazil 3rd year'] },
+    ];
+
+    function normalizeClassToken(raw) {
+        return enNum(String(raw || ''))
+            .replace(/শ্রেণি|শ্রেণী|class/gi, '')
+            .replace(/[()]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .toLowerCase();
+    }
+
+    function resolveClassOptionValue(selectEl, rawClass) {
+        if (!selectEl || !rawClass) return '';
+        const raw = String(rawClass).trim();
+        if (!raw) return '';
+        const options = Array.from(selectEl.options || []).filter(function (o) { return Boolean(o.value); });
+
+        // 1. Exact option value match
+        const exact = options.find(function (o) { return o.value === raw; });
+        if (exact) return exact.value;
+
+        // 2. Strip excel: or excel:exam_class_ prefix
+        const stripped = raw.replace(/^excel:(?:exam_class_)?/i, '').trim();
+        const byStripped = options.find(function (o) {
+            return o.value === stripped || o.value.toLowerCase() === stripped.toLowerCase();
+        });
+        if (byStripped) return byStripped.value;
+
+        // 3. Alias canonical key match (e.g. "ষষ্ঠ শ্রেণি", "6", "ষষ্ঠ")
+        const token = normalizeClassToken(stripped);
+        let canonicalKey = '';
+        for (let i = 0; i < CLASS_OPTION_ALIASES.length; i++) {
+            const entry = CLASS_OPTION_ALIASES[i];
+            if (entry.aliases.some(function (al) { return normalizeClassToken(al) === token; })) {
+                canonicalKey = entry.key;
+                break;
+            }
+        }
+        if (canonicalKey) {
+            const byCanon = options.find(function (o) { return o.value === canonicalKey; });
+            if (byCanon) return byCanon.value;
+        }
+
+        // 4. Text / normalized text match
+        const byText = options.find(function (o) {
+            const txt = normalizeClassToken(o.textContent || '');
+            return txt && token && (txt === token || txt.includes(token) || (canonicalKey && txt.includes(canonicalKey)));
+        });
+        return byText ? byText.value : '';
+    }
+
     window.NadufmStudentPicker = {
         bnNum: bnNum,
         enNum: enNum,
         escapeHtml: escapeHtml,
         safePhotoUrl: safePhotoUrl,
+        resolveClassOptionValue: resolveClassOptionValue,
         attachClassRollPicker: attachClassRollPicker,
     };
 })(window);

@@ -395,12 +395,17 @@
                 <% if (isEmbedded) { %><input type="hidden" name="embed" value="1"><% } %>
                 <div class="result-field">
                     <label for="student_class">শিক্ষার্থীর শ্রেণি / পরীক্ষা</label>
+                    <%
+                        const _selVal = typeof selectedClassValue !== 'undefined' ? String(selectedClassValue || '') : '';
+                        const _selKey = typeof selectedClassKey !== 'undefined' ? String(selectedClassKey || '') : '';
+                        const _selRoll = typeof searchedRoll !== 'undefined' ? String(searchedRoll || '') : '';
+                    %>
                     <select id="student_class" name="student_class" required>
-                        <option value="" disabled selected>শ্রেণি বা আপলোডকৃত পরীক্ষা নির্বাচন করুন</option>
+                        <option value="" disabled <%= (!_selVal && !_selKey) ? 'selected' : '' %>>শ্রেণি বা আপলোডকৃত পরীক্ষা নির্বাচন করুন</option>
                         <% if (typeof uploadedExams !== 'undefined' && uploadedExams.length > 0) { %>
                             <optgroup label="শ্রেণি ভিত্তিক আপলোডকৃত এক্সেল ফলাফল">
                                 <% uploadedExams.forEach(function(ex) { %>
-                                    <option value="excel:<%= ex.id %>"><%= ex.dropdownLabel || ex.title %> (<%= convertToBengali(ex.rowCount) %> জন)</option>
+                                    <option value="excel:<%= ex.id %>" <%= (_selVal === 'excel:' + ex.id) ? 'selected' : '' %>><%= ex.dropdownLabel || ex.title %> (<%= convertToBengali(ex.rowCount) %> জন)</option>
                                 <% }); %>
                             </optgroup>
                         <% } %>
@@ -408,8 +413,9 @@
                             <% Object.entries(classMap).forEach(function([k, v]) {
                                 const _cname = String(v.name || '').trim();
                                 const _clsLbl = /(?:শ্রেণি|শ্রেণী)$/.test(_cname) ? _cname : _cname + ' শ্রেণি';
+                                const _isSelectedCls = (_selVal === k) || (!_selVal.startsWith('excel:') && _selKey === k);
                             %>
-                                <option value="<%= k %>"><%= _clsLbl %></option>
+                                <option value="<%= k %>" <%= _isSelectedCls ? 'selected' : '' %>><%= _clsLbl %></option>
                             <% }); %>
                         </optgroup>
                     </select>
@@ -419,7 +425,7 @@
                         <span>রোল নম্বর</span>
                         <span id="resultRollCountBadge" class="id-count-pill"></span>
                     </label>
-                    <input id="roll_number" type="text" name="roll_number" list="resultRollDatalist" placeholder="রোল নম্বর লিখুন (যেমন: 1 বা ১) অথবা তালিকা থেকে বেছে নিন" required>
+                    <input id="roll_number" type="text" name="roll_number" value="<%= _selRoll %>" list="resultRollDatalist" placeholder="রোল নম্বর লিখুন (যেমন: 1 বা ১) অথবা তালিকা থেকে বেছে নিন" required>
                     <datalist id="resultRollDatalist"></datalist>
 
                     <div id="resultRollAutoWrap" class="roll-auto-panel" style="display:none;">
@@ -582,6 +588,17 @@
                 });
             }
 
+            var urlParams = new URLSearchParams(window.location.search);
+            var urlCls = urlParams.get('class');
+            var urlRoll = urlParams.get('roll');
+            if (classEl && !classEl.value && urlCls && typeof picker.resolveClassOptionValue === 'function') {
+                var resolved = picker.resolveClassOptionValue(classEl, urlCls);
+                if (resolved) classEl.value = resolved;
+            }
+            if (rollEl && !rollEl.value && urlRoll) {
+                rollEl.value = urlRoll;
+            }
+
             window.NadufmStudentPicker.attachClassRollPicker({
                 classSelect: classEl,
                 rollInput: rollEl,
@@ -602,7 +619,7 @@
         })();
     </script>
     <% } else { %>
-    <% const _qCls = encodeURIComponent(selectedClassValue || selectedClassName || ''); %>
+    <% const _qCls = encodeURIComponent((typeof selectedClassKey !== 'undefined' && selectedClassKey) ? selectedClassKey : (selectedClassValue || selectedClassName || '')); %>
     <% const _qRoll = encodeURIComponent(studentResult.roll || ''); %>
     <div class="marksheet-controls no-print">
         <div class="marksheet-toolbar">

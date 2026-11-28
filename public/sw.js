@@ -98,7 +98,7 @@ const ADMIN_PATHS = [
   '/excel-studio.php',
 ];
 
-const AUTH_BYPASS_PATHS = ['/admin-login', '/admin-logout'];
+const AUTH_BYPASS_PATHS = ['/admin-login', '/admin-login.php', '/admin-logout', '/admin-logout.php'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

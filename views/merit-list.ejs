@@ -341,6 +341,7 @@
             <% } %>
             <% const _mEmbed = isEmbedded ? '&embed=1' : ''; %>
             <% const _mClsQuery = encodeURIComponent(selectedClass || (selectedExamId ? 'excel:' + selectedExamId : '') || selectedName || ''); %>
+            <% const _mStuClsQuery = encodeURIComponent((typeof selectedClassKey !== 'undefined' && selectedClassKey) ? selectedClassKey : (selectedClass || (selectedExamId ? 'excel:' + selectedExamId : '') || selectedName || '')); %>
             <% _sections.forEach(function(sec) {
                 const _totalStudents = sec.rows.length;
                 const _passedStudents = sec.rows.filter(function(r) { return !r.absent && (r.fail === 0 || r.isPromoted); }).length;
@@ -416,7 +417,7 @@
                                 <td class="no-print">
                                     <div class="merit-doc-links">
                                         <a href="/result.php?class=<%= _mClsQuery %>&roll=<%= _mRoll %><%= _mEmbed %>" class="merit-doc-link" title="মার্কশিট দেখুন">মার্কশিট</a>
-                                        <a href="/student-search.php?class=<%= _mClsQuery %>&roll=<%= _mRoll %>&doc=attestation<%= _mEmbed %>" class="merit-doc-link alt" title="তথ্য, আইডি কার্ড, প্রত্যায়ন ও প্রশংসা পত্র">সনদ ও তথ্য</a>
+                                        <a href="/student-search.php?class=<%= _mStuClsQuery %>&roll=<%= _mRoll %>&doc=attestation<%= _mEmbed %>" class="merit-doc-link alt" title="তথ্য, আইডি কার্ড, প্রত্যায়ন ও প্রশংসা পত্র">সনদ ও তথ্য</a>
                                     </div>
                                 </td>
                             </tr>

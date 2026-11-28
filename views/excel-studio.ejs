@@ -2859,7 +2859,7 @@
 
     async function clearClassResult(classId, ev) {
         if (ev) ev.stopPropagation();
-        const ex = getActiveExam && getExamForClass(classId);
+        const ex = getExamForClass(classId);
         if (!ex || !(ex.rows || []).length) return;
         try {
             if (window.NadufmOffline) {
