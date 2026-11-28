@@ -35,8 +35,8 @@
         <h2 style="text-align: center; color: green; margin-top: 20px;">গভর্নিং বডি</h2>
 
         <div class="committee-info">
-            <p><strong>মাদ্রাসার নাম:</strong> নলতা আহ্ছানিয়া দারুল উলূম ফাযিল মাদ্রাসা, সাতক্ষীরা।</p>
-            <p><strong>কার্যকাল:</strong> ২৫.০৪.২০২৫ হতে ২৪.০৪.২০২৮ খ্রি: পর্যন্ত (০৩ বছর)।</p>
+            <p><strong>মাদ্রাসার নাম:</strong> <span id="gbInstitutionNameText"><%= governingBody && governingBody.institutionName ? governingBody.institutionName : 'নলতা আহ্ছানিয়া দারুল উলূম ফাযিল মাদ্রাসা, সাতক্ষীরা।' %></span></p>
+            <p><strong>কার্যকাল:</strong> <span id="gbTenureText"><%= governingBody && governingBody.tenure ? governingBody.tenure : '২৫.০৪.২০২৫ হতে ২৪.০৪.২০২৮ খ্রি: পর্যন্ত (০৩ বছর)।' %></span></p>
         </div>
 
         <table class="gb-table">
@@ -47,25 +47,63 @@
                     <th>পদবী</th>
                 </tr>
             </thead>
-            <tbody>
-                <tr><td align="center">১</td><td>আলহাজ্ব মোঃ রফিকুল ইসলাম</td><td>সভাপতি (ভাইস চ্যান্সেলর মহোদয় কর্তৃক মনোনীত)</td></tr>
-                <tr><td align="center">২</td><td>জনাব মোঃ নজরুল ইসলাম</td><td>সহ-সভাপতি</td></tr>
-                <tr><td align="center">৩</td><td>জনাব মোঃ নজরুল ইসলাম</td><td>বিদ্যোৎসাহী প্রতিনিধি (ভাইস চ্যান্সেলর মহোদয় কর্তৃক মনোনীত)</td></tr>
-                <tr><td align="center">৪</td><td>আলহাজ্ব এ, এফ, এম শামছুল হক</td><td>বিদ্যোৎসাহী প্রতিনিধি (বাংলাদেশ মাদ্রাসা শিক্ষা বোর্ড কর্তৃক মনোনীত)</td></tr>
-                <tr><td align="center">৫</td><td>আলহাজ্ব মোঃ ইউনুস</td><td>বিদ্যোৎসাহী প্রতিনিধি (ডি.জি. কর্তৃক মনোনীত)</td></tr>
-                <tr><td align="center">৬</td><td>জনাব মোঃ রমজান আলী</td><td>সদস্য (অভিভাবক প্রতিনিধি)</td></tr>
-                <tr><td align="center">৭</td><td>জনাব মোঃ হাবিবুর রহমান</td><td>সদস্য (অভিভাবক প্রতিনিধি)</td></tr>
-                <tr><td align="center">৮</td><td>জনাব মোঃ আব্দুর রাজ্জাক</td><td>সদস্য (অভিভাবক প্রতিনিধি)</td></tr>
-                <tr><td align="center">৯</td><td>আলহাজ মো: সাইদুর রহমান</td><td>প্রতিষ্ঠাতা সদস্য</td></tr>
-                <tr><td align="center">১০</td><td>আলহাজ্ব মো: আব্দুর রাজ্জাক</td><td>দাতা সদস্য</td></tr>
-                <tr><td align="center">১১</td><td>জনাব মো: ইলিয়াস হোসেন</td><td>সদস্য (শিক্ষক প্রতিনিধি)</td></tr>
-                <tr><td align="center">১২</td><td>জনাব শুভ্র রেজা</td><td>সদস্য (শিক্ষক প্রতিনিধি)</td></tr>
-                <tr><td align="center">১৩</td><td>জনাব মোঃ মারুফ হোসেন</td><td>সদস্য (শিক্ষক প্রতিনিধি)</td></tr>
-                <tr><td align="center">১৪</td><td>জনাব ডাঃ মোঃ হাবিবুর রহমান</td><td>সদস্য (চিকিৎসক)</td></tr>
-                <tr><td align="center">১৫</td><td>অধ্যক্ষ, নলতা আহছানিয়া দারুল উলূম ফাযিল মাদরাসা</td><td>সদস্য সচিব (পদাধিকারবলে)</td></tr>
+            <tbody id="gbMembersBody">
+                <% const gbMembers = (governingBody && Array.isArray(governingBody.members)) ? governingBody.members : []; %>
+                <% if (gbMembers.length === 0) { %>
+                    <tr><td colspan="3" align="center">কোনো সদস্যের তথ্য পাওয়া যায়নি।</td></tr>
+                <% } else { %>
+                    <% gbMembers.forEach(function (member, idx) { %>
+                        <tr>
+                            <td align="center"><%= convertToBengali(idx + 1) %></td>
+                            <td><%= member.name %></td>
+                            <td><%= member.designation %></td>
+                        </tr>
+                    <% }); %>
+                <% } %>
             </tbody>
         </table>
     </section>
 </main>
 
+<script>
+    (function () {
+        function escHtml(s) {
+            return String(s || '').replace(/[&<>"']/g, function (m) {
+                return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m];
+            });
+        }
+        function renderGbSnapshot(gb) {
+            if (!gb || typeof gb !== 'object') return;
+            var nameEl = document.getElementById('gbInstitutionNameText');
+            var tenureEl = document.getElementById('gbTenureText');
+            var tbody = document.getElementById('gbMembersBody');
+            if (nameEl && gb.institutionName) nameEl.textContent = gb.institutionName;
+            if (tenureEl && gb.tenure) tenureEl.textContent = gb.tenure;
+            if (tbody && Array.isArray(gb.members)) {
+                if (!gb.members.length) {
+                    tbody.innerHTML = '<tr><td colspan="3" align="center">কোনো সদস্যের তথ্য পাওয়া যায়নি।</td></tr>';
+                } else {
+                    tbody.innerHTML = gb.members.map(function (m, idx) {
+                        var bn = window.NadufmOffline ? window.NadufmOffline.bnNum(idx + 1) : String(idx + 1);
+                        return '<tr><td align="center">' + escHtml(bn) + '</td><td>' + escHtml(m.name) + '</td><td>' + escHtml(m.designation) + '</td></tr>';
+                    }).join('');
+                }
+            }
+        }
+        function refreshGbFromOffline() {
+            if (!window.NadufmOffline) return;
+            window.NadufmOffline.getSnapshot('bootstrap').then(function (snap) {
+                if (snap && snap.governingBody) renderGbSnapshot(snap.governingBody);
+            });
+        }
+        document.addEventListener('DOMContentLoaded', refreshGbFromOffline);
+        window.addEventListener('nadufm:sync-status', function (ev) {
+            if (ev && ev.detail && (ev.detail.type === 'BOOTSTRAP_REFRESHED' || ev.detail.type === 'QUEUE_UPDATED' || ev.detail.type === 'SYNC_COMPLETED')) {
+                refreshGbFromOffline();
+            }
+        });
+    })();
+</script>
+
 <%- include('partials/footer') %>
+

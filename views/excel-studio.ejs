@@ -508,6 +508,122 @@
         .adv-details summary:hover { color: var(--brand); }
         .adv-details[open] summary { color: var(--brand); margin-bottom: 12px; }
 
+        .result-guide-box {
+            background: linear-gradient(180deg, #f7fcf8 0%, #ffffff 100%);
+            border: 1px solid rgba(21, 128, 61, 0.22);
+            border-radius: 14px;
+            padding: 14px 18px;
+            margin-bottom: 14px;
+        }
+
+        .result-guide-summary {
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            user-select: none;
+        }
+
+        .result-guide-summary::-webkit-details-marker { display: none; }
+
+        .result-guide-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            font-size: 1.02rem;
+            font-weight: 700;
+            color: var(--brand);
+        }
+
+        .result-guide-title i {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            background: #dcfce7;
+            color: var(--brand);
+            display: inline-grid;
+            place-items: center;
+            font-size: 0.92rem;
+            flex-shrink: 0;
+        }
+
+        .result-guide-toggle {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--muted);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .result-guide-box[open] .result-guide-toggle i {
+            transform: rotate(180deg);
+        }
+
+        .result-guide-toggle i {
+            transition: transform 0.16s ease;
+        }
+
+        .result-guide-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(21, 128, 61, 0.14);
+        }
+
+        .result-guide-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .result-guide-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 7px;
+            background: #dcfce7;
+            color: var(--brand);
+            font-size: 0.82rem;
+            font-weight: 700;
+            display: inline-grid;
+            place-items: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .result-guide-body h3 {
+            margin: 0 0 3px 0;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .result-guide-body p {
+            margin: 0;
+            font-size: 0.83rem;
+            line-height: 1.5;
+            color: var(--muted);
+        }
+
+        .result-guide-code {
+            display: inline-block;
+            padding: 0 5px;
+            border-radius: 5px;
+            background: #f1f5f9;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            color: var(--text);
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
         .subject-marks-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(265px, 1fr));
@@ -1484,6 +1600,63 @@
     <!-- TAB 2: RESULTS, AUTO GPA, MERIT & PROMOTE  -->
     <!-- ========================================== -->
     <section id="panel-results" class="tab-panel no-print">
+        <details class="result-guide-box" open>
+            <summary class="result-guide-summary">
+                <span class="result-guide-title">
+                    <i class="fas fa-book-open" aria-hidden="true"></i>
+                    <span>রেজাল্ট তৈরির নির্দেশনা</span>
+                </span>
+                <span class="result-guide-toggle">
+                    <span>নির্দেশনা দেখুন / লুকান</span>
+                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                </span>
+            </summary>
+            <div class="result-guide-grid">
+                <div class="result-guide-item">
+                    <span class="result-guide-num">১</span>
+                    <div class="result-guide-body">
+                        <h3>ফাইল ও কলাম কাঠামো</h3>
+                        <p><span class="result-guide-code">.xlsx</span>, <span class="result-guide-code">.xls</span> বা <span class="result-guide-code">.csv</span> ফাইল ব্যবহার করুন। প্রথম সারিতে <span class="result-guide-code">রোল</span>, <span class="result-guide-code">শিক্ষার্থীর নাম</span>, <span class="result-guide-code">পিতার নাম</span> ও বিষয়গুলো রাখুন; প্রয়োজনে <span class="result-guide-code">বিভাগ</span>, <span class="result-guide-code">মাতার নাম</span>, <span class="result-guide-code">আইডি</span>, <span class="result-guide-code">৪র্থ বিষয়</span> যোগ করা যাবে।</p>
+                    </div>
+                </div>
+                <div class="result-guide-item">
+                    <span class="result-guide-num">২</span>
+                    <div class="result-guide-body">
+                        <h3>বিষয়ের নাম ও পূর্ণমান</h3>
+                        <p>বিষয়ের কলাম হেডিংয়ে নামের শেষে বন্ধনীতে পূর্ণমান লিখুন—যেমন <span class="result-guide-code">বাংলা (100)</span> বা <span class="result-guide-code">আইসিটি (50)</span>। কিছু না থাকলে ডিফল্ট ১০০ ধরা হবে; আপলোডের পরও টেবিলের হেডিং থেকে নাম ও পূর্ণমান সংশোধন করা যাবে।</p>
+                    </div>
+                </div>
+                <div class="result-guide-item">
+                    <span class="result-guide-num">৩</span>
+                    <div class="result-guide-body">
+                        <h3>নম্বর, অনুপস্থিত ও ফাঁকা ঘর</h3>
+                        <p>নম্বর ইংরেজি (<span class="result-guide-code">88</span>) বা বাংলা (<span class="result-guide-code">৮৮</span>) অঙ্কে লেখা যাবে। অনুপস্থিত থাকলে <span class="result-guide-code">A</span>, <span class="result-guide-code">Abs</span> বা <span class="result-guide-code">অনুপস্থিত</span> লিখুন। কোনো শিক্ষার্থীর যে বিষয় নেই সেই ঘর <strong>ফাঁকা</strong> রাখলে তা মার্কশিট ও GPA থেকে বাদ থাকবে।</p>
+                    </div>
+                </div>
+                <div class="result-guide-item">
+                    <span class="result-guide-num">৪</span>
+                    <div class="result-guide-body">
+                        <h3>১ম ও ২য় পত্র একত্রীকরণ</h3>
+                        <p>৬ষ্ঠ–১০ম শ্রেণিতে বাংলা, ইংরেজি, আরবি (ও দাখিলে কুরআন ও হাদিস) এবং আলিম শ্রেণিতে সকল ১ম ও ২য় পত্র স্বয়ংক্রিয়ভাবে একসাথে হিসাব হয়; এছাড়া প্রথম পত্রের শেষে <span class="result-guide-code">+</span> দিলেও পরের কলামের সাথে যুক্ত হবে।</p>
+                    </div>
+                </div>
+                <div class="result-guide-item">
+                    <span class="result-guide-num">৫</span>
+                    <div class="result-guide-body">
+                        <h3>বিভাগ ও ৪র্থ বিষয়</h3>
+                        <p><span class="result-guide-code">বিভাগ</span> কলামে <span class="result-guide-code">বিজ্ঞান</span> বা <span class="result-guide-code">Science</span> লিখলে (অথবা পদার্থ, রসায়ন, জীববিজ্ঞান, উচ্চতর গণিত থাকলে) বিজ্ঞান বিভাগের আলাদা মেধাতালিকা হবে। <span class="result-guide-code">৪র্থ বিষয়</span> কলাম বা হেডিংয়ে <span class="result-guide-code">(4th)</span> / <span class="result-guide-code">(৪র্থ)</span> দিলে বোনাস পয়েন্ট যুক্ত হবে।</p>
+                    </div>
+                </div>
+                <div class="result-guide-item">
+                    <span class="result-guide-num">৬</span>
+                    <div class="result-guide-body">
+                        <h3>সংরক্ষণ ও প্রিন্ট</h3>
+                        <p>নমুনা রেজাল্ট ডাউনলোড করে তথ্য সাজিয়ে শ্রেণি অনুযায়ী আপলোড করুন। আপলোড বা যেকোনো পরিবর্তনের পর অবশ্যই <strong>ফলাফল সংরক্ষণ</strong> বাটনে ক্লিক করুন—তাহলেই মার্কশিট, মেধাতালিকা ও A4 প্রিন্ট আপডেট হবে।</p>
+                    </div>
+                </div>
+            </div>
+        </details>
+
         <div class="card">
             <div class="card-head">
                 <div>

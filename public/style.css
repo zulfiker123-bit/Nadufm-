@@ -704,6 +704,10 @@ main {
     gap: 20px;
 }
 
+main.app-subpage-main {
+    margin-top: 16px;
+}
+
 .app-main-column,
 #notice-section.app-main-column {
     flex: 3;
@@ -2038,6 +2042,10 @@ body.admin-modal-open > *:not(#adminLoginModalBackdrop):not(script) {
     main {
         padding: 0 12px;
         gap: 14px;
+    }
+
+    main.app-subpage-main {
+        margin-top: 12px;
     }
 
     .app-hero-body {
