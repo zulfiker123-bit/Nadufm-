@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>মাদ্রাসা গ্যালারি ব্যবস্থাপনা</title>
+    <link rel="icon" href="/pwa-192x192.png" type="image/png" sizes="192x192">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#15803d">
+    <link rel="stylesheet" href="/fonts.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Kalpurush', sans-serif; background: #f6f8f7; color: #0f172a; padding: 18px; }
+        .wrap { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 360px 1fr; gap: 18px; align-items: start; }
+        .left-stack { display: flex; flex-direction: column; gap: 18px; }
+        .card { background: #fff; border: 1px solid rgba(15,23,42,0.08); border-radius: 14px; padding: 20px; }
+        .card h2 { font-size: 1.06rem; font-weight: 700; color: #14532d; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid rgba(15,23,42,0.08); }
+        .field { margin-bottom: 12px; }
+        .field label { display: block; font-size: 0.86rem; font-weight: 600; color: #334155; margin-bottom: 4px; }
+        .field input, .field select { width: 100%; height: 40px; padding: 0 12px; border: 1px solid rgba(15,23,42,0.14); border-radius: 9px; background: #f8faf9; font-family: inherit; font-size: 0.92rem; outline: none; }
+        .field input[type="file"] { padding: 7px 10px; height: auto; }
+        .field input:focus, .field select:focus { border-color: #15803d; background: #fff; }
+        .hint { font-size: 0.8rem; color: #64748b; margin-top: 4px; }
+        .preview-box { margin-top: 8px; border-radius: 10px; overflow: hidden; border: 1px solid rgba(15,23,42,0.1); display: none; background: #f1f5f9; }
+        .preview-box img { width: 100%; height: 150px; object-fit: cover; display: block; }
+        .btn { min-height: 42px; padding: 0 16px; border: 1px solid transparent; border-radius: 10px; font-family: inherit; font-size: 0.92rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.14s ease, filter 0.14s ease; }
+        .btn:hover { transform: translateY(-1px); filter: brightness(1.04); }
+        .btn:active { transform: translateY(2px); }
+        .btn-primary { width: 100%; background: linear-gradient(180deg, #1ea34d 0%, #15803d 100%); color: #fff; border-color: #146c34; box-shadow: inset 0 1px 0 rgba(255,255,255,0.28), 0 3.5px 0 #0e5427, 0 6px 14px -3px rgba(21,128,61,0.3); }
+        .btn-primary:active { box-shadow: 0 1px 0 #0e5427; }
+        .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+        .gal-item { border: 1px solid rgba(15,23,42,0.1); border-radius: 12px; overflow: hidden; background: #fff; display: flex; flex-direction: column; }
+        .gal-thumb { width: 100%; height: 140px; object-fit: cover; display: block; background: #e2e8f0; }
+        .gal-body { padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; flex: 1; justify-content: space-between; }
+        .gal-caption { font-size: 0.88rem; font-weight: 600; color: #1e293b; line-height: 1.35; }
+        .gal-meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        .gal-badge { font-size: 0.78rem; font-weight: 700; color: #15803d; background: #dcfce7; padding: 2px 8px; border-radius: 999px; }
+        .act-del { padding: 5px 11px; border-radius: 8px; border: 1px solid #fca5a5; font-family: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer; background: linear-gradient(180deg, #fef2f2 0%, #fee2e2 100%); color: #b91c1c; }
+        .status-msg { padding: 9px 12px; border-radius: 9px; font-size: 0.88rem; font-weight: 600; margin-bottom: 12px; display: none; background: #dcfce7; color: #166534; }
+        .status-msg.is-error { background: #fee2e2; color: #b91c1c; }
+        @media (max-width: 920px) { .wrap { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="left-stack">
+            <div class="card">
+                <h2>হোমপেজ ছবি আপলোড (গ্যালারি)</h2>
+                <div id="uploadStatusMsg" class="status-msg"></div>
+                <form id="galleryUploadForm">
+                    <div class="field">
+                        <label for="gFile">ছবি নির্বাচন করুন (ফাইল আপলোড)</label>
+                        <input type="file" id="gFile" name="image" accept="image/png,image/jpeg,image/webp,image/gif">
+                        <div class="hint">JPG, PNG বা WebP (সর্বোচ্চ ১০ মেগাবাইট)</div>
+                        <div id="filePreviewBox" class="preview-box"><img id="filePreviewImg" alt="প্রিভিউ"></div>
+                    </div>
+                    <div class="field">
+                        <label for="gImageUrl">অথবা ছবির লিংক (URL)</label>
+                        <input type="text" id="gImageUrl" placeholder="যেমন: /header.jpg বা https://...">
+                    </div>
+                    <div class="field">
+                        <label for="gCaption">ক্যাপশন / শিরোনাম (ঐচ্ছিক)</label>
+                        <input type="text" id="gCaption" placeholder="যেমন: মাদ্রাসার মূল ভবন">
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="uploadBtn">ছবি গ্যালারিতে যুক্ত করুন</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>ছবি পরিবর্তনের সময় (স্লাইডশো)</h2>
+                <div id="settingsStatusMsg" class="status-msg"></div>
+                <form id="settingsForm">
+                    <div class="field">
+                        <label for="gInterval">কত সেকেন্ড পর পর ছবি পরিবর্তন হবে?</label>
+                        <select id="gInterval">
+                            <option value="10">১০ সেকেন্ড পর পর</option>
+                            <option value="12">১২ সেকেন্ড পর পর</option>
+                            <option value="15">১৫ সেকেন্ড পর পর</option>
+                            <option value="20">২০ সেকেন্ড পর পর</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">সময় সংরক্ষণ করুন</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="toolbar">
+                <h2 style="margin:0; border:none; padding:0;">হোমপেজ ব্যানার ও গ্যালারি (<span id="totalCount">০</span>টি ছবি)</h2>
+            </div>
+            <div id="galleryGrid" class="gallery-grid"></div>
+        </div>
+    </div>
+
+    <script src="/offline-sync.js"></script>
+    <script>
+        let gallery = <%- JSON.stringify(gallery || []) %>;
+        let galleryIntervalSec = <%= Number(galleryIntervalSec || 12) %>;
+
+        function bnNum(v) {
+            const d = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+            return String(v).replace(/[0-9]/g, ch => d[Number(ch)]);
+        }
+
+        function esc(s) {
+            return String(s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+        }
+
+        function showStatus(elId, msg, isError) {
+            const el = document.getElementById(elId);
+            if (!el) return;
+            el.textContent = msg;
+            el.classList.toggle('is-error', Boolean(isError));
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 4000);
+        }
+
+        function renderGallery() {
+            document.getElementById('totalCount').textContent = bnNum(gallery.length);
+            const intervalEl = document.getElementById('gInterval');
+            if (intervalEl) {
+                const validVals = ['10', '12', '15', '20'];
+                const strVal = String(galleryIntervalSec || 12);
+                intervalEl.value = validVals.includes(strVal) ? strVal : '12';
+            }
+
+            const grid = document.getElementById('galleryGrid');
+            if (!gallery.length) {
+                grid.innerHTML = '<p style="color:#64748b; padding:18px 0;">এখনো কোনো ছবি যুক্ত করা হয়নি। বাম পাশ থেকে ছবি আপলোড করুন।</p>';
+                return;
+            }
+            grid.innerHTML = gallery.map((item, idx) => `
+                <div class="gal-item">
+                    <img src="${esc(item.imageUrl)}" alt="${esc(item.caption || 'মাদ্রাসার ছবি')}" class="gal-thumb" onerror="this.src='/header.jpg'">
+                    <div class="gal-body">
+                        <div class="gal-caption">${esc(item.caption || 'মাদ্রাসা প্রাঙ্গণ')}</div>
+                        <div class="gal-meta">
+                            <span class="gal-badge">স্লাইড ${bnNum(idx + 1)}</span>
+                            <button type="button" class="act-del" onclick="deleteGalleryItem('${esc(item.id)}')">ডিলিট</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('gFile').addEventListener('change', function () {
+            const file = this.files && this.files[0];
+            const box = document.getElementById('filePreviewBox');
+            const img = document.getElementById('filePreviewImg');
+            if (!file) {
+                box.style.display = 'none';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function (ev) {
+                img.src = ev.target.result;
+                box.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById('galleryUploadForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('gFile');
+            const urlInput = document.getElementById('gImageUrl');
+            const captionInput = document.getElementById('gCaption');
+            const btn = document.getElementById('uploadBtn');
+
+            const file = fileInput.files && fileInput.files[0];
+            const urlVal = urlInput.value.trim();
+            if (!file && !urlVal) {
+                showStatus('uploadStatusMsg', 'অনুগ্রহ করে একটি ছবি নির্বাচন করুন অথবা ছবির লিংক দিন।', true);
+                return;
+            }
+
+            const formData = new FormData();
+            if (file) formData.append('image', file);
+            if (urlVal) formData.append('imageUrl', urlVal);
+            formData.append('caption', captionInput.value.trim());
+
+            btn.disabled = true;
+            try {
+                const res = await fetch('/api/portal/gallery', {
+                    method: 'POST',
+                    body: formData,
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) {
+                    throw new Error(data.error || 'ছবি আপলোড করা যায়নি।');
+                }
+                gallery = data.gallery || [];
+                galleryIntervalSec = data.galleryIntervalSec || galleryIntervalSec;
+                if (window.NadufmOffline) {
+                    await window.NadufmOffline.updateBootstrap(base => {
+                        base.gallery = gallery;
+                        base.galleryIntervalSec = galleryIntervalSec;
+                        return base;
+                    });
+                }
+                this.reset();
+                document.getElementById('filePreviewBox').style.display = 'none';
+                renderGallery();
+                showStatus('uploadStatusMsg', 'ছবি সফলভাবে গ্যালারিতে যুক্ত হয়েছে এবং হোমপেজে প্রদর্শিত হবে।');
+            } catch (err) {
+                showStatus('uploadStatusMsg', err && err.message ? err.message : 'আপলোড ব্যর্থ হয়েছে।', true);
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('settingsForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const intervalSec = Number(document.getElementById('gInterval').value) || 12;
+            try {
+                const res = await fetch('/api/portal/gallery/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ galleryIntervalSec: intervalSec }),
+                });
+                const data = await res.json();
+                if (!res.ok || !data.ok) {
+                    throw new Error(data.error || 'সময় সংরক্ষণ করা যায়নি।');
+                }
+                galleryIntervalSec = data.galleryIntervalSec;
+                if (window.NadufmOffline) {
+                    await window.NadufmOffline.updateBootstrap(base => {
+                        base.galleryIntervalSec = galleryIntervalSec;
+                        return base;
+                    });
+                }
+                showStatus('settingsStatusMsg', 'স্লাইডশো পরিবর্তনের সময় আপডেট করা হয়েছে।');
+            } catch (err) {
+                showStatus('settingsStatusMsg', err && err.message ? err.message : 'সমস্যা হয়েছে।', true);
+            }
+        });
+
+        async function deleteGalleryItem(id) {
+            try {
+                const res = await fetch('/api/portal/gallery/' + encodeURIComponent(id), { method: 'DELETE' });
+                const data = await res.json();
+                if (!res.ok || !data.ok) {
+                    throw new Error(data.error || 'ছবি মুছে ফেলা যায়নি।');
+                }
+                gallery = data.gallery || [];
+                if (window.NadufmOffline) {
+                    await window.NadufmOffline.updateBootstrap(base => {
+                        base.gallery = gallery;
+                        return base;
+                    });
+                }
+                renderGallery();
+                showStatus('uploadStatusMsg', 'ছবি গ্যালারি থেকে সরানো হয়েছে।');
+            } catch (err) {
+                showStatus('uploadStatusMsg', err && err.message ? err.message : 'ডিলিট করা যায়নি।', true);
+            }
+        }
+
+        renderGallery();
+    </script>
+    <script src="/pwa.js" defer></script>
+</body>
+</html>

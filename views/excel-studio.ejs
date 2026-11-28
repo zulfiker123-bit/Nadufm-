@@ -970,40 +970,43 @@
         }
 
         .inline-ms-card {
-            border: 1px solid #bbf7d0;
-            border-radius: 12px;
+            border: 3px double #14532d;
+            outline: 1px solid #b45309;
+            outline-offset: -6px;
+            border-radius: 6px;
             background: #ffffff;
-            padding: 16px;
+            padding: 18px 20px;
         }
 
         .inline-ms-header {
             text-align: center;
-            border-bottom: 1.5px solid #166534;
+            border-bottom: 2px solid #14532d;
             padding-bottom: 10px;
             margin-bottom: 12px;
         }
 
         .inline-ms-header h4 {
-            margin: 0 0 2px;
+            margin: 0 0 3px;
             color: #14532d;
-            font-size: 1.05rem;
+            font-size: 1.12rem;
+            font-weight: 800;
         }
 
         .inline-ms-header p {
             margin: 0;
-            font-size: 0.83rem;
-            color: var(--muted);
-            font-weight: 600;
+            font-size: 0.85rem;
+            color: #166534;
+            font-weight: 700;
         }
 
         .inline-ms-meta {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
             gap: 8px 14px;
             padding: 10px 12px;
-            background: #f8fafc;
-            border: 1px solid var(--border);
-            border-radius: 9px;
+            background: #f8faf9;
+            border: 1px solid #14532d;
+            border-radius: 4px;
             margin-bottom: 12px;
             font-size: 0.86rem;
             font-variant-numeric: tabular-nums;
@@ -1124,6 +1127,11 @@
             break-after: page;
         }
 
+        .a4-page.is-landscape {
+            width: 297mm;
+            min-height: 210mm;
+        }
+
         .a4-page * {
             font-family: 'Nikosh', 'Kalpurush', sans-serif;
         }
@@ -1134,13 +1142,100 @@
         }
 
         .a4-frame {
-            border: 2px solid #166534;
+            position: relative;
+            border: 3px double #14532d;
+            outline: 1px solid #b45309;
+            outline-offset: -7px;
             padding: 16px 20px;
             flex: 1;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            background: #ffffff;
         }
+
+        .ms-watermark {
+            position: absolute;
+            left: 50%;
+            top: 52%;
+            transform: translate(-50%, -50%);
+            width: 235px;
+            height: 235px;
+            object-fit: contain;
+            opacity: 0.055;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .ms-content-layer { position: relative; z-index: 1; }
+        .ms-board-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #14532d;
+        }
+        .ms-logo-col { width: 76px; flex-shrink: 0; text-align: center; }
+        .ms-logo-col img { width: 62px; height: 62px; object-fit: contain; }
+        .ms-eiin-tag {
+            margin-top: 3px;
+            font-size: 0.68em;
+            font-weight: 700;
+            color: #14532d;
+            border: 1px solid rgba(20, 83, 45, 0.35);
+            background: #f0fdf4;
+            border-radius: 4px;
+            padding: 1px 4px;
+        }
+        .ms-title-col { flex: 1; text-align: center; }
+        .ms-bismillah { font-size: 0.92em; font-weight: 700; color: #14532d; margin-bottom: 2px; }
+        .ms-title-col h2 { margin: 0; color: #14532d; font-size: 1.38em; font-weight: 800; line-height: 1.22; }
+        .ms-title-col p { margin: 2px 0; font-size: 0.88em; font-weight: 600; color: #334155; }
+        .ms-exam-pill {
+            display: inline-block;
+            margin-top: 4px;
+            padding: 2px 12px;
+            background: #f0fdf4;
+            border: 1px solid #166534;
+            border-radius: 4px;
+            color: #14532d;
+            font-size: 0.88em;
+            font-weight: 700;
+        }
+        .grade-chart { border-collapse: collapse; font-size: 0.66em; text-align: center; border: 1px solid #14532d; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+        .grade-chart th { background: #14532d; color: #ffffff; border: 1px solid #14532d; padding: 2px 5px; }
+        .grade-chart td { border: 1px solid rgba(20, 83, 45, 0.45); padding: 1.5px 5px; color: #0f172a; }
+        .ms-transcript-title { text-align: center; margin: 10px 0; }
+        .ms-transcript-title span {
+            display: inline-block;
+            padding: 3px 22px;
+            background: #14532d;
+            color: #ffffff;
+            border: 1.5px solid #b45309;
+            border-radius: 4px;
+            font-size: 0.96em;
+            font-weight: 700;
+        }
+        .ms-student-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border: 1px solid #14532d;
+            background: #f8faf9;
+            margin-bottom: 12px;
+            font-size: 0.92em;
+            font-variant-numeric: tabular-nums;
+        }
+        .ms-info-cell {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            padding: 5px 10px;
+            border-bottom: 1px solid rgba(20, 83, 45, 0.22);
+            border-right: 1px solid rgba(20, 83, 45, 0.22);
+        }
+        .ms-info-cell:nth-child(even) { border-right: none; }
+        .ms-info-lbl { font-weight: 700; color: #14532d; white-space: nowrap; min-width: 82px; }
+        .ms-info-val { font-weight: 700; color: #0f172a; }
 
         .cert-frame {
             position: relative;
@@ -1153,15 +1248,53 @@
             display: flex;
             flex-direction: column;
         }
+        .a4-page.is-landscape .cert-frame {
+            min-height: 186mm;
+            padding: 12px;
+        }
         .trad-cert-ornate-edge {
             position: relative;
             flex: 1;
             border: 1.5px solid #1f2937;
-            padding: 18px 24px 20px 24px;
+            padding: 16px 24px 18px 24px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             background-color: #ffffff;
+        }
+        .a4-page.is-landscape .trad-cert-ornate-edge {
+            padding: 12px 24px 14px 24px;
+        }
+        .a4-page.is-landscape .trad-inst-head {
+            margin-bottom: 4px;
+        }
+        .a4-page.is-landscape .trad-inst-logo {
+            width: 66px;
+            height: 66px;
+        }
+        .a4-page.is-landscape .trad-title-ribbon-row {
+            margin: 6px 0 10px 0;
+        }
+        .a4-page.is-landscape .trad-lines {
+            font-size: 1em;
+            line-height: 1.84;
+        }
+        .a4-page.is-landscape .trad-para {
+            margin-top: 8px;
+            font-size: 0.98em;
+            line-height: 1.65;
+        }
+        .a4-page.is-landscape .trad-para-wish {
+            margin-top: 6px;
+            font-size: 0.98em;
+            line-height: 1.6;
+        }
+        .a4-page.is-landscape .trad-watermark {
+            width: 220px;
+            height: 220px;
+        }
+        .a4-page.is-landscape .trad-sign-footer {
+            margin-top: 20px;
         }
         .trad-cert-border-svg {
             position: absolute;
@@ -1418,43 +1551,54 @@
             border-collapse: collapse;
             font-size: 0.92em;
             font-variant-numeric: tabular-nums;
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
         .a4-ms-table th, .a4-ms-table td {
-            border: 1px solid #166534;
-            padding: 6px 6px;
+            border: 1px solid rgba(20, 83, 45, 0.5);
+            padding: 6.5px 6px;
             text-align: center;
         }
 
         .a4-ms-table th {
-            background: #166534;
+            background: #14532d;
             color: #ffffff;
+            border-bottom: 2px solid #b45309;
+            font-weight: 700;
+        }
+
+        .a4-ms-table tbody tr:nth-child(even) {
+            background: #f8fafc;
         }
 
         .a4-summary-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            border: 1px solid #166534;
+            border: 1.5px solid #14532d;
+            border-radius: 4px;
+            overflow: hidden;
             margin-top: 14px;
             font-weight: 700;
             font-size: 0.92em;
+            background: #f0fdf4;
             font-variant-numeric: tabular-nums;
         }
 
         .a4-summary-grid div {
             padding: 8px 6px;
             text-align: center;
-            border-right: 1px solid #166534;
+            border-right: 1px solid rgba(20, 83, 45, 0.35);
         }
 
         .a4-summary-grid div:last-child { border-right: none; }
 
         .a4-sign-row {
+            position: relative;
+            z-index: 1;
             display: flex;
             justify-content: space-between;
             gap: 16px;
-            margin-top: 48px;
+            margin-top: 44px;
             font-size: 0.9em;
             font-weight: 700;
             color: #14532d;
@@ -1462,13 +1606,13 @@
 
         .a4-sign-box {
             text-align: center;
-            min-width: 140px;
+            min-width: 145px;
         }
 
         .a4-sign-line {
-            border-top: 1px solid #14532d;
+            border-top: 1.4px solid #14532d;
             padding-top: 5px;
-            margin-top: 32px;
+            margin-top: 30px;
         }
 
         .hidden { display: none !important; }
@@ -1494,8 +1638,10 @@
             .doc-preview-panel { background: transparent !important; padding: 0 !important; overflow: visible !important; }
             .a4-pages-stack { gap: 0 !important; display: block !important; }
             .a4-page { box-shadow: none !important; margin: 0 !important; width: 210mm !important; min-height: 297mm !important; }
+            .a4-page.is-landscape { width: 297mm !important; min-height: 210mm !important; }
         }
     </style>
+    <style id="dynamicStudioPrintOrientationStyle"></style>
 </head>
 <body>
 
@@ -1936,7 +2082,7 @@
                             <% } %>
                             <button type="button" class="btn btn-primary" onclick="printA4()"><i class="fas fa-print" aria-hidden="true"></i> সরাসরি প্রিন্ট (A4)</button>
                             <button type="button" id="btnDownloadA4Pdf" class="btn btn-rose" onclick="downloadA4Pdf()"><i class="fas fa-file-pdf" aria-hidden="true"></i> PDF ডাউনলোড</button>
-                            <button type="button" id="btnDownloadA4Word" class="btn btn-blue" onclick="downloadA4Word()"><i class="fas fa-file-word" aria-hidden="true"></i> Word (.doc)</button>
+                            <button type="button" id="btnDownloadA4Word" class="btn btn-blue" onclick="downloadA4Word()"><i class="fas fa-file-word" aria-hidden="true"></i> Word (.docx)</button>
                         </div>
                     </div>
                     <div class="seg-group" id="docQuickSwitcher" role="tablist" aria-label="তাৎক্ষণিক ডকুমেন্ট পরিবর্তন">
@@ -4439,11 +4585,13 @@
         };
     }
 
-    function buildMarksheetPageHtml(ev, exam, style, overrideName, overrideRoll, overrideFather, overrideClass) {
+    function buildMarksheetPageHtml(ev, exam, style, overrideName, overrideRoll, overrideFather, overrideClass, overrideMother, overrideReg) {
         const rawName = overrideName ?? ev.name ?? '—';
         const name = formatStudentNameClient(rawName, Boolean(ev.isScience));
         const roll = overrideRoll ?? ev.roll ?? '—';
         const father = overrideFather ?? ev.father ?? '';
+        const mother = overrideMother ?? ev.mother ?? '';
+        const reg = overrideReg ?? ev.reg ?? ev.id ?? '';
         const cls = overrideClass ?? exam.className ?? '';
         const principalLabel = document.getElementById('fPrincipalLabel').value || 'অধ্যক্ষের স্বাক্ষর';
         const statusColor = ev.isPromoted ? '#b45309' : (ev.failCount > 0 ? '#b91c1c' : '#15803d');
@@ -4451,31 +4599,40 @@
         return `
             <div class="a4-page" style="padding:${style.mTop}mm ${style.mRight}mm ${style.mBottom}mm ${style.mLeft}mm; font-size:${style.fontSize}px;">
                 <div class="a4-frame">
-                    <div>
-                        <div class="a4-inst-header">
-                            <img src="/logo.png" alt="Logo" style="width:62px; height:62px;">
-                            <div class="a4-inst-title">
-                                <h2>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h2>
-                                <p>নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা · EIIN: ১১৮৭৭৮</p>
-                                <p style="color:#14532d; font-weight:700;">${esc(exam.examName || 'বার্ষিক পরীক্ষা')} - ${esc(exam.year || '২০২৬')} | একাডেমিক ট্রান্সক্রিপ্ট</p>
+                    <img src="/logo.png" class="ms-watermark" alt="" aria-hidden="true">
+                    <div class="ms-content-layer">
+                        <div class="ms-board-header">
+                            <div class="ms-logo-col">
+                                <img src="/logo.png" alt="Logo">
+                                <div class="ms-eiin-tag">EIIN: ১১৮৭৭৮</div>
                             </div>
-                            <table style="border-collapse:collapse; font-size:0.7em; text-align:center; border:1px solid #166534;">
-                                <tr><th style="border:1px solid #166534; padding:1px 4px;">LG</th><th style="border:1px solid #166534; padding:1px 4px;">GP</th></tr>
-                                <tr><td style="border:1px solid #166534; padding:1px 4px;">A+</td><td style="border:1px solid #166534; padding:1px 4px;">5.0</td></tr>
-                                <tr><td style="border:1px solid #166534; padding:1px 4px;">A</td><td style="border:1px solid #166534; padding:1px 4px;">4.0</td></tr>
-                                <tr><td style="border:1px solid #166534; padding:1px 4px;">A-</td><td style="border:1px solid #166534; padding:1px 4px;">3.5</td></tr>
-                                <tr><td style="border:1px solid #166534; padding:1px 4px;">B</td><td style="border:1px solid #166534; padding:1px 4px;">3.0</td></tr>
-                                <tr><td style="border:1px solid #166534; padding:1px 4px;">C</td><td style="border:1px solid #166534; padding:1px 4px;">2.0</td></tr>
-                                <tr><td style="border:1px solid #166534; padding:1px 4px;">D</td><td style="border:1px solid #166534; padding:1px 4px;">1.0</td></tr>
-                                <tr><td style="border:1px solid #166534; padding:1px 4px;">F</td><td style="border:1px solid #166534; padding:1px 4px;">0.0</td></tr>
+                            <div class="ms-title-col">
+                                <div class="ms-bismillah">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</div>
+                                <h2>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h2>
+                                <p>নলতা মোবারকনগর, কালিগঞ্জ, সাতক্ষীরা · স্থাপিত: ১৯৮০ খ্রি.</p>
+                                <p class="ms-exam-pill">${esc(exam.examName || 'বার্ষিক পরীক্ষা')} - ${esc(exam.year || '২০২৬')}</p>
+                            </div>
+                            <table class="grade-chart">
+                                <tr><th>নম্বর</th><th>গ্রেড</th><th>জিপি</th></tr>
+                                <tr><td>৮০-১০০</td><td>A+</td><td>৫.০০</td></tr>
+                                <tr><td>৭০-৭৯</td><td>A</td><td>৪.০০</td></tr>
+                                <tr><td>৬০-৬৯</td><td>A-</td><td>৩.৫০</td></tr>
+                                <tr><td>৫০-৫৯</td><td>B</td><td>৩.০০</td></tr>
+                                <tr><td>৪০-৪৯</td><td>C</td><td>২.০০</td></tr>
+                                <tr><td>৩৩-৩৯</td><td>D</td><td>১.০০</td></tr>
+                                <tr><td>০০-৩২</td><td>F</td><td>০.০০</td></tr>
                             </table>
                         </div>
 
-                        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-weight:700; padding:6px 4px; border-bottom:1.5px solid #166534; margin-bottom:10px;">
-                            <span>নাম: ${esc(name)}</span>
-                            ${father ? `<span>পিতা: ${esc(father)}</span>` : ''}
-                            <span>শ্রেণি: ${esc(cls)}</span>
-                            <span>রোল: ${bnNum(roll)}</span>
+                        <div class="ms-transcript-title"><span>একাডেমিক ট্রান্সক্রিপ্ট (নম্বরপত্র)</span></div>
+
+                        <div class="ms-student-grid">
+                            <div class="ms-info-cell"><span class="ms-info-lbl">শিক্ষার্থীর নাম:</span><span class="ms-info-val">${esc(name)}</span></div>
+                            <div class="ms-info-cell"><span class="ms-info-lbl">শ্রেণি:</span><span class="ms-info-val">${esc(cls)}</span></div>
+                            <div class="ms-info-cell"><span class="ms-info-lbl">পিতার নাম:</span><span class="ms-info-val">${esc(father || '—')}</span></div>
+                            <div class="ms-info-cell"><span class="ms-info-lbl">রোল নম্বর:</span><span class="ms-info-val">${bnNum(roll)}</span></div>
+                            <div class="ms-info-cell"><span class="ms-info-lbl">মাতার নাম:</span><span class="ms-info-val">${esc(mother || '—')}</span></div>
+                            <div class="ms-info-cell"><span class="ms-info-lbl">আইডি / রেজিঃ:</span><span class="ms-info-val">${esc(reg || '—')}</span></div>
                         </div>
 
                         <table class="a4-ms-table">
@@ -4684,7 +4841,7 @@
             : 'অধ্যক্ষের স্বাক্ষর';
 
         return `
-            <div class="a4-page" style="padding:${style.mTop}mm ${style.mRight}mm ${style.mBottom}mm ${style.mLeft}mm; font-size:${style.fontSize}px;">
+            <div class="a4-page is-landscape" style="padding:${Math.min(12, style.mTop)}mm ${style.mRight}mm ${Math.min(12, style.mBottom)}mm ${style.mLeft}mm; font-size:${style.fontSize}px;">
                 <div class="cert-frame">
                     <div class="trad-cert-ornate-edge">
                         ${ornateBorderSvg}
@@ -4762,9 +4919,22 @@
         `;
     }
 
+    function isStudioLandscapeDoc(docType) {
+        return docType === 'attestation' || docType === 'testimonial';
+    }
+
+    function syncStudioPrintOrientation(docType) {
+        const styleEl = document.getElementById('dynamicStudioPrintOrientationStyle');
+        if (!styleEl) return;
+        styleEl.textContent = isStudioLandscapeDoc(docType)
+            ? '@media print { @page { size: A4 landscape; margin: 0; } }'
+            : '@media print { @page { size: A4 portrait; margin: 0; } }';
+    }
+
     function renderA4Document() {
         const container = document.getElementById('a4PagesContainer');
         const docType = document.getElementById('docTypeSelect').value;
+        syncStudioPrintOrientation(docType);
         const batchMode = document.getElementById('docBatchMode').value === 'batch';
         const style = getDocStyle();
         const filterClsKey = document.getElementById('docClassFilter')?.value || '';
@@ -4799,7 +4969,7 @@
                     container.innerHTML = computed.evaluatedRows.map((ev) => buildMarksheetPageHtml(ev, exam, style)).join('');
                     return;
                 }
-                container.innerHTML = withRes.map((u) => buildMarksheetPageHtml(u.ev, u.exam, style, u.name, u.roll, u.father, u.cls)).join('');
+                container.innerHTML = withRes.map((u) => buildMarksheetPageHtml(u.ev, u.exam, style, u.name, u.roll, u.father, u.cls, u.mother, u.reg || u.id)).join('');
                 return;
             }
 
@@ -4823,7 +4993,7 @@
                 `;
                 return;
             }
-            container.innerHTML = buildMarksheetPageHtml(ev, activeExamForSheet, style, fName, fRoll, fFather, fClass);
+            container.innerHTML = buildMarksheetPageHtml(ev, activeExamForSheet, style, fName, fRoll, fFather, fClass, fMother, fReg);
             return;
         }
 
@@ -4991,6 +5161,7 @@
         const btn = document.getElementById('btnDownloadA4Pdf');
         if (!container) return;
         const docType = document.getElementById('docTypeSelect').value;
+        const orientation = isStudioLandscapeDoc(docType) ? 'landscape' : 'portrait';
         const filename = `${docType}-a4-${Date.now()}.pdf`;
         if (btn) btn.disabled = true;
         try {
@@ -5001,6 +5172,7 @@
                 element: container,
                 filename,
                 marginMm: 0,
+                orientation,
                 onStatus: (msg, isErr) => {
                     setDocExportStatus(msg, isErr);
                     showToast(msg, isErr);
@@ -5021,30 +5193,8 @@
         if (!container) return;
         const style = getDocStyle();
         const docType = document.getElementById('docTypeSelect').value;
-        const filename = `${docType}-a4-${Date.now()}.doc`;
-        const cssText = `
-            @page Section1 {
-                size: 210mm 297mm;
-                margin: ${style.mTop}mm ${style.mRight}mm ${style.mBottom}mm ${style.mLeft}mm;
-            }
-            div.Section1 {
-                page: Section1;
-                font-family: "Nikosh", "Kalpurush", Arial, sans-serif;
-                font-size: ${style.fontSize}px;
-                color: #0f172a;
-            }
-            .a4-frame { border: 2px solid #166534; padding: 14px 18px; }
-            .cert-frame { border: 3px double #14532d; padding: 20px 24px; }
-            .a4-inst-header { border-bottom: 2px solid #166534; padding-bottom: 8px; margin-bottom: 12px; text-align: center; }
-            .a4-doc-badge { text-align: center; font-size: 1.18em; font-weight: bold; color: #14532d; text-decoration: underline; margin: 12px 0; }
-            .a4-memo-row { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 12px; }
-            .a4-body-text { line-height: 1.85; text-align: justify; }
-            table.a4-ms-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-            table.a4-ms-table th, table.a4-ms-table td { border: 1px solid #166534; padding: 6px; text-align: center; }
-            table.a4-ms-table th { background-color: #166534; color: #ffffff; }
-            .a4-summary-grid { border: 1px solid #166534; padding: 8px; margin-top: 12px; font-weight: bold; }
-            .a4-sign-row { margin-top: 40px; text-align: center; }
-        `;
+        const orientation = isStudioLandscapeDoc(docType) ? 'landscape' : 'portrait';
+        const filename = `${docType}-a4-${Date.now()}.docx`;
         if (btn) btn.disabled = true;
         try {
             if (!window.NadufmExport) {
@@ -5054,7 +5204,8 @@
                 element: container,
                 filename,
                 title: docType,
-                cssText,
+                orientation,
+                marginMm: Number(style.mLeft) || 12,
                 onStatus: (msg, isErr) => {
                     setDocExportStatus(msg, isErr);
                     showToast(msg, isErr);

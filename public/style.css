@@ -284,6 +284,13 @@ marquee {
     z-index: 2;
 }
 
+.app-hero-slides {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
 .app-hero-banner {
     display: block;
     width: 100%;
@@ -292,12 +299,58 @@ marquee {
     object-position: center;
 }
 
+.app-hero-banner-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.9s ease-in-out;
+    pointer-events: none;
+}
+
+.app-hero-banner-slide.is-active {
+    opacity: 1;
+}
+
 .app-hero-banner-scrim {
     position: absolute;
     inset: 0;
     background: linear-gradient(180deg, rgba(15, 23, 42, 0.06) 0%, rgba(15, 23, 42, 0.04) 48%, rgba(15, 36, 23, 0.42) 100%);
     pointer-events: none;
     z-index: 1;
+}
+
+.app-hero-dots {
+    position: absolute;
+    right: 12px;
+    bottom: 11px;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.36);
+    backdrop-filter: blur(4px);
+}
+
+.app-hero-dots[hidden] {
+    display: none;
+}
+
+.app-hero-dot {
+    width: 7px;
+    height: 7px;
+    padding: 0;
+    border: none;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.52);
+    cursor: pointer;
+    transition: width 0.25s ease, background-color 0.25s ease;
+}
+
+.app-hero-dot.is-active {
+    width: 18px;
+    background: #ffffff;
 }
 
 .app-hero-body {

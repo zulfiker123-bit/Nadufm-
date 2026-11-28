@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'nadufm-pwa-v17';
+const CACHE_VERSION = 'nadufm-pwa-v18';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PAGE_CACHE = `${CACHE_VERSION}-pages`;
 const ADMIN_PAGE_CACHE = `${CACHE_VERSION}-admin-pages`;
@@ -71,6 +71,7 @@ const ADMIN_WARM_PAGES = [
   '/add_notice.php?embed=1',
   '/admin-teachers.php?embed=1',
   '/admin-governingbody.php?embed=1',
+  '/admin-gallery.php?embed=1',
   '/admin-academic.php?embed=1',
   '/admin-admissions.php?embed=1',
   '/accounting_entry.php?embed=1',
@@ -90,6 +91,8 @@ const ADMIN_PATHS = [
   '/admin-teachers.php',
   '/admin-governingbody',
   '/admin-governingbody.php',
+  '/admin-gallery',
+  '/admin-gallery.php',
   '/admin-academic',
   '/admin-academic.php',
   '/admin-admissions',

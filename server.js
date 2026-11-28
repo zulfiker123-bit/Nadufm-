@@ -1,8 +1,10 @@
 import express from 'express';
 import crypto from 'node:crypto';
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import multer from 'multer';
+import { buildDocxBuffer } from './data/docxExport.js';
 import {
   classMap,
   convertToBengali,
@@ -421,6 +423,8 @@ app.get(['/', '/index.php'], (req, res) => {
     headlines: getHeadlines(),
     notices: getNoticesForBoard(),
     teachers: carouselTeachers,
+    gallery: portal.gallery || [],
+    galleryIntervalSec: portal.galleryIntervalSec || 12,
   });
 });
 
@@ -507,6 +511,8 @@ app.get('/api/offline/bootstrap', (req, res) => {
     },
     teachers: portal.teachers || [],
     governingBody: portal.governingBody || { institutionName: '', tenure: '', members: [] },
+    gallery: portal.gallery || [],
+    galleryIntervalSec: portal.galleryIntervalSec || 12,
     academic: {
       routines: portal.routines || [],
       syllabus: portal.syllabus || [],
@@ -805,6 +811,7 @@ app.all(['/dashboard', '/dashboard.php', '/admin', '/admin.php', '/admin-panel',
   const excelDocsCount = (store.documents?.rows || []).length;
   const teachersCount = (portal.teachers || []).length;
   const governingBodyCount = (portal.governingBody?.members || []).length;
+  const galleryCount = (portal.gallery || []).length;
   const admissionsCount = (portal.admissions || []).length;
   const routinesCount = (portal.routines || []).length;
   const syllabusCount = (portal.syllabus || []).length;
@@ -927,6 +934,15 @@ app.all(['/dashboard', '/dashboard.php', '/admin', '/admin.php', '/admin-panel',
       icon: 'users',
       tone: 'ic-blue',
       src: '/admin-governingbody.php?embed=1',
+    },
+    {
+      id: 'gallery',
+      category: 'academic',
+      label: 'গ্যালারি (হোম ছবি)',
+      meta: `${convertToBengali(galleryCount)}টি ছবি · ${convertToBengali(portal.galleryIntervalSec || 12)} সে. স্লাইড`,
+      icon: 'image',
+      tone: 'ic-amber',
+      src: '/admin-gallery.php?embed=1',
     },
     {
       id: 'routine',
@@ -1134,6 +1150,109 @@ app.delete('/api/portal/governing-body/:id', requireAdminApi, verifySameOrigin, 
   };
   savePortalStore(portal);
   res.json({ ok: true, governingBody: portal.governingBody });
+});
+
+const GALLERY_UPLOAD_DIR = path.join(__dirname, 'public', 'uploads', 'gallery');
+const SAFE_IMAGE_EXT_BY_MIME = {
+  'image/jpeg': '.jpg',
+  'image/jpg': '.jpg',
+  'image/png': '.png',
+  'image/webp': '.webp',
+  'image/gif': '.gif',
+};
+
+function isValidImageSignature(buf, ext) {
+  if (!Buffer.isBuffer(buf) || buf.length < 12) return false;
+  if (ext === '.jpg') return buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff;
+  if (ext === '.png') return buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47;
+  if (ext === '.gif') return buf.slice(0, 4).toString('ascii') === 'GIF8';
+  if (ext === '.webp') return buf.slice(0, 4).toString('ascii') === 'RIFF' && buf.slice(8, 12).toString('ascii') === 'WEBP';
+  return false;
+}
+
+app.get(['/admin-gallery', '/admin-gallery.php'], requireAdminPage, (req, res) => {
+  const portal = loadPortalStore();
+  res.render('admin-gallery', {
+    gallery: portal.gallery || [],
+    galleryIntervalSec: portal.galleryIntervalSec || 12,
+  });
+});
+
+app.post('/api/portal/gallery', requireAdminApi, verifySameOrigin, upload.single('image'), (req, res) => {
+  try {
+    const portal = loadPortalStore();
+    const caption = String(req.body?.caption || '').trim().slice(0, 140);
+    let imageUrl = '';
+
+    if (req.file && req.file.buffer && req.file.buffer.length > 0) {
+      const mime = String(req.file.mimetype || '').toLowerCase();
+      let ext = SAFE_IMAGE_EXT_BY_MIME[mime] || '';
+      if (!ext) {
+        const origExt = path.extname(String(req.file.originalname || '')).toLowerCase();
+        if (['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(origExt)) {
+          ext = origExt === '.jpeg' ? '.jpg' : origExt;
+        }
+      }
+      if (!ext || !isValidImageSignature(req.file.buffer, ext)) {
+        return res.status(400).json({ error: 'সঠিক ছবি ফাইল (JPG, PNG, WEBP বা GIF) আপলোড করুন।' });
+      }
+      fs.mkdirSync(GALLERY_UPLOAD_DIR, { recursive: true });
+      const fileName = `gal_${Date.now()}_${crypto.randomBytes(4).toString('hex')}${ext}`;
+      fs.writeFileSync(path.join(GALLERY_UPLOAD_DIR, fileName), req.file.buffer);
+      imageUrl = `/uploads/gallery/${fileName}`;
+    } else if (req.body?.imageUrl) {
+      const sanitized = sanitizeImageUrl(req.body.imageUrl);
+      if (!sanitized || sanitized === '/logo.png') {
+        return res.status(400).json({ error: 'সঠিক ছবির লিংক বা ফাইল প্রদান করুন।' });
+      }
+      imageUrl = sanitized;
+    } else {
+      return res.status(400).json({ error: 'অনুগ্রহ করে একটি ছবি আপলোড করুন অথবা ছবির লিংক দিন।' });
+    }
+
+    const item = {
+      id: `gal_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`,
+      imageUrl,
+      caption: caption || 'মাদ্রাসা প্রাঙ্গণ',
+      createdAt: new Date().toISOString(),
+    };
+    portal.gallery = [item, ...(Array.isArray(portal.gallery) ? portal.gallery : [])];
+    savePortalStore(portal);
+    res.json({
+      ok: true,
+      gallery: portal.gallery,
+      galleryIntervalSec: portal.galleryIntervalSec || 12,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message || 'ছবি সংরক্ষণ করা যায়নি।' });
+  }
+});
+
+app.post('/api/portal/gallery/settings', requireAdminApi, verifySameOrigin, (req, res) => {
+  const portal = loadPortalStore();
+  const raw = Number(req.body?.galleryIntervalSec);
+  const clamped = Math.max(10, Math.min(20, Math.round(Number.isFinite(raw) ? raw : 12)));
+  portal.galleryIntervalSec = clamped;
+  savePortalStore(portal);
+  res.json({ ok: true, galleryIntervalSec: portal.galleryIntervalSec });
+});
+
+app.delete('/api/portal/gallery/:id', requireAdminApi, verifySameOrigin, (req, res) => {
+  const portal = loadPortalStore();
+  const targetId = String(req.params.id || '');
+  const existing = (portal.gallery || []).find((g) => String(g.id) === targetId);
+  if (existing && typeof existing.imageUrl === 'string' && existing.imageUrl.startsWith('/uploads/gallery/')) {
+    const fileName = path.basename(existing.imageUrl);
+    const fullPath = path.join(GALLERY_UPLOAD_DIR, fileName);
+    try {
+      if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+    } catch {
+      // Ignore unlink failure
+    }
+  }
+  portal.gallery = (portal.gallery || []).filter((g) => String(g.id) !== targetId);
+  savePortalStore(portal);
+  res.json({ ok: true, gallery: portal.gallery });
 });
 
 app.get(['/admin-academic', '/admin-academic.php'], requireAdminPage, (req, res) => {
@@ -1572,22 +1691,47 @@ app.post('/api/excel/export', requireAdminApi, verifySameOrigin, (req, res) => {
   }
 });
 
-app.post('/api/export/word', (req, res) => {
+app.post('/api/export/word', async (req, res) => {
   try {
     const html = String(req.body?.html || '');
-    if (!html.trim()) {
+    const rawPayload = req.body?.payload;
+    let parsedPayload = null;
+    if (typeof rawPayload === 'string' && rawPayload.trim()) {
+      try {
+        parsedPayload = JSON.parse(rawPayload);
+      } catch {
+        parsedPayload = null;
+      }
+    } else if (rawPayload && typeof rawPayload === 'object') {
+      parsedPayload = rawPayload;
+    }
+
+    const pages = parsedPayload && Array.isArray(parsedPayload.pages) ? parsedPayload.pages : null;
+    if ((!pages || !pages.length) && !html.trim()) {
       return res.status(400).send('ডকুমেন্টের কোনো কন্টেন্ট পাওয়া যায়নি।');
     }
-    const safeFilename = String(req.body?.filename || 'document.doc')
+
+    const orientation = (parsedPayload && parsedPayload.orientation) || req.body?.orientation || 'portrait';
+    const title = (parsedPayload && parsedPayload.title) || req.body?.title || 'Document';
+    const marginMm = (parsedPayload && parsedPayload.marginMm) || req.body?.marginMm || 14;
+    const safeFilename = String(req.body?.filename || 'document.docx')
       .replace(/[^a-zA-Z0-9._-]/g, '_')
-      .replace(/\.docx?$/i, '') + '.doc';
-    const docBuffer = Buffer.concat([Buffer.from('\ufeff', 'utf8'), Buffer.from(html, 'utf8')]);
-    res.setHeader('Content-Type', 'application/msword; charset=utf-8');
+      .replace(/\.docx?$/i, '') + '.docx';
+
+    const docBuffer = await buildDocxBuffer({
+      pages,
+      html,
+      orientation,
+      title,
+      marginMm,
+    });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
     res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}"`);
     res.setHeader('Content-Length', String(docBuffer.length));
     res.send(docBuffer);
   } catch (err) {
-    res.status(500).send(err.message || 'Word ফাইল তৈরি ব্যর্থ হয়েছে।');
+    res.status(500).send(err.message || 'Word (.docx) ফাইল তৈরি ব্যর্থ হয়েছে।');
   }
 });
 

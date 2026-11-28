@@ -1,9 +1,124 @@
 <section class="app-hero" aria-label="প্রতিষ্ঠানের পরিচিতি ও যোগাযোগ">
     <div class="app-hero-card">
-        <div class="app-hero-banner-wrap">
-            <img src="/header.jpg" alt="নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা" class="app-hero-banner" referrerpolicy="no-referrer">
+        <div class="app-hero-banner-wrap" id="heroGalleryWrap" data-interval-sec="<%= Number(typeof galleryIntervalSec !== 'undefined' ? galleryIntervalSec : 12) %>">
+            <%
+                const heroSlides = (typeof gallery !== 'undefined' && Array.isArray(gallery) && gallery.length > 0)
+                    ? gallery
+                    : [{ id: 'gal_default', imageUrl: '/header.jpg', caption: 'নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা' }];
+            %>
+            <div class="app-hero-slides" id="heroGallerySlides">
+                <% heroSlides.forEach(function (item, idx) { %>
+                    <img
+                        src="<%= item.imageUrl %>"
+                        alt="<%= item.caption || 'নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা' %>"
+                        class="app-hero-banner app-hero-banner-slide <%= idx === 0 ? 'is-active' : '' %>"
+                        referrerpolicy="no-referrer"
+                    >
+                <% }); %>
+            </div>
             <div class="app-hero-banner-scrim" aria-hidden="true"></div>
+            <div class="app-hero-dots" id="heroGalleryDots" <%= heroSlides.length <= 1 ? 'hidden' : '' %> aria-label="ছবি পরিবর্তন">
+                <% heroSlides.forEach(function (item, idx) { %>
+                    <button type="button" class="app-hero-dot <%= idx === 0 ? 'is-active' : '' %>" data-slide-idx="<%= idx %>" aria-label="ছবি <%= idx + 1 %>"></button>
+                <% }); %>
+            </div>
         </div>
+        <script>
+            (function () {
+                var wrap = document.getElementById('heroGalleryWrap');
+                var slidesEl = document.getElementById('heroGallerySlides');
+                var dotsEl = document.getElementById('heroGalleryDots');
+                if (!wrap || !slidesEl) return;
+
+                var activeIdx = 0;
+                var timerId = null;
+                var intervalSec = Number(wrap.getAttribute('data-interval-sec')) || 12;
+                if (intervalSec < 10) intervalSec = 10;
+                if (intervalSec > 20) intervalSec = 20;
+
+                function goToSlide(idx) {
+                    var imgs = slidesEl.querySelectorAll('.app-hero-banner-slide');
+                    var dots = dotsEl ? dotsEl.querySelectorAll('.app-hero-dot') : [];
+                    if (!imgs.length) return;
+                    activeIdx = ((idx % imgs.length) + imgs.length) % imgs.length;
+                    imgs.forEach(function (im, i) { im.classList.toggle('is-active', i === activeIdx); });
+                    dots.forEach(function (dt, i) { dt.classList.toggle('is-active', i === activeIdx); });
+                }
+
+                function restartTimer() {
+                    if (timerId) {
+                        clearInterval(timerId);
+                        timerId = null;
+                    }
+                    var count = slidesEl.querySelectorAll('.app-hero-banner-slide').length;
+                    if (count > 1) {
+                        timerId = setInterval(function () {
+                            goToSlide(activeIdx + 1);
+                        }, intervalSec * 1000);
+                    }
+                }
+
+                function bindDots() {
+                    if (!dotsEl) return;
+                    dotsEl.querySelectorAll('.app-hero-dot').forEach(function (btn) {
+                        btn.addEventListener('click', function () {
+                            var targetIdx = Number(btn.getAttribute('data-slide-idx')) || 0;
+                            goToSlide(targetIdx);
+                            restartTimer();
+                        });
+                    });
+                }
+
+                function applyGallerySnapshot(list, sec) {
+                    if (!Array.isArray(list) || !list.length) return;
+                    if (typeof sec === 'number' && sec >= 10 && sec <= 20) {
+                        intervalSec = sec;
+                    }
+                    slidesEl.innerHTML = '';
+                    list.forEach(function (item, i) {
+                        var img = document.createElement('img');
+                        img.src = item.imageUrl || '/header.jpg';
+                        img.alt = item.caption || 'নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা';
+                        img.className = 'app-hero-banner app-hero-banner-slide' + (i === 0 ? ' is-active' : '');
+                        img.setAttribute('referrerpolicy', 'no-referrer');
+                        slidesEl.appendChild(img);
+                    });
+                    if (dotsEl) {
+                        dotsEl.innerHTML = '';
+                        dotsEl.hidden = list.length <= 1;
+                        list.forEach(function (_, i) {
+                            var b = document.createElement('button');
+                            b.type = 'button';
+                            b.className = 'app-hero-dot' + (i === 0 ? ' is-active' : '');
+                            b.setAttribute('data-slide-idx', String(i));
+                            b.setAttribute('aria-label', 'ছবি ' + (i + 1));
+                            dotsEl.appendChild(b);
+                        });
+                        bindDots();
+                    }
+                    activeIdx = 0;
+                    restartTimer();
+                }
+
+                bindDots();
+                restartTimer();
+
+                function refreshFromOffline() {
+                    if (!window.NadufmOffline) return;
+                    window.NadufmOffline.getSnapshot('bootstrap').then(function (snap) {
+                        if (snap && Array.isArray(snap.gallery) && snap.gallery.length > 0) {
+                            applyGallerySnapshot(snap.gallery, Number(snap.galleryIntervalSec));
+                        }
+                    });
+                }
+                document.addEventListener('DOMContentLoaded', refreshFromOffline);
+                window.addEventListener('nadufm:sync-status', function (ev) {
+                    if (ev && ev.detail && (ev.detail.type === 'BOOTSTRAP_REFRESHED' || ev.detail.type === 'SYNC_COMPLETED')) {
+                        refreshFromOffline();
+                    }
+                });
+            })();
+        </script>
         <div class="app-hero-body">
             <div class="app-hero-identity">
                 <div class="app-hero-logo-frame">

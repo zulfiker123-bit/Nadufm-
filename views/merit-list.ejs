@@ -438,7 +438,7 @@
             </button>
             <button type="button" onclick="downloadMeritWord()" class="merit-btn merit-btn-blue">
                 <%- iconSvg('file-word', 'app-svg-icon', 17) %>
-                <span>Word (.doc)</span>
+                <span>Word (.docx)</span>
             </button>
         </div>
         <div id="meritExportStatus" class="no-print" style="display:none; margin-top:12px; padding:9px 13px; border-radius:9px; font-size:0.88rem; font-weight:600; text-align:center;"></div>
@@ -499,9 +499,9 @@
             if (!window.NadufmExport) throw new Error('এক্সপোর্ট স্ক্রিপ্ট লোড হয়নি।');
             await window.NadufmExport.exportElementToWord({
                 element: el,
-                filename: 'merit-list.doc',
+                filename: 'merit-list.docx',
                 title: 'Merit List',
-                cssText: cssText,
+                orientation: 'portrait',
                 onStatus: setMeritStatus
             });
         } catch (err) {

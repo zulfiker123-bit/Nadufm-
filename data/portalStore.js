@@ -71,6 +71,11 @@ function createDefaultPortalStore() {
         { id: 'gb_15', name: 'অধ্যক্ষ, নলতা আহছানিয়া দারুল উলূম ফাযিল মাদরাসা', designation: 'সদস্য সচিব (পদাধিকারবলে)' },
       ],
     },
+    galleryIntervalSec: 12,
+    gallery: [
+      { id: 'gal_1', imageUrl: '/header.jpg', caption: 'নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা' },
+      { id: 'gal_2', imageUrl: '/g1.jpg', caption: 'মাদ্রাসা একাডেমিক ভবন ও প্রাঙ্গণ' },
+    ],
   };
 }
 
@@ -96,6 +101,10 @@ export function loadPortalStore() {
           members: Array.isArray(rawGb.members) ? rawGb.members : defaults.governingBody.members,
         }
       : defaults.governingBody;
+    const parsedInterval = Number(parsed.galleryIntervalSec);
+    const galleryIntervalSec = Number.isFinite(parsedInterval) && parsedInterval >= 10 && parsedInterval <= 20
+      ? parsedInterval
+      : defaults.galleryIntervalSec;
     return {
       notices: Array.isArray(parsed.notices) ? parsed.notices : defaults.notices,
       teachers: Array.isArray(parsed.teachers) ? parsed.teachers : defaults.teachers,
@@ -106,6 +115,8 @@ export function loadPortalStore() {
       registrations: Array.isArray(parsed.registrations) ? parsed.registrations : defaults.registrations,
       studentStats: Array.isArray(parsed.studentStats) ? parsed.studentStats : defaults.studentStats,
       governingBody,
+      galleryIntervalSec,
+      gallery: Array.isArray(parsed.gallery) && parsed.gallery.length > 0 ? parsed.gallery : defaults.gallery,
     };
   } catch (err) {
     console.warn('Could not read portal store, resetting defaults:', err.message);

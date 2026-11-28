@@ -102,13 +102,31 @@
     });
   }
 
-  async function exportElementToA4Pdf({ element, filename = 'document.pdf', marginMm = 0, onStatus }) {
+  function detectOrientation(element, explicitOrientation) {
+    if (explicitOrientation === 'landscape' || explicitOrientation === 'portrait') {
+      return explicitOrientation;
+    }
+    if (element && element.classList && element.classList.contains('is-landscape')) {
+      return 'landscape';
+    }
+    if (element && element.querySelector && element.querySelector('.is-landscape')) {
+      return 'landscape';
+    }
+    return 'portrait';
+  }
+
+  async function exportElementToA4Pdf({ element, filename = 'document.pdf', marginMm = 0, orientation, onStatus }) {
     if (!element) {
       throw new Error('প্রিভিউ কন্টেন্ট পাওয়া যায়নি।');
     }
     if (typeof onStatus === 'function') {
       onStatus('PDF তৈরি হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন...', false);
     }
+
+    const resolvedOrientation = detectOrientation(element, orientation);
+    const isLandscape = resolvedOrientation === 'landscape';
+    const pageWidthMm = isLandscape ? '297mm' : '210mm';
+    const pageMinHeightMm = isLandscape ? '208mm' : '295mm';
 
     const html2pdfFn = await ensureHtml2Pdf();
     if (document.fonts && document.fonts.ready) {
@@ -119,7 +137,7 @@
     host.style.position = 'fixed';
     host.style.left = '-12000px';
     host.style.top = '0';
-    host.style.width = '210mm';
+    host.style.width = pageWidthMm;
     host.style.background = '#ffffff';
     host.style.color = '#0f172a';
     host.style.margin = '0';
@@ -136,14 +154,22 @@
     if (clone.classList && clone.classList.contains('a4-pages-stack')) {
       clone.style.display = 'block';
       clone.style.gap = '0';
-      clone.style.width = '210mm';
+      clone.style.width = pageWidthMm;
+      clone.style.margin = '0';
+    }
+
+    if (clone.classList && clone.classList.contains('a4-doc-sheet')) {
+      clone.style.width = pageWidthMm;
+      clone.style.minHeight = pageMinHeightMm;
+      clone.style.boxShadow = 'none';
+      clone.style.border = 'none';
       clone.style.margin = '0';
     }
 
     const pages = clone.querySelectorAll ? clone.querySelectorAll('.a4-page') : [];
     pages.forEach((pg, idx) => {
-      pg.style.width = '210mm';
-      pg.style.minHeight = '295mm';
+      pg.style.width = pageWidthMm;
+      pg.style.minHeight = pageMinHeightMm;
       pg.style.boxShadow = 'none';
       pg.style.margin = '0';
       if (idx === pages.length - 1) {
@@ -185,7 +211,7 @@
             scrollX: 0,
             scrollY: 0,
           },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: resolvedOrientation },
           pagebreak: { mode: ['css', 'legacy'] },
         })
         .from(clone)
@@ -216,43 +242,312 @@
     }
   }
 
-  async function exportElementToWord({ element, filename = 'document.doc', title = 'Document', cssText = '', onStatus }) {
+  function cleanText(str) {
+    return String(str || '').replace(/\s+/g, ' ').trim();
+  }
+
+  function extractHeaderFromEl(headerEl) {
+    const h2 = headerEl.querySelector('h2');
+    const title = h2 ? cleanText(h2.textContent) : '';
+    const lines = [];
+    headerEl.querySelectorAll('p').forEach((p) => {
+      const t = cleanText(p.textContent);
+      if (t) lines.push(t);
+    });
+    const gradeTable = headerEl.querySelector('table.grade-chart, table');
+    const gradeRows = [];
+    if (gradeTable && headerEl.tagName === 'TABLE') {
+      const nested = headerEl.querySelector('table');
+      if (nested) {
+        nested.querySelectorAll('tr').forEach((tr) => {
+          const rowVals = Array.from(tr.children).map((c) => cleanText(c.textContent));
+          if (rowVals.length) gradeRows.push(rowVals);
+        });
+      }
+    } else if (gradeTable) {
+      gradeTable.querySelectorAll('tr').forEach((tr) => {
+        const rowVals = Array.from(tr.children).map((c) => cleanText(c.textContent));
+        if (rowVals.length) gradeRows.push(rowVals);
+      });
+    }
+    return { type: 'header', title, lines, gradeRows };
+  }
+
+  function extractTableBlock(tableEl) {
+    const rows = [];
+    tableEl.querySelectorAll('tr').forEach((tr) => {
+      const cells = Array.from(tr.children).map((cell) => {
+        const isHeader = cell.tagName === 'TH';
+        const styleAlign = (cell.style && cell.style.textAlign) || '';
+        const align = styleAlign === 'left' ? 'left' : (styleAlign === 'right' ? 'right' : 'center');
+        return {
+          text: cleanText(cell.textContent),
+          isHeader,
+          align,
+          bold: isHeader || (cell.style && cell.style.fontWeight === '700'),
+        };
+      });
+      if (cells.length) {
+        const bg = (tr.style && tr.style.background) || '';
+        rows.push({
+          isHeader: cells.every((c) => c.isHeader),
+          highlight: bg.includes('fefce8'),
+          cells,
+        });
+      }
+    });
+    return rows.length ? { type: 'table', rows } : null;
+  }
+
+  function extractPageBlocks(root) {
+    const blocks = [];
+    const seenTables = new WeakSet();
+
+    function walk(node) {
+      if (!node || node.nodeType !== 1) return;
+      const el = node;
+      if (el.classList.contains('no-print') || el.tagName === 'SVG' || el.tagName === 'STYLE' || el.tagName === 'SCRIPT') {
+        return;
+      }
+
+      if (el.classList.contains('trad-bismillah')) {
+        blocks.push({ type: 'header', bismillah: cleanText(el.textContent), title: '', lines: [] });
+        return;
+      }
+
+      if (el.classList.contains('trad-inst-head')) {
+        const hdr = extractHeaderFromEl(el);
+        const prev = blocks[blocks.length - 1];
+        if (prev && prev.type === 'header' && prev.bismillah && !prev.title) {
+          prev.title = hdr.title;
+          prev.lines = hdr.lines;
+        } else {
+          blocks.push(hdr);
+        }
+        return;
+      }
+
+      if (el.classList.contains('a4-inst-header') || el.classList.contains('cert-inst-header') || el.classList.contains('header-wrapper') || el.classList.contains('header-table') || el.classList.contains('ms-board-header')) {
+        blocks.push(extractHeaderFromEl(el));
+        el.querySelectorAll('table').forEach((t) => seenTables.add(t));
+        return;
+      }
+
+      if (el.classList.contains('trad-title-ribbon-row')) {
+        const left = el.querySelector('.trad-memo-cell:not(.is-right)');
+        const plaque = el.querySelector('.trad-ribbon-plaque');
+        const right = el.querySelector('.trad-memo-cell.is-right');
+        blocks.push({
+          type: 'rowStrip',
+          cells: [
+            { text: left ? cleanText(left.textContent) : '', bold: true },
+            { text: plaque ? cleanText(plaque.textContent) : '', bold: true, align: 'center', size: 24, color: '14532D' },
+            { text: right ? cleanText(right.textContent) : '', bold: true },
+          ],
+        });
+        return;
+      }
+
+      if (el.classList.contains('form-title') || el.classList.contains('a4-doc-badge') || el.classList.contains('ms-transcript-title')) {
+        blocks.push({ type: 'badge', text: cleanText(el.textContent) });
+        return;
+      }
+
+      if (el.classList.contains('section-title')) {
+        blocks.push({ type: 'heading', text: cleanText(el.textContent) });
+        return;
+      }
+
+      if (el.classList.contains('trad-line-row')) {
+        const lineText = cleanText(el.textContent);
+        if (lineText) blocks.push({ type: 'paragraph', text: lineText });
+        return;
+      }
+
+      if (el.classList.contains('trad-para') || el.classList.contains('trad-para-wish') || el.classList.contains('a4-body-text')) {
+        const paraText = cleanText(el.textContent);
+        if (paraText) blocks.push({ type: 'paragraph', text: paraText, align: 'justify' });
+        return;
+      }
+
+      if (el.classList.contains('info-bar') || el.classList.contains('ms-student-grid')) {
+        const items = [];
+        el.querySelectorAll('.ms-info-cell, span, div').forEach((ch) => {
+          if (ch.parentElement !== el && !ch.classList.contains('ms-info-cell')) return;
+          const lbl = ch.querySelector('.ms-info-lbl');
+          const val = ch.querySelector('.ms-info-val');
+          if (lbl && val) {
+            items.push({ label: cleanText(lbl.textContent).replace(/:$/, ''), value: cleanText(val.textContent) });
+          } else {
+            const t = cleanText(ch.textContent);
+            if (t) items.push({ text: t });
+          }
+        });
+        if (items.length) blocks.push({ type: 'kvGrid', columns: 2, bordered: el.classList.contains('ms-student-grid'), items });
+        return;
+      }
+
+      if (el.classList.contains('doc-row')) {
+        const items = [];
+        el.querySelectorAll('.doc-field').forEach((f) => {
+          const lbl = f.querySelector('.doc-label');
+          const val = f.querySelector('.dotted-line');
+          if (lbl && val) {
+            items.push({ label: cleanText(lbl.textContent).replace(/:$/, ''), value: cleanText(val.textContent) });
+          }
+        });
+        if (items.length) blocks.push({ type: 'kvGrid', columns: Math.min(items.length, 3), items });
+        return;
+      }
+
+      if (el.classList.contains('doc-field')) {
+        const lbl = el.querySelector('.doc-label');
+        const val = el.querySelector('.dotted-line');
+        if (lbl && val) {
+          blocks.push({ type: 'kvGrid', columns: 1, items: [{ label: cleanText(lbl.textContent).replace(/:$/, ''), value: cleanText(val.textContent) }] });
+          return;
+        }
+      }
+
+      if (el.classList.contains('status-box') || el.classList.contains('ms-summary') || el.classList.contains('a4-summary-grid')) {
+        const items = Array.from(el.children)
+          .map((d) => ({ text: cleanText(d.textContent) }))
+          .filter((x) => x.text);
+        if (items.length) blocks.push({ type: 'kvGrid', columns: Math.min(items.length, 4), bordered: true, items });
+        return;
+      }
+
+      if (el.classList.contains('sign-row') || el.classList.contains('signature-area') || el.classList.contains('a4-sign-row') || el.classList.contains('trad-sign-footer')) {
+        const cells = Array.from(el.children)
+          .map((d) => ({ text: cleanText(d.textContent), bold: true, align: 'center', size: 19 }))
+          .filter((x) => x.text);
+        if (cells.length) blocks.push({ type: 'rowStrip', cells, topRule: true, topSpacer: true });
+        return;
+      }
+
+      if (el.tagName === 'TABLE') {
+        if (seenTables.has(el)) return;
+        seenTables.add(el);
+        const tbl = extractTableBlock(el);
+        if (tbl) blocks.push(tbl);
+        return;
+      }
+
+      if (el.tagName === 'H1' || el.tagName === 'H2' || el.tagName === 'H3') {
+        const t = cleanText(el.textContent);
+        if (t) blocks.push({ type: 'heading', text: t, align: 'center' });
+        return;
+      }
+
+      if (el.tagName === 'P') {
+        const t = cleanText(el.textContent);
+        if (t) blocks.push({ type: 'paragraph', text: t });
+        return;
+      }
+
+      for (let i = 0; i < el.children.length; i++) {
+        walk(el.children[i]);
+      }
+    }
+
+    walk(root);
+    return blocks;
+  }
+
+  function extractDocPages(clone) {
+    const a4Pages = clone.querySelectorAll('.a4-page');
+    if (a4Pages.length > 0) {
+      return Array.from(a4Pages).map((pg) => ({
+        blocks: extractPageBlocks(pg),
+      }));
+    }
+    return [{ blocks: extractPageBlocks(clone) }];
+  }
+
+  function toRtfUnicode(str) {
+    let out = '';
+    const s = String(str || '');
+    for (let i = 0; i < s.length; i++) {
+      const code = s.charCodeAt(i);
+      if (code === 92 || code === 123 || code === 125) {
+        out += '\\' + s[i];
+      } else if (code < 128) {
+        out += s[i];
+      } else {
+        out += '\\u' + code + '?';
+      }
+    }
+    return out;
+  }
+
+  function buildRtfFromPages(pages, orientation) {
+    const isLandscape = orientation === 'landscape';
+    const header = isLandscape
+      ? '{\\rtf1\\ansi\\deff0\\landscape\\paperw16838\\paperh11906\\margl720\\margr720\\margt720\\margb720\n'
+      : '{\\rtf1\\ansi\\deff0\\paperw11906\\paperh16838\\margl720\\margr720\\margt720\\margb720\n';
+    const parts = [header];
+    pages.forEach((pg, pgIdx) => {
+      if (pgIdx > 0) parts.push('\\page\n');
+      (pg.blocks || []).forEach((blk) => {
+        if (blk.type === 'header') {
+          if (blk.bismillah) parts.push('\\pard\\qc\\b\\fs24 ' + toRtfUnicode(blk.bismillah) + '\\b0\\par\n');
+          if (blk.title) parts.push('\\pard\\qc\\b\\fs32 ' + toRtfUnicode(blk.title) + '\\b0\\par\n');
+          (blk.lines || []).forEach((ln) => parts.push('\\pard\\qc\\fs22 ' + toRtfUnicode(ln) + '\\par\n'));
+        } else if (blk.type === 'badge' || blk.type === 'heading') {
+          parts.push('\\pard\\qc\\b\\fs26 ' + toRtfUnicode(blk.text) + '\\b0\\par\n');
+        } else if (blk.type === 'paragraph') {
+          parts.push('\\pard\\qj\\fs22 ' + toRtfUnicode(blk.text) + '\\par\n');
+        } else if (blk.type === 'kvGrid') {
+          const line = (blk.items || []).map((it) => it.text || ((it.label ? it.label + ': ' : '') + (it.value || ''))).join('   |   ');
+          if (line) parts.push('\\pard\\ql\\fs22 ' + toRtfUnicode(line) + '\\par\n');
+        } else if (blk.type === 'rowStrip') {
+          const line = (blk.cells || []).map((c) => c.text).filter(Boolean).join('     |     ');
+          if (line) parts.push('\\pard\\qc\\b\\fs22 ' + toRtfUnicode(line) + '\\b0\\par\n');
+        } else if (blk.type === 'table') {
+          (blk.rows || []).forEach((row) => {
+            const line = (row.cells || []).map((c) => c.text).join('  |  ');
+            parts.push('\\pard\\ql\\fs20 ' + toRtfUnicode(line) + '\\par\n');
+          });
+        }
+      });
+    });
+    parts.push('}');
+    return parts.join('');
+  }
+
+  async function exportElementToWord({ element, filename = 'document.docx', title = 'Document', cssText = '', orientation, marginMm = 14, onStatus }) {
     if (!element) {
       throw new Error('ডকুমেন্ট কন্টেন্ট পাওয়া যায়নি।');
     }
     const clone = element.cloneNode(true);
     clone.querySelectorAll('.no-print').forEach((n) => n.remove());
-    await replaceLocalImagesWithDataUri(clone);
 
-    clone.querySelectorAll('.a4-page').forEach((pg, idx) => {
-      pg.style.padding = '0';
-      pg.style.width = 'auto';
-      pg.style.minHeight = 'auto';
-      pg.style.boxShadow = 'none';
-      if (idx > 0) {
-        pg.insertAdjacentHTML('beforebegin', '<br clear="all" style="page-break-before:always;" />');
-      }
-    });
-
-    const fullHtml = [
-      '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">',
-      '<head><meta charset="utf-8"><title>' + String(title || 'Document') + '</title>',
-      '<style>' + cssText + '</style></head>',
-      '<body><div class="Section1">' + clone.innerHTML + '</div></body></html>',
-    ].join('');
+    const resolvedOrientation = detectOrientation(element, orientation);
+    const pages = extractDocPages(clone);
+    const docxFilename = String(filename || 'document.docx').replace(/\.docx?$/i, '') + '.docx';
 
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
-      const blob = new Blob(['\ufeff' + fullHtml], { type: 'application/msword;charset=utf-8' });
-      triggerBlobDownload(blob, filename);
+      const rtf = buildRtfFromPages(pages, resolvedOrientation);
+      const rtfFilename = docxFilename.replace(/\.docx$/i, '.rtf');
+      const blob = new Blob([rtf], { type: 'application/rtf;charset=utf-8' });
+      triggerBlobDownload(blob, rtfFilename);
     } else {
       postDownloadForm('/api/export/word', {
-        html: fullHtml,
-        filename,
+        payload: JSON.stringify({
+          pages,
+          orientation: resolvedOrientation,
+          title: String(title || 'Document'),
+          marginMm: Number(marginMm) || 14,
+        }),
+        html: clone.innerHTML,
+        orientation: resolvedOrientation,
+        title: String(title || 'Document'),
+        filename: docxFilename,
       });
     }
 
     if (typeof onStatus === 'function') {
-      onStatus('Word (.doc) ফাইল ডাউনলোড শুরু হয়েছে।', false);
+      onStatus('Word (.docx) ফাইল ডাউনলোড শুরু হয়েছে।', false);
     }
   }
 

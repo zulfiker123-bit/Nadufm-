@@ -259,7 +259,7 @@
         width: 210mm;
         min-height: 297mm;
         margin: 0 auto;
-        padding: 15mm;
+        padding: 12mm;
         font-family: 'Nikosh', 'Kalpurush', sans-serif;
         font-size: 14px;
         border: 1px solid rgba(15, 23, 42, 0.16);
@@ -274,66 +274,223 @@
     }
 
     .marksheet-inner {
-        border: 2px solid #166534;
-        padding: 18px 20px;
+        position: relative;
+        border: 3px double #14532d;
+        outline: 1px solid #b45309;
+        outline-offset: -7px;
+        padding: 16px 20px;
         flex: 1;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        background: #ffffff;
     }
 
-    .header-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-    .grade-chart { border-collapse: collapse; font-size: 0.72em; text-align: center; border: 1px solid #166534; float: right; font-variant-numeric: tabular-nums; }
-    .grade-chart td, .grade-chart th { border: 1px solid #166534; padding: 2px 5px; }
+    .ms-watermark {
+        position: absolute;
+        left: 50%;
+        top: 52%;
+        transform: translate(-50%, -50%);
+        width: 240px;
+        height: 240px;
+        object-fit: contain;
+        opacity: 0.055;
+        pointer-events: none;
+        z-index: 0;
+    }
 
-    .info-bar {
+    .ms-content-layer {
+        position: relative;
+        z-index: 1;
+    }
+
+    .ms-board-header {
         display: flex;
+        align-items: flex-start;
         justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin: 10px 0 14px 0;
-        font-size: 1em;
+        gap: 12px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #14532d;
+    }
+
+    .ms-logo-col {
+        width: 78px;
+        flex-shrink: 0;
+        text-align: center;
+    }
+
+    .ms-logo-col img {
+        width: 64px;
+        height: 64px;
+        object-fit: contain;
+    }
+
+    .ms-eiin-tag {
+        margin-top: 3px;
+        font-size: 0.72em;
         font-weight: 700;
-        border-top: 1px solid rgba(15, 23, 42, 0.14);
-        border-bottom: 2px solid #166534;
-        padding: 8px 4px;
+        color: #14532d;
+        border: 1px solid rgba(20, 83, 45, 0.35);
+        background: #f0fdf4;
+        border-radius: 4px;
+        padding: 1px 4px;
+    }
+
+    .ms-title-col {
+        flex: 1;
+        text-align: center;
+    }
+
+    .ms-bismillah {
+        font-size: 0.92em;
+        font-weight: 700;
+        color: #14532d;
+        margin-bottom: 2px;
+    }
+
+    .ms-title-col h2 {
+        margin: 0;
+        color: #14532d;
+        font-size: 1.38em;
+        font-weight: 800;
+        line-height: 1.22;
+    }
+
+    .ms-title-col p {
+        margin: 2px 0;
+        font-size: 0.88em;
+        font-weight: 600;
+        color: #334155;
+    }
+
+    .ms-exam-pill {
+        display: inline-block;
+        margin-top: 4px;
+        padding: 2px 12px;
+        background: #f0fdf4;
+        border: 1px solid #166534;
+        border-radius: 4px;
+        color: #14532d;
+        font-size: 0.88em;
+        font-weight: 700;
+    }
+
+    .grade-chart {
+        border-collapse: collapse;
+        font-size: 0.68em;
+        text-align: center;
+        border: 1px solid #14532d;
         font-variant-numeric: tabular-nums;
+        flex-shrink: 0;
+    }
+
+    .grade-chart th {
+        background: #14532d;
+        color: #ffffff;
+        border: 1px solid #14532d;
+        padding: 2px 5px;
+        font-weight: 700;
+    }
+
+    .grade-chart td {
+        border: 1px solid rgba(20, 83, 45, 0.45);
+        padding: 1.5px 5px;
+        color: #0f172a;
+        background: #ffffff;
+    }
+
+    .ms-transcript-title {
+        text-align: center;
+        margin: 10px 0 10px 0;
+    }
+
+    .ms-transcript-title span {
+        display: inline-block;
+        padding: 3px 22px;
+        background: #14532d;
+        color: #ffffff;
+        border: 1.5px solid #b45309;
+        border-radius: 4px;
+        font-size: 0.96em;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+    }
+
+    .ms-student-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border: 1px solid #14532d;
+        background: #f8faf9;
+        margin-bottom: 12px;
+        font-size: 0.92em;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .ms-info-cell {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+        padding: 5px 10px;
+        border-bottom: 1px solid rgba(20, 83, 45, 0.22);
+        border-right: 1px solid rgba(20, 83, 45, 0.22);
+    }
+
+    .ms-info-cell:nth-child(even) {
+        border-right: none;
+    }
+
+    .ms-info-lbl {
+        font-weight: 700;
+        color: #14532d;
+        white-space: nowrap;
+        min-width: 82px;
+    }
+
+    .ms-info-val {
+        font-weight: 700;
+        color: #0f172a;
     }
 
     table.main-table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 0.94em;
+        font-size: 0.92em;
         font-variant-numeric: tabular-nums;
     }
 
     table.main-table th, table.main-table td {
-        border: 1px solid rgba(22, 101, 52, 0.45);
-        padding: 7px 6px;
+        border: 1px solid rgba(20, 83, 45, 0.5);
+        padding: 6.5px 6px;
         text-align: center;
     }
 
     table.main-table th {
-        background: #166534;
+        background: #14532d;
         color: #ffffff;
-        font-weight: 600;
+        font-weight: 700;
+        border-bottom: 2px solid #b45309;
+    }
+
+    table.main-table tbody tr:nth-child(even) {
+        background: #f8fafc;
     }
 
     .status-box {
-        margin-top: 16px;
-        border: 1px solid #166534;
-        border-radius: 6px;
+        margin-top: 14px;
+        border: 1.5px solid #14532d;
+        border-radius: 4px;
         overflow: hidden;
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         font-weight: 700;
-        font-size: 0.95em;
+        font-size: 0.92em;
+        background: #f0fdf4;
         font-variant-numeric: tabular-nums;
     }
 
     .status-box div {
-        padding: 9px 6px;
-        border-right: 1px solid rgba(22, 101, 52, 0.35);
+        padding: 8px 6px;
+        border-right: 1px solid rgba(20, 83, 45, 0.35);
         text-align: center;
     }
 
@@ -343,19 +500,21 @@
     .failed-text { color: #b91c1c; }
 
     .sign-row {
-        margin-top: 52px;
+        position: relative;
+        z-index: 1;
+        margin-top: 44px;
         display: flex;
         justify-content: space-between;
         gap: 12px;
         padding: 0 10px;
-        color: #166534;
+        color: #14532d;
         font-size: 0.88em;
         font-weight: 700;
     }
 
     .sign-row div p {
-        border-top: 1px solid #166534;
-        width: 135px;
+        border-top: 1.4px solid #14532d;
+        width: 145px;
         padding-top: 5px;
         text-align: center;
         margin: 0;
@@ -521,7 +680,7 @@
                         '<div class="marksheet-toolbar">' +
                             '<button type="button" onclick="window.print()" class="r-btn r-btn-primary"><span>সরাসরি প্রিন্ট (A4)</span></button>' +
                             '<button type="button" onclick="downloadOfflineResultPdf()" class="r-btn r-btn-rose"><span>PDF ডাউনলোড</span></button>' +
-                            '<button type="button" onclick="downloadOfflineResultWord()" class="r-btn r-btn-blue"><span>Word (.doc)</span></button>' +
+                            '<button type="button" onclick="downloadOfflineResultWord()" class="r-btn r-btn-blue"><span>Word (.docx)</span></button>' +
                             '<a href="/student-search.php?class=' + qCls + '&roll=' + qRoll + '&doc=profile' + embedSuffix + '" class="r-btn r-btn-secondary"><span>শিক্ষার্থী তথ্য</span></a>' +
                             '<a href="/id-card.php?class=' + qCls + '&roll=' + qRoll + embedSuffix + '" class="r-btn r-btn-secondary"><span>আইডি কার্ড</span></a>' +
                             '<a href="/admit.php?class=' + qCls + '&roll=' + qRoll + embedSuffix + '" class="r-btn r-btn-secondary"><span>এডমিট কার্ড</span></a>' +
@@ -531,34 +690,51 @@
                         '</div>' +
                         '<div class="a4-style-bar">' +
                             '<label class="a4-control-item"><span>ফন্ট সাইজ: <strong id="fontSizeVal">14px</strong></span><input type="range" id="msFontSize" min="11" max="20" value="14" oninput="updateOfflineMsLayout()"></label>' +
-                            '<label class="a4-control-item"><span>পেজ মার্জিন (A4): <strong id="marginVal">15mm</strong></span><input type="range" id="msMargin" min="6" max="28" value="15" oninput="updateOfflineMsLayout()"></label>' +
+                            '<label class="a4-control-item"><span>পেজ মার্জিন (A4): <strong id="marginVal">12mm</strong></span><input type="range" id="msMargin" min="6" max="28" value="12" oninput="updateOfflineMsLayout()"></label>' +
                         '</div>' +
                         '<div id="resultExportStatus" style="display:none; padding:9px 13px; border-radius:9px; font-size:0.88rem; font-weight:600; text-align:center;"></div>' +
                     '</div>' +
-                    '<div class="a4-preview-scroll"><div class="marksheet" id="marksheetA4"><div class="marksheet-inner"><div>' +
-                        '<table class="header-table"><tr>' +
-                            '<td width="72"><img src="/logo.png" alt="Logo" style="width:62px;"></td>' +
-                            '<td style="text-align:center;"><h2 style="margin:0; color:#166534; font-size:1.35em;">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h2><p style="margin:2px 0; font-size:0.92em; font-weight:600;">নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা</p><p style="margin:2px 0; font-size:0.88em; color:#166534; font-weight:700;">' + esc(rs.examTitle || (rs.examName + ' (' + rs.year + ')')) + '</p></td>' +
-                            '<td width="92"><table class="grade-chart"><tr><th>LG</th><th>GP</th></tr><tr><td>A+</td><td>5.0</td></tr><tr><td>A</td><td>4.0</td></tr><tr><td>A-</td><td>3.5</td></tr><tr><td>B</td><td>3.0</td></tr><tr><td>C</td><td>2.0</td></tr><tr><td>D</td><td>1.0</td></tr><tr><td>F</td><td>0.0</td></tr></table></td>' +
-                        '</tr></table>' +
-                        '<div class="info-bar">' +
-                            '<span>নাম: ' + esc(rs.displayName || st.displayName || st.name_bn) + '</span>' +
-                            (st.father_bn ? '<span>পিতা: ' + esc(st.father_bn) + '</span>' : '') +
-                            (st.mother_bn ? '<span>মাতা: ' + esc(st.mother_bn) + '</span>' : '') +
-                            '<span>শ্রেণি: ' + esc(st.class_name || rs.className || '—') + '</span>' +
-                            '<span>রোল: ' + bn(st.roll || rollVal) + '</span>' +
-                            (st.id ? '<span>আইডি: ' + esc(st.id) + '</span>' : '') +
+                    '<div class="a4-preview-scroll"><div class="marksheet" id="marksheetA4"><div class="marksheet-inner">' +
+                        '<img src="/logo.png" class="ms-watermark" alt="" aria-hidden="true">' +
+                        '<div class="ms-content-layer">' +
+                            '<div class="ms-board-header">' +
+                                '<div class="ms-logo-col"><img src="/logo.png" alt="Logo"><div class="ms-eiin-tag">EIIN: ১১৮৭৭৮</div></div>' +
+                                '<div class="ms-title-col">' +
+                                    '<div class="ms-bismillah">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</div>' +
+                                    '<h2>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h2>' +
+                                    '<p>নলতা মোবারকনগর, কালিগঞ্জ, সাতক্ষীরা · স্থাপিত: ১৯৮০ খ্রি.</p>' +
+                                    '<p class="ms-exam-pill">' + esc(rs.examTitle || (rs.examName + ' (' + rs.year + ')')) + '</p>' +
+                                '</div>' +
+                                '<table class="grade-chart">' +
+                                    '<tr><th>নম্বর</th><th>গ্রেড</th><th>জিপি</th></tr>' +
+                                    '<tr><td>৮০-১০০</td><td>A+</td><td>৫.০০</td></tr>' +
+                                    '<tr><td>৭০-৭৯</td><td>A</td><td>৪.০০</td></tr>' +
+                                    '<tr><td>৬০-৬৯</td><td>A-</td><td>৩.৫০</td></tr>' +
+                                    '<tr><td>৫০-৫৯</td><td>B</td><td>৩.০০</td></tr>' +
+                                    '<tr><td>৪০-৪৯</td><td>C</td><td>২.০০</td></tr>' +
+                                    '<tr><td>৩৩-৩৯</td><td>D</td><td>১.০০</td></tr>' +
+                                    '<tr><td>০০-৩২</td><td>F</td><td>০.০০</td></tr>' +
+                                '</table>' +
+                            '</div>' +
+                            '<div class="ms-transcript-title"><span>একাডেমিক ট্রান্সক্রিপ্ট (নম্বরপত্র)</span></div>' +
+                            '<div class="ms-student-grid">' +
+                                '<div class="ms-info-cell"><span class="ms-info-lbl">শিক্ষার্থীর নাম:</span><span class="ms-info-val">' + esc(rs.displayName || st.displayName || st.name_bn) + '</span></div>' +
+                                '<div class="ms-info-cell"><span class="ms-info-lbl">শ্রেণি:</span><span class="ms-info-val">' + esc(st.class_name || rs.className || '—') + '</span></div>' +
+                                '<div class="ms-info-cell"><span class="ms-info-lbl">পিতার নাম:</span><span class="ms-info-val">' + esc(st.father_bn || '—') + '</span></div>' +
+                                '<div class="ms-info-cell"><span class="ms-info-lbl">রোল নম্বর:</span><span class="ms-info-val">' + bn(st.roll || rollVal) + '</span></div>' +
+                                '<div class="ms-info-cell"><span class="ms-info-lbl">মাতার নাম:</span><span class="ms-info-val">' + esc(st.mother_bn || '—') + '</span></div>' +
+                                '<div class="ms-info-cell"><span class="ms-info-lbl">আইডি / রেজিঃ:</span><span class="ms-info-val">' + esc(st.reg_no || st.id || '—') + '</span></div>' +
+                            '</div>' +
+                            '<table class="main-table"><thead><tr><th width="7%">নং</th><th width="39%">বিষয়ের নাম</th><th width="11%">পূর্ণমান</th><th width="16%">প্রাপ্ত নম্বর</th><th width="9%">গড়</th><th width="9%">গ্রেড</th><th width="9%">জিপি</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>' +
+                            '<div class="status-box" style="' + (hasOpt ? 'grid-template-columns: repeat(5, 1fr);' : '') + '">' +
+                                '<div>ফলাফল: <span class="' + cssCls + '">' + esc(rs.statusBn || (failCount === 0 ? 'উত্তীর্ণ' : 'অকৃতকার্য')) + '</span></div>' +
+                                '<div>মোট নম্বর: ' + bn(rs.totalObtained) + '</div>' +
+                                (hasOpt ? '<div>GPA (৪র্থ ছাড়া): ' + bn(Number(rs.gpaWithoutOptional != null ? rs.gpaWithoutOptional : rs.gpa || 0).toFixed(2)) + (optBonus > 0 && failCount === 0 ? '<div style="font-size:0.78em; font-weight:500; color:#475569; margin-top:2px;">বোনাস: +' + bn(optBonus.toFixed(2)) + '</div>' : '') + '</div>' : '') +
+                                '<div>' + (hasOpt ? 'চূড়ান্ত GPA' : 'GPA') + ': ' + bn(Number(rs.gpa || 0).toFixed(2)) + '</div>' +
+                                '<div>মেধাক্রম: ' + (rs.meritRank ? bn(rs.meritRank) + (rs.isScience ? ' (বিজ্ঞান)' : '') : '—') + '</div>' +
+                            '</div>' +
                         '</div>' +
-                        '<table class="main-table"><thead><tr><th width="7%">নং</th><th width="39%">বিষয়ের নাম</th><th width="11%">পূর্ণমান</th><th width="16%">প্রাপ্ত নম্বর</th><th width="9%">গড়</th><th width="9%">গ্রেড</th><th width="9%">জিপি</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>' +
-                        '<div class="status-box" style="' + (hasOpt ? 'grid-template-columns: repeat(5, 1fr);' : '') + '">' +
-                            '<div>ফলাফল: <span class="' + cssCls + '">' + esc(rs.statusBn || (failCount === 0 ? 'উত্তীর্ণ' : 'অকৃতকার্য')) + '</span></div>' +
-                            '<div>মোট নম্বর: ' + bn(rs.totalObtained) + '</div>' +
-                            (hasOpt ? '<div>GPA (৪র্থ ছাড়া): ' + bn(Number(rs.gpaWithoutOptional != null ? rs.gpaWithoutOptional : rs.gpa || 0).toFixed(2)) + (optBonus > 0 && failCount === 0 ? '<div style="font-size:0.78em; font-weight:500; color:#475569; margin-top:2px;">বোনাস: +' + bn(optBonus.toFixed(2)) + '</div>' : '') + '</div>' : '') +
-                            '<div>' + (hasOpt ? 'চূড়ান্ত GPA' : 'GPA') + ': ' + bn(Number(rs.gpa || 0).toFixed(2)) + '</div>' +
-                            '<div>মেধাক্রম: ' + (rs.meritRank ? bn(rs.meritRank) + (rs.isScience ? ' (বিজ্ঞান)' : '') : '—') + '</div>' +
-                        '</div>' +
-                    '</div>' +
-                    '<div class="sign-row"><div><p>শ্রেণি শিক্ষকের স্বাক্ষর</p></div><div><p>অভিভাবকের স্বাক্ষর</p></div><div><p>অধ্যক্ষের স্বাক্ষর</p></div></div>' +
+                        '<div class="sign-row"><div><p>শ্রেণি শিক্ষকের স্বাক্ষর</p></div><div><p>অভিভাবকের স্বাক্ষর</p></div><div><p>অধ্যক্ষের স্বাক্ষর</p></div></div>' +
                     '</div></div></div>';
 
                 window.updateOfflineMsLayout = function () {
@@ -575,7 +751,7 @@
                 };
                 window.downloadOfflineResultWord = function () {
                     var el = document.getElementById('marksheetA4');
-                    if (el && window.NadufmExport) window.NadufmExport.exportElementToWord({ element: el, filename: 'marksheet-roll-' + encodeURIComponent(st.roll || '0') + '.doc', title: 'Marksheet' });
+                    if (el && window.NadufmExport) window.NadufmExport.exportElementToWord({ element: el, filename: 'marksheet-roll-' + encodeURIComponent(st.roll || '0') + '.docx', title: 'Academic Transcript', orientation: 'portrait' });
                 };
             }
 
@@ -633,7 +809,7 @@
             </button>
             <button type="button" onclick="downloadResultWord()" class="r-btn r-btn-blue">
                 <%- iconSvg('file-word', 'app-svg-icon', 17) %>
-                <span>Word (.doc)</span>
+                <span>Word (.docx)</span>
             </button>
             <% const _embedSuffix = isEmbedded ? '&embed=1' : ''; %>
             <a href="/student-search.php?class=<%= _qCls %>&roll=<%= _qRoll %>&doc=profile<%= _embedSuffix %>" class="r-btn r-btn-secondary">
@@ -671,8 +847,8 @@
                 <input type="range" id="msFontSize" min="11" max="20" value="14" oninput="updateMarksheetLayout()">
             </label>
             <label class="a4-control-item">
-                <span>পেজ মার্জিন (A4): <strong id="marginVal">15mm</strong></span>
-                <input type="range" id="msMargin" min="6" max="28" value="15" oninput="updateMarksheetLayout()">
+                <span>পেজ মার্জিন (A4): <strong id="marginVal">12mm</strong></span>
+                <input type="range" id="msMargin" min="6" max="28" value="12" oninput="updateMarksheetLayout()">
             </label>
         </div>
         <div id="resultExportStatus" style="display:none; padding:9px 13px; border-radius:9px; font-size:0.88rem; font-weight:600; text-align:center;"></div>
@@ -681,45 +857,60 @@
     <div class="a4-preview-scroll">
         <div class="marksheet" id="marksheetA4">
             <div class="marksheet-inner">
-                <div>
-                    <table class="header-table">
-                        <tr>
-                            <td width="72"><img src="/logo.png" alt="Logo" style="width:62px;" referrerpolicy="no-referrer"></td>
-                            <td style="text-align: center;">
-                                <h2 style="margin:0; color:#166534; font-size: 1.35em;">নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h2>
-                                <p style="margin:2px 0; font-size: 0.92em; font-weight: 600;">নলতা শরীফ, কালিগঞ্জ, সাতক্ষীরা</p>
-                                <p style="margin:2px 0; font-size: 0.88em; color:#166534; font-weight:700;">
-                                    <%= selectedExamTitle || 'একাডেমিক ট্রান্সক্রিপ্ট' %>
-                                </p>
-                            </td>
-                            <td width="92">
-                                <table class="grade-chart">
-                                    <tr><th>LG</th><th>GP</th></tr>
-                                    <tr><td>A+</td><td>5.0</td></tr>
-                                    <tr><td>A</td><td>4.0</td></tr>
-                                    <tr><td>A-</td><td>3.5</td></tr>
-                                    <tr><td>B</td><td>3.0</td></tr>
-                                    <tr><td>C</td><td>2.0</td></tr>
-                                    <tr><td>D</td><td>1.0</td></tr>
-                                    <tr><td>F</td><td>0.0</td></tr>
-                                </table>
-                            </td>
-                        </tr>
-                    </table>
+                <img src="/logo.png" class="ms-watermark" alt="" aria-hidden="true">
+                <div class="ms-content-layer">
+                    <div class="ms-board-header">
+                        <div class="ms-logo-col">
+                            <img src="/logo.png" alt="Logo" referrerpolicy="no-referrer">
+                            <div class="ms-eiin-tag">EIIN: ১১৮৭৭৮</div>
+                        </div>
+                        <div class="ms-title-col">
+                            <div class="ms-bismillah">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</div>
+                            <h2>নলতা আহছানিয়া দারুল উলুম ফাজিল (ডিগ্রী) মাদ্রাসা</h2>
+                            <p>নলতা মোবারকনগর, কালিগঞ্জ, সাতক্ষীরা · স্থাপিত: ১৯৮০ খ্রি.</p>
+                            <p class="ms-exam-pill">
+                                <%= selectedExamTitle || 'একাডেমিক ট্রান্সক্রিপ্ট' %>
+                            </p>
+                        </div>
+                        <table class="grade-chart">
+                            <tr><th>নম্বর</th><th>গ্রেড</th><th>জিপি</th></tr>
+                            <tr><td>৮০-১০০</td><td>A+</td><td>৫.০০</td></tr>
+                            <tr><td>৭০-৭৯</td><td>A</td><td>৪.০০</td></tr>
+                            <tr><td>৬০-৬৯</td><td>A-</td><td>৩.৫০</td></tr>
+                            <tr><td>৫০-৫৯</td><td>B</td><td>৩.০০</td></tr>
+                            <tr><td>৪০-৪৯</td><td>C</td><td>২.০০</td></tr>
+                            <tr><td>৩৩-৩৯</td><td>D</td><td>১.০০</td></tr>
+                            <tr><td>০০-৩২</td><td>F</td><td>০.০০</td></tr>
+                        </table>
+                    </div>
 
-                    <div class="info-bar">
-                        <span>নাম: <%= studentResult.displayName || studentResult.name %></span>
-                        <% if (studentResult.father) { %>
-                            <span>পিতা: <%= studentResult.father %></span>
-                        <% } %>
-                        <% if (studentResult.mother) { %>
-                            <span>মাতা: <%= studentResult.mother %></span>
-                        <% } %>
-                        <span>শ্রেণি: <%= selectedClassName %></span>
-                        <span>রোল: <%= convertToBengali(studentResult.roll) %></span>
-                        <% if (studentResult.id) { %>
-                            <span>আইডি: <%= studentResult.id %></span>
-                        <% } %>
+                    <div class="ms-transcript-title"><span>একাডেমিক ট্রান্সক্রিপ্ট (নম্বরপত্র)</span></div>
+
+                    <div class="ms-student-grid">
+                        <div class="ms-info-cell">
+                            <span class="ms-info-lbl">শিক্ষার্থীর নাম:</span>
+                            <span class="ms-info-val"><%= studentResult.displayName || studentResult.name %></span>
+                        </div>
+                        <div class="ms-info-cell">
+                            <span class="ms-info-lbl">শ্রেণি:</span>
+                            <span class="ms-info-val"><%= selectedClassName %></span>
+                        </div>
+                        <div class="ms-info-cell">
+                            <span class="ms-info-lbl">পিতার নাম:</span>
+                            <span class="ms-info-val"><%= studentResult.father || '—' %></span>
+                        </div>
+                        <div class="ms-info-cell">
+                            <span class="ms-info-lbl">রোল নম্বর:</span>
+                            <span class="ms-info-val"><%= convertToBengali(studentResult.roll) %></span>
+                        </div>
+                        <div class="ms-info-cell">
+                            <span class="ms-info-lbl">মাতার নাম:</span>
+                            <span class="ms-info-val"><%= studentResult.mother || '—' %></span>
+                        </div>
+                        <div class="ms-info-cell">
+                            <span class="ms-info-lbl">আইডি / রেজিঃ:</span>
+                            <span class="ms-info-val"><%= studentResult.id || '—' %></span>
+                        </div>
                     </div>
 
                     <table class="main-table">
@@ -846,20 +1037,16 @@
             var el = document.getElementById('marksheetA4');
             if (!el) return;
             var fs = document.getElementById('msFontSize').value || '14';
-            var mg = document.getElementById('msMargin').value || '15';
-            var filename = 'marksheet-roll-<%= String(studentResult.roll).replace(/[^a-zA-Z0-9_-]/g, "") %>.doc';
-            var cssText = '@page Section1 { size: 210mm 297mm; margin: ' + mg + 'mm; }' +
-                'div.Section1 { page: Section1; font-family: "Nikosh", "Kalpurush", Arial, sans-serif; font-size: ' + fs + 'px; color: #0f172a; }' +
-                'table { width: 100%; border-collapse: collapse; }' +
-                'table.main-table th, table.main-table td { border: 1px solid #166534; padding: 6px; text-align: center; }' +
-                'table.main-table th { background-color: #166534; color: #ffffff; }';
+            var mg = document.getElementById('msMargin').value || '12';
+            var filename = 'marksheet-roll-<%= String(studentResult.roll).replace(/[^a-zA-Z0-9_-]/g, "") %>.docx';
             try {
                 if (!window.NadufmExport) throw new Error('এক্সপোর্ট স্ক্রিপ্ট লোড হয়নি।');
                 await window.NadufmExport.exportElementToWord({
                     element: el,
                     filename: filename,
-                    title: 'Marksheet',
-                    cssText: cssText,
+                    title: 'Academic Transcript',
+                    orientation: 'portrait',
+                    marginMm: Number(mg) || 12,
                     onStatus: setResultStatus
                 });
             } catch (err) {

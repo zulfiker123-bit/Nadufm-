@@ -310,6 +310,11 @@ export const ICONS = {
     <circle cx="12" cy="12" r="8.8" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="1.85"/>
     <path d="M12 7.8V13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
     <circle cx="12" cy="16.2" r="1.1" fill="currentColor"/>
+  `,
+  'image': `
+    <rect x="3.5" y="4.5" width="17" height="15" rx="2.5" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="1.85"/>
+    <circle cx="8.8" cy="9.5" r="1.7" fill="currentColor" fill-opacity="0.4" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M4.8 17.2L9.8 12.6L13.5 16L16.2 13.4L19.5 16.8" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"/>
   `
 };
 
