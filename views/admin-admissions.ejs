@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ভর্তি ও এডমিট কার্ড ব্যবস্থাপনা</title>
+    <title>ভর্তি আবেদন ও শিক্ষার্থী ব্যবস্থাপনা</title>
     <link rel="icon" href="/pwa-192x192.png" type="image/png" sizes="192x192">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="manifest" href="/manifest.webmanifest">
@@ -12,26 +12,75 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Kalpurush', sans-serif; background: #f6f8f7; color: #0f172a; padding: 18px; }
-        .wrap { max-width: 1180px; margin: 0 auto; }
+        .wrap { max-width: 1220px; margin: 0 auto; }
         .mode-tabs { display: flex; gap: 8px; flex-wrap: wrap; background: #e8efe9; border: 1px solid rgba(15,23,42,0.1); border-radius: 14px; padding: 6px; margin-bottom: 16px; box-shadow: inset 0 2px 5px rgba(15, 23, 42, 0.08), inset 0 1px 1px rgba(15, 23, 42, 0.05); }
-        .mode-tab { flex: 1 1 180px; min-height: 42px; border: 1px solid rgba(15, 23, 42, 0.07); border-radius: 10px; background: linear-gradient(180deg, #ffffff 0%, #f4f7f5 100%); color: #334155; font-family: inherit; font-size: 0.92rem; font-weight: 600; cursor: pointer; box-shadow: inset 0 1px 0 #ffffff, 0 2px 0 rgba(15, 23, 42, 0.08); transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.14s ease, background 0.14s ease, color 0.14s ease; }
+        .mode-tab { flex: 1 1 180px; min-height: 42px; border: 1px solid rgba(15, 23, 42, 0.07); border-radius: 10px; background: linear-gradient(180deg, #ffffff 0%, #f4f7f5 100%); color: #334155; font-family: inherit; font-size: 0.94rem; font-weight: 600; cursor: pointer; box-shadow: inset 0 1px 0 #ffffff, 0 2px 0 rgba(15, 23, 42, 0.08); transition: transform 0.14s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.14s ease, background 0.14s ease, color 0.14s ease; }
         .mode-tab:hover { transform: translateY(-1px); color: #14532d; }
         .mode-tab:active { transform: translateY(1.5px); box-shadow: 0 1px 0 rgba(15, 23, 42, 0.08); }
         .mode-tab.active { background: linear-gradient(180deg, #1ea34d 0%, #15803d 100%); color: #fff; border-color: #146c34; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 3px 0 #0e5427, 0 6px 14px -3px rgba(21, 128, 61, 0.32); }
-        .card { background: #fff; border: 1px solid rgba(15,23,42,0.08); border-radius: 14px; padding: 20px; }
-        .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
-        .toolbar h2 { font-size: 1.06rem; font-weight: 700; color: #14532d; }
-        .search-box { height: 38px; padding: 0 12px; border: 1px solid rgba(15,23,42,0.14); border-radius: 9px; min-width: 220px; font-family: inherit; }
+        .card { background: #fff; border: 1px solid rgba(15,23,42,0.08); border-radius: 14px; padding: 20px; box-shadow: 0 2px 10px rgba(15,23,42,0.03); }
+        .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+        .toolbar-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .toolbar h2 { font-size: 1.1rem; font-weight: 700; color: #14532d; }
+        .toolbar-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .filter-group { display: inline-flex; gap: 4px; background: #f1f5f9; padding: 4px; border-radius: 10px; border: 1px solid rgba(15,23,42,0.08); }
+        .filter-btn { border: none; background: transparent; color: #475569; font-family: inherit; font-size: 0.85rem; font-weight: 600; padding: 6px 11px; border-radius: 7px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.14s ease; }
+        .filter-btn:hover { color: #0f172a; }
+        .filter-btn.active { background: #ffffff; color: #14532d; box-shadow: 0 1px 3px rgba(15,23,42,0.1); }
+        .filter-count { font-size: 0.78rem; padding: 1px 7px; border-radius: 999px; background: #e2e8f0; color: #334155; }
+        .filter-btn.active .filter-count { background: #dcfce7; color: #166534; }
+        .search-box { height: 38px; padding: 0 12px; border: 1px solid rgba(15,23,42,0.14); border-radius: 9px; min-width: 220px; font-family: inherit; font-size: 0.9rem; }
+        .btn-refresh { height: 38px; padding: 0 12px; border-radius: 9px; border: 1px solid rgba(15,23,42,0.14); background: #fff; color: #334155; font-family: inherit; font-size: 0.86rem; font-weight: 600; cursor: pointer; }
+        .btn-refresh:hover { background: #f8fafc; color: #14532d; }
+        .status-banner { margin-bottom: 14px; padding: 10px 14px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; display: none; align-items: center; justify-content: space-between; gap: 10px; }
+        .status-banner.show { display: flex; }
+        .status-banner.ok { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .status-banner.err { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+        .status-banner.info { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
         .table-wrap { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
-        th { background: #f8faf9; color: #14532d; text-align: left; padding: 11px 12px; border-bottom: 1px solid rgba(15,23,42,0.09); }
-        td { padding: 10px 12px; border-bottom: 1px solid rgba(15,23,42,0.06); vertical-align: middle; }
-        .btn-sm { padding: 5px 11px; border-radius: 8px; border: 1px solid transparent; font-family: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: transform 0.13s ease; }
+        th { background: #f8faf9; color: #14532d; text-align: left; padding: 11px 12px; border-bottom: 1px solid rgba(15,23,42,0.09); white-space: nowrap; }
+        td { padding: 11px 12px; border-bottom: 1px solid rgba(15,23,42,0.06); vertical-align: middle; }
+        .student-cell { display: flex; align-items: center; gap: 10px; min-width: 190px; }
+        .thumb { width: 40px; height: 40px; border-radius: 9px; object-fit: cover; border: 1px solid rgba(15,23,42,0.1); background: #f1f5f9; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #64748b; font-size: 0.78rem; font-weight: 700; }
+        .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
+        .badge-pending { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .badge-approved { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .action-row { display: inline-flex; align-items: center; justify-content: flex-end; gap: 6px; flex-wrap: wrap; }
+        .btn-sm { padding: 6px 11px; border-radius: 8px; border: 1px solid transparent; font-family: inherit; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: transform 0.13s ease, opacity 0.13s ease; white-space: nowrap; }
         .btn-sm:hover { transform: translateY(-1px); }
         .btn-sm:active { transform: translateY(1px); }
+        .btn-sm:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+        .btn-approve { background: linear-gradient(180deg, #22c55e 0%, #15803d 100%); color: #fff; border-color: #15803d; box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), 0 2px 0 #0f5327; }
+        .btn-edit { background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%); color: #1d4ed8; border-color: #93c5fd; box-shadow: inset 0 1px 0 #ffffff, 0 2px 0 rgba(29, 78, 216, 0.14); }
         .btn-del { background: linear-gradient(180deg, #fef2f2 0%, #fee2e2 100%); color: #b91c1c; border-color: #fca5a5; box-shadow: inset 0 1px 0 #ffffff, 0 2px 0 rgba(185, 28, 28, 0.16); }
-        .sub-frame { width: 100%; height: calc(100vh - 110px); min-height: 620px; border: none; border-radius: 14px; background: #fff; border: 1px solid rgba(15,23,42,0.08); }
+        .sub-frame { width: 100%; height: calc(100vh - 110px); min-height: 620px; border-radius: 14px; background: #fff; border: 1px solid rgba(15,23,42,0.08); }
         .is-hidden { display: none !important; }
+
+        /* Modal */
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.52); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 1000; }
+        .modal-backdrop.open { display: flex; }
+        .modal-box { background: #fff; width: 100%; max-width: 720px; max-height: 92vh; overflow-y: auto; border-radius: 16px; border: 1px solid rgba(15,23,42,0.1); box-shadow: 0 24px 48px rgba(15,23,42,0.22); padding: 20px; }
+        .modal-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0; margin-bottom: 14px; }
+        .modal-head h3 { font-size: 1.08rem; color: #14532d; }
+        .modal-close { border: 1px solid #e2e8f0; background: #f8fafc; color: #475569; width: 32px; height: 32px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; }
+        .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+        .field { display: flex; flex-direction: column; gap: 4px; }
+        .field.full { grid-column: 1 / -1; }
+        .field label { font-size: 0.84rem; font-weight: 700; color: #334155; }
+        .field input, .field select { height: 38px; padding: 0 10px; border: 1px solid rgba(15,23,42,0.16); border-radius: 8px; font-family: inherit; font-size: 0.92rem; background: #fff; color: #0f172a; }
+        .field input:focus, .field select:focus { outline: none; border-color: #15803d; box-shadow: 0 0 0 3px rgba(21,128,61,0.12); }
+        .modal-foot { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; padding-top: 16px; margin-top: 16px; border-top: 1px solid #e2e8f0; }
+        .btn-md { padding: 9px 15px; border-radius: 9px; border: 1px solid transparent; font-family: inherit; font-size: 0.9rem; font-weight: 700; cursor: pointer; }
+        .btn-cancel { background: #f1f5f9; color: #334155; border-color: #cbd5e1; }
+        .btn-save { background: #eff6ff; color: #1d4ed8; border-color: #93c5fd; }
+        .btn-save-approve { background: linear-gradient(180deg, #22c55e 0%, #15803d 100%); color: #fff; border-color: #15803d; }
+        .btn-danger-solid { background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%); color: #fff; border-color: #b91c1c; }
+        @media (max-width: 640px) {
+            body { padding: 12px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .search-box { width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -42,19 +91,35 @@
         </div>
 
         <section id="pane-list" class="card">
-            <div class="toolbar">
-                <h2>জমাকৃত অনলাইন ভর্তি আবেদন (<span id="admCount">০</span>)</h2>
-                <input type="search" id="admSearch" class="search-box" placeholder="নাম, শ্রেণি বা রোল খুঁজুন..." oninput="renderAdmissions()">
+            <div id="admStatusMsg" class="status-banner" role="status">
+                <span id="admStatusText"></span>
+                <button type="button" onclick="hideBanner()" style="border:none; background:transparent; cursor:pointer; font-weight:700; color:inherit;">✕</button>
             </div>
+
+            <div class="toolbar">
+                <div class="toolbar-title">
+                    <h2>জমাকৃত অনলাইন ভর্তি আবেদন (<span id="admCount">০</span>)</h2>
+                    <div class="filter-group" role="group" aria-label="স্ট্যাটাস ফিল্টার">
+                        <button type="button" class="filter-btn active" data-filter="all" onclick="setFilter('all')">সকল <span class="filter-count" id="cntAll">০</span></button>
+                        <button type="button" class="filter-btn" data-filter="pending" onclick="setFilter('pending')">অপেক্ষমান <span class="filter-count" id="cntPending">০</span></button>
+                        <button type="button" class="filter-btn" data-filter="approved" onclick="setFilter('approved')">অনুমোদিত <span class="filter-count" id="cntApproved">০</span></button>
+                    </div>
+                </div>
+                <div class="toolbar-actions">
+                    <input type="search" id="admSearch" class="search-box" placeholder="নাম, শ্রেণি, রোল বা মোবাইল..." oninput="renderAdmissions()">
+                    <button type="button" class="btn-refresh" onclick="refreshAdmissionsFromServer()">রিফ্রেশ</button>
+                </div>
+            </div>
+
             <div class="table-wrap">
                 <table>
                     <thead>
                         <tr>
-                            <th>নাম (বাংলা)</th>
-                            <th>শ্রেণি</th>
-                            <th>রোল / আইডি</th>
-                            <th>পিতার নাম</th>
-                            <th>মোবাইল</th>
+                            <th>শিক্ষার্থী</th>
+                            <th>শ্রেণি ও রোল</th>
+                            <th>পিতা ও মাতা</th>
+                            <th>মোবাইল ও ঠিকানা</th>
+                            <th>স্ট্যাটাস</th>
                             <th style="text-align:right;">অ্যাকশন</th>
                         </tr>
                     </thead>
@@ -68,9 +133,120 @@
         </section>
     </div>
 
+    <!-- Edit & Approve Modal -->
+    <div id="editModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
+        <div class="modal-box">
+            <div class="modal-head">
+                <h3 id="editModalTitle">ভর্তি আবেদন সম্পাদনা ও অনুমোদন</h3>
+                <button type="button" class="modal-close" onclick="closeEditModal()" aria-label="বন্ধ করুন">✕</button>
+            </div>
+            <form id="editForm" onsubmit="return false;">
+                <input type="hidden" id="edit_id">
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="edit_name_bn">শিক্ষার্থীর নাম (বাংলা)</label>
+                        <input type="text" id="edit_name_bn" required>
+                    </div>
+                    <div class="field">
+                        <label for="edit_name_en">শিক্ষার্থীর নাম (ইংরেজি)</label>
+                        <input type="text" id="edit_name_en">
+                    </div>
+                    <div class="field">
+                        <label for="edit_student_class">ভর্তিচ্ছু শ্রেণি</label>
+                        <select id="edit_student_class">
+                            <option value="শিশু">শিশু</option>
+                            <option value="প্রথম">প্রথম</option>
+                            <option value="দ্বিতীয়">দ্বিতীয়</option>
+                            <option value="তৃতীয়">তৃতীয়</option>
+                            <option value="চতুর্থ">চতুর্থ</option>
+                            <option value="পঞ্চম">পঞ্চম</option>
+                            <option value="ষষ্ঠ">ষষ্ঠ</option>
+                            <option value="সপ্তম">সপ্তম</option>
+                            <option value="অষ্টম">অষ্টম</option>
+                            <option value="নবম">নবম</option>
+                            <option value="দশম">দশম</option>
+                            <option value="আলিম ১ম বর্ষ">আলিম ১ম বর্ষ</option>
+                            <option value="আলিম ২য় বর্ষ">আলিম ২য় বর্ষ</option>
+                            <option value="ফাজিল ১ম বর্ষ">ফাজিল ১ম বর্ষ</option>
+                            <option value="ফাজিল ২য় বর্ষ">ফাজিল ২য় বর্ষ</option>
+                            <option value="ফাজিল ৩য় বর্ষ">ফাজিল ৩য় বর্ষ</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="edit_session">সেশন / শিক্ষাবর্ষ</label>
+                        <input type="text" id="edit_session" placeholder="২০২৬">
+                    </div>
+                    <div class="field">
+                        <label for="edit_roll_no">রোল নং</label>
+                        <input type="text" id="edit_roll_no">
+                    </div>
+                    <div class="field">
+                        <label for="edit_id_no">আইডি নং</label>
+                        <input type="text" id="edit_id_no">
+                    </div>
+                    <div class="field">
+                        <label for="edit_father_bn">পিতার নাম (বাংলা)</label>
+                        <input type="text" id="edit_father_bn">
+                    </div>
+                    <div class="field">
+                        <label for="edit_mother_bn">মাতার নাম (বাংলা)</label>
+                        <input type="text" id="edit_mother_bn">
+                    </div>
+                    <div class="field">
+                        <label for="edit_mobile">মোবাইল নম্বর</label>
+                        <input type="text" id="edit_mobile">
+                    </div>
+                    <div class="field">
+                        <label for="edit_dob">জন্ম তারিখ</label>
+                        <input type="text" id="edit_dob">
+                    </div>
+                    <div class="field">
+                        <label for="edit_birth_reg">জন্ম নিবন্ধন / রেজি নং</label>
+                        <input type="text" id="edit_birth_reg">
+                    </div>
+                    <div class="field">
+                        <label for="edit_blood_group">রক্তের গ্রুপ</label>
+                        <input type="text" id="edit_blood_group">
+                    </div>
+                    <div class="field">
+                        <label for="edit_gender">লিঙ্গ</label>
+                        <input type="text" id="edit_gender">
+                    </div>
+                    <div class="field">
+                        <label for="edit_address">ঠিকানা</label>
+                        <input type="text" id="edit_address">
+                    </div>
+                </div>
+                <div class="modal-foot">
+                    <button type="button" class="btn-md btn-cancel" onclick="closeEditModal()">বাতিল</button>
+                    <button type="button" class="btn-md btn-save" id="btnSaveOnly" onclick="submitEdit(false)">সংরক্ষণ করুন</button>
+                    <button type="button" class="btn-md btn-save-approve" id="btnSaveAndApprove" onclick="submitEdit(true)">এডিট ও এপ্রুভ করুন</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+        <div class="modal-box" style="max-width:440px;">
+            <div class="modal-head">
+                <h3 id="deleteModalTitle" style="color:#b91c1c;">আবেদন ডিলিট নিশ্চিতকরণ</h3>
+                <button type="button" class="modal-close" onclick="closeDeleteModal()" aria-label="বন্ধ করুন">✕</button>
+            </div>
+            <p id="deleteModalBody" style="font-size:0.95rem; line-height:1.6; color:#334155;"></p>
+            <div class="modal-foot">
+                <button type="button" class="btn-md btn-cancel" onclick="closeDeleteModal()">না, বাতিল</button>
+                <button type="button" class="btn-md btn-danger-solid" id="btnConfirmDelete" onclick="confirmDeleteAdmission()">হ্যাঁ, ডিলিট করুন</button>
+            </div>
+        </div>
+    </div>
+
     <script src="/offline-sync.js"></script>
     <script>
         let admissions = <%- JSON.stringify(admissions || []) %>;
+        let activeFilter = 'all';
+        let activePane = 'list';
+        let pendingDeleteId = null;
 
         function bnNum(v) {
             const d = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
@@ -81,74 +257,462 @@
             return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
         }
 
+        function getStatus(a) {
+            return (a && a.status === 'approved') ? 'approved' : 'pending';
+        }
+
+        function showBanner(msg, type = 'ok') {
+            const box = document.getElementById('admStatusMsg');
+            const textEl = document.getElementById('admStatusText');
+            box.className = 'status-banner show ' + type;
+            textEl.textContent = msg;
+        }
+
+        function hideBanner() {
+            document.getElementById('admStatusMsg').classList.remove('show');
+        }
+
+        function setFilter(nextFilter) {
+            activeFilter = nextFilter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-filter') === nextFilter);
+            });
+            renderAdmissions();
+        }
+
+        async function refreshAdmissionsFromServer() {
+            if (!navigator.onLine) {
+                await hydrateOfflineAdmissions();
+                showBanner('অফলাইনে সংরক্ষিত তালিকা দেখানো হচ্ছে।', 'info');
+                return;
+            }
+            try {
+                const res = await fetch('/api/portal/admissions', { credentials: 'same-origin' });
+                if (!res.ok) throw new Error('রিফ্রেশ করা যায়নি।');
+                const data = await res.json();
+                if (data && Array.isArray(data.admissions)) {
+                    admissions = data.admissions;
+                    if (window.NadufmOffline) {
+                        await window.NadufmOffline.updateBootstrap(base => {
+                            base.admissions = data.admissions;
+                            return base;
+                        });
+                    }
+                    renderAdmissions();
+                }
+            } catch (err) {
+                showBanner(err.message || 'তালিকা রিফ্রেশ করতে সমস্যা হয়েছে।', 'err');
+            }
+        }
+
         function switchPane(pane) {
+            const prevPane = activePane;
+            activePane = pane;
             document.querySelectorAll('.mode-tab').forEach(b => b.classList.toggle('active', b.getAttribute('data-pane') === pane));
             document.getElementById('pane-list').classList.toggle('is-hidden', pane !== 'list');
             document.getElementById('pane-form').classList.toggle('is-hidden', pane !== 'form');
             if (pane === 'form' && document.getElementById('formFrame').getAttribute('src') === 'about:blank') {
                 document.getElementById('formFrame').setAttribute('src', '/admission.php?embed=1');
             }
+            if (pane === 'list' && prevPane === 'form') {
+                refreshAdmissionsFromServer();
+            }
+        }
+
+        function updateCounts() {
+            const total = admissions.length;
+            const approved = admissions.filter(a => getStatus(a) === 'approved').length;
+            const pending = total - approved;
+            document.getElementById('cntAll').textContent = bnNum(total);
+            document.getElementById('cntPending').textContent = bnNum(pending);
+            document.getElementById('cntApproved').textContent = bnNum(approved);
         }
 
         function renderAdmissions() {
+            updateCounts();
             const q = (document.getElementById('admSearch').value || '').trim().toLowerCase();
             const list = admissions.filter(a => {
-                const hay = `${a.name_bn} ${a.name_en} ${a.student_class} ${a.roll_no} ${a.id_no} ${a.mobile}`.toLowerCase();
+                const st = getStatus(a);
+                if (activeFilter !== 'all' && st !== activeFilter) return false;
+                const hay = `${a.name_bn || ''} ${a.name_en || ''} ${a.student_class || ''} ${a.roll_no || ''} ${a.id_no || ''} ${a.father_bn || ''} ${a.mobile || ''}`.toLowerCase();
                 return !q || hay.includes(q);
             });
             document.getElementById('admCount').textContent = bnNum(list.length);
             const tbody = document.getElementById('admBody');
             if (!list.length) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:24px; color:#64748b;">এখনো কোনো ভর্তি আবেদন জমা হয়নি। "নতুন ভর্তি ফরম" ট্যাব থেকে আবেদন যুক্ত করা যাবে।</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:26px; color:#64748b;">কোনো ভর্তি আবেদন পাওয়া যায়নি।</td></tr>';
                 return;
             }
-            tbody.innerHTML = list.map(a => `
+            tbody.innerHTML = list.map(a => {
+                const st = getStatus(a);
+                const badgeHtml = st === 'approved'
+                    ? '<span class="badge badge-approved">অনুমোদিত</span>'
+                    : '<span class="badge badge-pending">অপেক্ষমান</span>';
+                const photoSrc = (a.photo && /^(data:image\/|\/|https?:\/\/)/i.test(String(a.photo))) ? String(a.photo) : '';
+                const initials = esc((a.name_bn || a.name_en || 'শ').slice(0, 1));
+                const avatarHtml = photoSrc
+                    ? `<img src="${esc(photoSrc)}" class="thumb" alt="ছবি">`
+                    : `<div class="thumb">${initials}</div>`;
+                const approveBtn = st !== 'approved'
+                    ? `<button type="button" class="btn-sm btn-approve" onclick="approveAdmission('${esc(a.id)}')">এপ্রুভ</button>`
+                    : '';
+                return `
                 <tr>
-                    <td><div style="font-weight:700;">${esc(a.name_bn)}</div><div style="font-size:0.8rem; color:#64748b;">${esc(a.name_en)}</div></td>
-                    <td>${esc(a.student_class)}</td>
-                    <td>রোল: ${esc(a.roll_no || '—')}<br><span style="font-size:0.8rem; color:#64748b;">আইডি: ${esc(a.id_no || '—')}</span></td>
-                    <td>${esc(a.father_bn || '—')}</td>
-                    <td>${esc(a.mobile || '—')}</td>
-                    <td style="text-align:right;"><button type="button" class="btn-sm btn-del" onclick="deleteAdmission('${esc(a.id)}')">ডিলিট</button></td>
-                </tr>
-            `).join('');
+                    <td>
+                        <div class="student-cell">
+                            ${avatarHtml}
+                            <div>
+                                <div style="font-weight:700; color:#0f172a;">${esc(a.name_bn || a.name_en || '—')}</div>
+                                <div style="font-size:0.8rem; color:#64748b;">${esc(a.name_en || '')}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-weight:600;">${esc(a.student_class || '—')}</div>
+                        <div style="font-size:0.8rem; color:#64748b;">রোল: ${esc(a.roll_no || '—')} · আইডি: ${esc(a.id_no || '—')}</div>
+                    </td>
+                    <td>
+                        <div>${esc(a.father_bn || '—')}</div>
+                        <div style="font-size:0.8rem; color:#64748b;">মাতা: ${esc(a.mother_bn || '—')}</div>
+                    </td>
+                    <td>
+                        <div>${esc(a.mobile || '—')}</div>
+                        <div style="font-size:0.8rem; color:#64748b;">${esc(a.address || '—')}</div>
+                    </td>
+                    <td>${badgeHtml}</td>
+                    <td style="text-align:right;">
+                        <div class="action-row">
+                            ${approveBtn}
+                            <button type="button" class="btn-sm btn-edit" onclick="openEditModal('${esc(a.id)}')">এডিট</button>
+                            <button type="button" class="btn-sm btn-del" onclick="openDeleteModal('${esc(a.id)}')">ডিলিট</button>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
         }
 
-        async function deleteAdmission(id) {
-            const nextList = admissions.filter(a => String(a.id) !== String(id));
-            if (window.NadufmOffline) {
-                const res = await window.NadufmOffline.saveMutationOrQueue({
-                    label: 'ভর্তি আবেদন ডিলিট',
-                    url: '/api/portal/admissions/' + encodeURIComponent(id),
-                    method: 'DELETE',
-                    headers: {},
-                    optimisticUpdate: () => window.NadufmOffline.updateBootstrap(base => {
-                        base.admissions = nextList;
-                        return base;
-                    }),
-                    onOnlineSuccess: (data) => {
-                        if (data && data.admissions) {
-                            admissions = data.admissions;
-                            return window.NadufmOffline.updateBootstrap(base => {
-                                base.admissions = data.admissions;
-                                return base;
-                            });
-                        }
-                    },
-                });
-                if (res.queued) {
-                    admissions = nextList;
+        function syncBootstrapSnapshot(data, fallbackAdmissions) {
+            if (!window.NadufmOffline) return Promise.resolve();
+            return window.NadufmOffline.updateBootstrap(base => {
+                if (data && Array.isArray(data.admissions)) {
+                    base.admissions = data.admissions;
+                } else if (Array.isArray(fallbackAdmissions)) {
+                    base.admissions = fallbackAdmissions;
+                }
+                if (data && Array.isArray(data.students)) {
+                    base.students = data.students;
+                }
+                return base;
+            });
+        }
+
+        function upsertAdmissionInStudentBootstrap(base, adm) {
+            const list = Array.isArray(base.students) ? base.students.slice() : [];
+            const admKey = String(adm.id);
+            const mapped = {
+                id: adm.id_no || adm.id,
+                _admId: admKey,
+                roll: String(adm.roll_no || ''),
+                rollBn: bnNum(adm.roll_no || ''),
+                reg_no: String(adm.birth_reg || adm.id_no || ''),
+                name_bn: String(adm.name_bn || adm.name_en || ''),
+                name_en: String(adm.name_en || ''),
+                class_name: String(adm.student_class || ''),
+                father_bn: String(adm.father_bn || ''),
+                mother_bn: String(adm.mother_bn || ''),
+                dob: String(adm.dob || ''),
+                mobile: String(adm.mobile || ''),
+                address: String(adm.address || ''),
+                blood: String(adm.blood_group || ''),
+                session: String(adm.session || '২০২৬'),
+                photo: String(adm.photo || ''),
+                source: 'admission',
+            };
+            const idx = list.findIndex(s => String(s._admId || s.id || '') === admKey);
+            if (idx !== -1) list[idx] = Object.assign({}, list[idx], mapped);
+            else list.unshift(mapped);
+            base.students = list;
+        }
+
+        async function approveAdmission(id) {
+            const existing = admissions.find(a => String(a.id) === String(id));
+            if (!existing) return;
+            const optimisticAdm = Object.assign({}, existing, {
+                status: 'approved',
+                approvedAt: new Date().toISOString(),
+            });
+            const nextList = admissions.map(a => String(a.id) === String(id) ? optimisticAdm : a);
+
+            try {
+                if (window.NadufmOffline) {
+                    const res = await window.NadufmOffline.saveMutationOrQueue({
+                        label: 'ভর্তি আবেদন এপ্রুভ (' + (existing.name_bn || existing.name_en || '') + ')',
+                        url: '/api/portal/admissions/' + encodeURIComponent(id) + '/approve',
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({}),
+                        optimisticUpdate: () => window.NadufmOffline.updateBootstrap(base => {
+                            base.admissions = nextList;
+                            upsertAdmissionInStudentBootstrap(base, optimisticAdm);
+                            return base;
+                        }),
+                        onOnlineSuccess: (data) => {
+                            if (data && Array.isArray(data.admissions)) {
+                                admissions = data.admissions;
+                            }
+                            return syncBootstrapSnapshot(data);
+                        },
+                    });
+                    if (res.queued) {
+                        admissions = nextList;
+                        renderAdmissions();
+                        showBanner('অফলাইন কিউতে এপ্রুভাল সংরক্ষিত হয়েছে। ইন্টারনেট পেলে সিঙ্ক হবে।', 'info');
+                        return;
+                    }
                     renderAdmissions();
+                    showBanner('ভর্তি আবেদন অনুমোদন করা হয়েছে এবং শিক্ষার্থী ডেটায় যোগ হয়েছে।', 'ok');
                     return;
                 }
+
+                const res = await fetch('/api/portal/admissions/' + encodeURIComponent(id) + '/approve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({}),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'এপ্রুভ করতে সমস্যা হয়েছে।');
+                if (data.admissions) admissions = data.admissions;
                 renderAdmissions();
+                showBanner('ভর্তি আবেদন অনুমোদন করা হয়েছে এবং শিক্ষার্থী ডেটায় যোগ হয়েছে।', 'ok');
+            } catch (err) {
+                showBanner(err.message || 'এপ্রুভ করতে সমস্যা হয়েছে।', 'err');
+            }
+        }
+
+        function setSelectOrAdd(selectEl, val) {
+            const text = String(val || '').trim();
+            if (!text) {
+                selectEl.selectedIndex = 0;
                 return;
             }
-            const res = await fetch('/api/portal/admissions/' + encodeURIComponent(id), { method: 'DELETE' });
-            const data = await res.json();
-            if (res.ok && data.admissions) {
-                admissions = data.admissions;
+            const opts = Array.from(selectEl.options);
+            const found = opts.find(o => o.value === text || o.text === text);
+            if (found) {
+                selectEl.value = found.value;
+            } else {
+                const opt = document.createElement('option');
+                opt.value = text;
+                opt.textContent = text;
+                selectEl.appendChild(opt);
+                selectEl.value = text;
+            }
+        }
+
+        function openEditModal(id) {
+            const adm = admissions.find(a => String(a.id) === String(id));
+            if (!adm) return;
+            document.getElementById('edit_id').value = adm.id;
+            document.getElementById('edit_name_bn').value = adm.name_bn || '';
+            document.getElementById('edit_name_en').value = adm.name_en || '';
+            setSelectOrAdd(document.getElementById('edit_student_class'), adm.student_class || '');
+            document.getElementById('edit_session').value = adm.session || '২০২৬';
+            document.getElementById('edit_roll_no').value = adm.roll_no || '';
+            document.getElementById('edit_id_no').value = adm.id_no || '';
+            document.getElementById('edit_father_bn').value = adm.father_bn || '';
+            document.getElementById('edit_mother_bn').value = adm.mother_bn || '';
+            document.getElementById('edit_mobile').value = adm.mobile || '';
+            document.getElementById('edit_dob').value = adm.dob || '';
+            document.getElementById('edit_birth_reg').value = adm.birth_reg || '';
+            document.getElementById('edit_blood_group').value = adm.blood_group || '';
+            document.getElementById('edit_gender').value = adm.gender || '';
+            document.getElementById('edit_address').value = adm.address || '';
+
+            const isApproved = getStatus(adm) === 'approved';
+            const btnApprove = document.getElementById('btnSaveAndApprove');
+            btnApprove.textContent = isApproved ? 'আপডেট ও সিঙ্ক করুন' : 'এডিট ও এপ্রুভ করুন';
+            document.getElementById('editModal').classList.add('open');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('open');
+        }
+
+        async function submitEdit(approveNow) {
+            const id = document.getElementById('edit_id').value;
+            const existing = admissions.find(a => String(a.id) === String(id));
+            if (!existing) return;
+
+            const payload = {
+                name_bn: document.getElementById('edit_name_bn').value.trim(),
+                name_en: document.getElementById('edit_name_en').value.trim(),
+                student_class: document.getElementById('edit_student_class').value.trim(),
+                session: document.getElementById('edit_session').value.trim() || '২০২৬',
+                roll_no: document.getElementById('edit_roll_no').value.trim(),
+                id_no: document.getElementById('edit_id_no').value.trim(),
+                father_bn: document.getElementById('edit_father_bn').value.trim(),
+                mother_bn: document.getElementById('edit_mother_bn').value.trim(),
+                mobile: document.getElementById('edit_mobile').value.trim(),
+                dob: document.getElementById('edit_dob').value.trim(),
+                birth_reg: document.getElementById('edit_birth_reg').value.trim(),
+                blood_group: document.getElementById('edit_blood_group').value.trim(),
+                gender: document.getElementById('edit_gender').value.trim(),
+                address: document.getElementById('edit_address').value.trim(),
+                approve: Boolean(approveNow),
+            };
+
+            if (!payload.name_bn && !payload.name_en) {
+                showBanner('শিক্ষার্থীর নাম পূরণ করা আবশ্যক।', 'err');
+                return;
+            }
+
+            const btn1 = document.getElementById('btnSaveOnly');
+            const btn2 = document.getElementById('btnSaveAndApprove');
+            btn1.disabled = true;
+            btn2.disabled = true;
+
+            const optimisticAdm = Object.assign({}, existing, payload, {
+                status: (approveNow || getStatus(existing) === 'approved') ? 'approved' : 'pending',
+                updatedAt: new Date().toISOString(),
+            });
+            const nextList = admissions.map(a => String(a.id) === String(id) ? optimisticAdm : a);
+
+            try {
+                if (window.NadufmOffline) {
+                    const res = await window.NadufmOffline.saveMutationOrQueue({
+                        label: (approveNow ? 'আবেদন এডিট ও এপ্রুভ' : 'আবেদন এডিট') + ' (' + (payload.name_bn || payload.name_en) + ')',
+                        url: '/api/portal/admissions/' + encodeURIComponent(id),
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                        optimisticUpdate: () => window.NadufmOffline.updateBootstrap(base => {
+                            base.admissions = nextList;
+                            if (optimisticAdm.status === 'approved') {
+                                upsertAdmissionInStudentBootstrap(base, optimisticAdm);
+                            }
+                            return base;
+                        }),
+                        onOnlineSuccess: (data) => {
+                            if (data && Array.isArray(data.admissions)) {
+                                admissions = data.admissions;
+                            }
+                            return syncBootstrapSnapshot(data);
+                        },
+                    });
+                    closeEditModal();
+                    if (res.queued) {
+                        admissions = nextList;
+                        renderAdmissions();
+                        showBanner('অফলাইনে পরিবর্তন সংরক্ষিত হয়েছে। ইন্টারনেট পেলে সিঙ্ক হবে।', 'info');
+                        return;
+                    }
+                    renderAdmissions();
+                    showBanner(
+                        optimisticAdm.status === 'approved'
+                            ? 'তথ্য সংশোধন ও অনুমোদন সম্পন্ন হয়েছে এবং শিক্ষার্থী ডেটা আপডেট হয়েছে।'
+                            : 'আবেদনের তথ্য সংরক্ষণ করা হয়েছে।',
+                        'ok'
+                    );
+                    return;
+                }
+
+                const res = await fetch('/api/portal/admissions/' + encodeURIComponent(id), {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify(payload),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'আপডেট ব্যর্থ হয়েছে।');
+                if (data.admissions) admissions = data.admissions;
+                closeEditModal();
                 renderAdmissions();
+                showBanner(
+                    optimisticAdm.status === 'approved'
+                        ? 'তথ্য সংশোধন ও অনুমোদন সম্পন্ন হয়েছে এবং শিক্ষার্থী ডেটা আপডেট হয়েছে।'
+                        : 'আবেদনের তথ্য সংরক্ষণ করা হয়েছে।',
+                    'ok'
+                );
+            } catch (err) {
+                showBanner(err.message || 'সংরক্ষণ করতে সমস্যা হয়েছে।', 'err');
+            } finally {
+                btn1.disabled = false;
+                btn2.disabled = false;
+            }
+        }
+
+        function openDeleteModal(id) {
+            const adm = admissions.find(a => String(a.id) === String(id));
+            if (!adm) return;
+            pendingDeleteId = adm.id;
+            const name = adm.name_bn || adm.name_en || 'এই শিক্ষার্থী';
+            const extra = getStatus(adm) === 'approved'
+                ? ' এটি অনুমোদিত হওয়ায় শিক্ষার্থী ডেটা থেকেও তথ্যটি মুছে যাবে।'
+                : '';
+            document.getElementById('deleteModalBody').textContent =
+                `আপনি কি নিশ্চিতভাবে "${name}"-এর ভর্তি আবেদন ডিলিট করতে চান?${extra}`;
+            document.getElementById('deleteModal').classList.add('open');
+        }
+
+        function closeDeleteModal() {
+            pendingDeleteId = null;
+            document.getElementById('deleteModal').classList.remove('open');
+        }
+
+        async function confirmDeleteAdmission() {
+            if (!pendingDeleteId) return;
+            const id = pendingDeleteId;
+            const btn = document.getElementById('btnConfirmDelete');
+            btn.disabled = true;
+            const nextList = admissions.filter(a => String(a.id) !== String(id));
+
+            try {
+                if (window.NadufmOffline) {
+                    const res = await window.NadufmOffline.saveMutationOrQueue({
+                        label: 'ভর্তি আবেদন ডিলিট',
+                        url: '/api/portal/admissions/' + encodeURIComponent(id),
+                        method: 'DELETE',
+                        headers: {},
+                        optimisticUpdate: () => window.NadufmOffline.updateBootstrap(base => {
+                            base.admissions = nextList;
+                            if (Array.isArray(base.students)) {
+                                base.students = base.students.filter(s => String(s._admId || '') !== String(id));
+                            }
+                            return base;
+                        }),
+                        onOnlineSuccess: (data) => {
+                            if (data && Array.isArray(data.admissions)) {
+                                admissions = data.admissions;
+                            }
+                            return syncBootstrapSnapshot(data);
+                        },
+                    });
+                    closeDeleteModal();
+                    if (res.queued) {
+                        admissions = nextList;
+                        renderAdmissions();
+                        showBanner('অফলাইনে ডিলিট অনুরোধ যুক্ত হয়েছে। ইন্টারনেট পেলে মুছে যাবে।', 'info');
+                        return;
+                    }
+                    renderAdmissions();
+                    showBanner('ভর্তি আবেদন এবং সংশ্লিষ্ট শিক্ষার্থী তথ্য মুছে ফেলা হয়েছে।', 'ok');
+                    return;
+                }
+
+                const res = await fetch('/api/portal/admissions/' + encodeURIComponent(id), {
+                    method: 'DELETE',
+                    credentials: 'same-origin',
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'ডিলিট করা যায়নি।');
+                if (data.admissions) admissions = data.admissions;
+                closeDeleteModal();
+                renderAdmissions();
+                showBanner('ভর্তি আবেদন এবং সংশ্লিষ্ট শিক্ষার্থী তথ্য মুছে ফেলা হয়েছে।', 'ok');
+            } catch (err) {
+                showBanner(err.message || 'ডিলিট করতে সমস্যা হয়েছে।', 'err');
+            } finally {
+                btn.disabled = false;
             }
         }
 
@@ -164,6 +728,13 @@
                 }
             }
         }
+
+        document.getElementById('editModal').addEventListener('click', (e) => {
+            if (e.target.id === 'editModal') closeEditModal();
+        });
+        document.getElementById('deleteModal').addEventListener('click', (e) => {
+            if (e.target.id === 'deleteModal') closeDeleteModal();
+        });
 
         window.addEventListener('nadufm:sync-status', function (ev) {
             const t = ev && ev.detail && ev.detail.type;

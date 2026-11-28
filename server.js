@@ -1299,6 +1299,91 @@ app.delete('/api/portal/academic/:section/:id', requireAdminApi, verifySameOrigi
   res.json({ ok: true, items: portal[section] });
 });
 
+function buildStudentRowFromAdmission(adm, mapping = {}) {
+  const row = { _admId: String(adm.id) };
+  const setMapped = (fieldKey, fallbackKey, val) => {
+    const targetKey = (mapping && mapping[fieldKey]) ? mapping[fieldKey] : fallbackKey;
+    row[targetKey] = val;
+    if (targetKey !== fallbackKey && row[fallbackKey] === undefined) {
+      row[fallbackKey] = val;
+    }
+  };
+  setMapped('roll', 'roll', String(adm.roll_no || '').trim());
+  setMapped('id', 'id', String(adm.id_no || adm.id || '').trim());
+  setMapped('reg_no', 'reg_no', String(adm.birth_reg || adm.id_no || '').trim());
+  setMapped('name_bn', 'name_bn', String(adm.name_bn || adm.name_en || '').trim());
+  setMapped('name_en', 'name_en', String(adm.name_en || '').trim());
+  setMapped('class_name', 'class_name', String(adm.student_class || '').trim());
+  setMapped('father_bn', 'father_bn', String(adm.father_bn || '').trim());
+  setMapped('mother_bn', 'mother_bn', String(adm.mother_bn || '').trim());
+  setMapped('dob', 'dob', String(adm.dob || '').trim());
+  setMapped('mobile', 'mobile', String(adm.mobile || '').trim());
+  setMapped('address', 'address', String(adm.address || '').trim());
+  setMapped('blood', 'blood', String(adm.blood_group || '').trim());
+  setMapped('session', 'session', String(adm.session || '২০২৬').trim());
+  if (adm.photo) {
+    setMapped('photo', 'photo', sanitizeImageUrl(adm.photo));
+  }
+  return row;
+}
+
+function syncApprovedAdmissionToExcelStudents(adm) {
+  const store = loadExcelStore();
+  if (!store.students) store.students = { columns: [], mapping: {}, rows: [], updatedAt: null };
+  const mapping = store.students.mapping || {};
+  const rows = Array.isArray(store.students.rows) ? [...store.students.rows] : [];
+  const rowObj = buildStudentRowFromAdmission(adm, mapping);
+  const admIdStr = String(adm.id);
+  const existingIdx = rows.findIndex((r) => String(r._admId || '') === admIdStr);
+  if (existingIdx !== -1) {
+    rows[existingIdx] = { ...rows[existingIdx], ...rowObj };
+  } else {
+    rows.unshift(rowObj);
+  }
+  store.students.rows = rows;
+  store.students.updatedAt = new Date().toISOString();
+  saveExcelStore(store);
+  return store;
+}
+
+function removeAdmissionFromExcelStudents(admId) {
+  const store = loadExcelStore();
+  if (!store.students || !Array.isArray(store.students.rows)) return store;
+  const admIdStr = String(admId);
+  const beforeLen = store.students.rows.length;
+  store.students.rows = store.students.rows.filter((r) => String(r._admId || '') !== admIdStr);
+  if (store.students.rows.length !== beforeLen) {
+    store.students.updatedAt = new Date().toISOString();
+    saveExcelStore(store);
+  }
+  return store;
+}
+
+function applyAdmissionEdits(existing, b = {}) {
+  const has = (k) => Object.prototype.hasOwnProperty.call(b, k);
+  return {
+    ...existing,
+    roll_no: has('roll_no') ? String(b.roll_no || '').trim() : (existing.roll_no || ''),
+    id_no: has('id_no') ? String(b.id_no || '').trim() : (existing.id_no || ''),
+    birth_reg: has('birth_reg') ? String(b.birth_reg || '').trim() : (existing.birth_reg || ''),
+    dob: has('dob') ? String(b.dob || '').trim() : (existing.dob || ''),
+    blood_group: has('blood_group') ? String(b.blood_group || '').trim() : (existing.blood_group || ''),
+    gender: has('gender') ? String(b.gender || '').trim() : (existing.gender || ''),
+    name_bn: has('name_bn') ? String(b.name_bn || '').trim() : (existing.name_bn || ''),
+    name_en: has('name_en') ? String(b.name_en || '').trim() : (existing.name_en || ''),
+    student_class: has('student_class') ? String(b.student_class || '').trim() : (existing.student_class || ''),
+    father_bn: has('father_bn') ? String(b.father_bn || '').trim() : (existing.father_bn || ''),
+    father_en: has('father_en') ? String(b.father_en || '').trim() : (existing.father_en || ''),
+    mother_bn: has('mother_bn') ? String(b.mother_bn || '').trim() : (existing.mother_bn || ''),
+    mother_en: has('mother_en') ? String(b.mother_en || '').trim() : (existing.mother_en || ''),
+    mobile: has('mobile') ? String(b.mobile || '').trim() : (existing.mobile || ''),
+    address: has('address') ? String(b.address || '').trim() : (existing.address || ''),
+    session: has('session') ? String(b.session || '').trim() : (existing.session || '২০২৬'),
+    prev_school: has('prev_school') ? String(b.prev_school || '').trim() : (existing.prev_school || ''),
+    prev_reg: has('prev_reg') ? String(b.prev_reg || '').trim() : (existing.prev_reg || ''),
+  };
+}
+
 app.get(['/admin-admissions', '/admin-admissions.php'], requireAdminPage, (req, res) => {
   const portal = loadPortalStore();
   res.render('admin-admissions', {
@@ -1306,12 +1391,19 @@ app.get(['/admin-admissions', '/admin-admissions.php'], requireAdminPage, (req, 
   });
 });
 
+app.get('/api/portal/admissions', requireAdminApi, (req, res) => {
+  const portal = loadPortalStore();
+  res.json({ ok: true, admissions: portal.admissions || [] });
+});
+
 app.post('/api/portal/admissions', (req, res) => {
   const portal = loadPortalStore();
   const b = req.body || {};
   const addrParts = [String(b.village || '').trim(), String(b.union || '').trim(), String(b.upazila || '').trim(), String(b.district || '').trim()].filter(Boolean);
+  const fallbackAddr = String(b.address || '').trim();
   const item = {
     id: `adm_${Date.now()}`,
+    status: 'pending',
     roll_no: String(b.roll_no || '').trim(),
     id_no: String(b.id_no || '').trim(),
     birth_reg: String(b.birth_reg || '').trim(),
@@ -1322,10 +1414,15 @@ app.post('/api/portal/admissions', (req, res) => {
     name_en: String(b.name_en || '').trim(),
     student_class: String(b.student_class || '').trim(),
     father_bn: String(b.father_bn || '').trim(),
+    father_en: String(b.father_en || '').trim(),
     mother_bn: String(b.mother_bn || '').trim(),
+    mother_en: String(b.mother_en || '').trim(),
     mobile: String(b.mobile || '').trim(),
-    address: addrParts.join(', '),
-    photo: String(b.base64 || ''),
+    address: addrParts.length ? addrParts.join(', ') : fallbackAddr,
+    session: String(b.session || '২০২৬').trim(),
+    prev_school: String(b.prev_school || '').trim(),
+    prev_reg: String(b.prev_reg || '').trim(),
+    photo: String(b.base64 || b.photo || ''),
     createdAt: new Date().toISOString(),
   };
   portal.admissions = [item, ...(portal.admissions || [])];
@@ -1333,11 +1430,86 @@ app.post('/api/portal/admissions', (req, res) => {
   res.json({ ok: true, admission: item });
 });
 
+app.put('/api/portal/admissions/:id', requireAdminApi, verifySameOrigin, (req, res) => {
+  const portal = loadPortalStore();
+  const targetId = String(req.params.id || '');
+  const list = Array.isArray(portal.admissions) ? [...portal.admissions] : [];
+  const idx = list.findIndex((a) => String(a.id) === targetId);
+  if (idx === -1) {
+    return res.status(404).json({ error: 'আবেদনটি পাওয়া যায়নি।' });
+  }
+  const b = req.body || {};
+  const shouldApprove = Boolean(b.approve);
+  const updated = applyAdmissionEdits(list[idx], b);
+  if (!updated.name_bn && !updated.name_en) {
+    return res.status(400).json({ error: 'শিক্ষার্থীর নাম আবশ্যক।' });
+  }
+  if (shouldApprove || updated.status === 'approved') {
+    updated.status = 'approved';
+    updated.approvedAt = updated.approvedAt || new Date().toISOString();
+  } else {
+    updated.status = updated.status || 'pending';
+  }
+  updated.updatedAt = new Date().toISOString();
+  list[idx] = updated;
+  portal.admissions = list;
+  savePortalStore(portal);
+
+  let excelStore = loadExcelStore();
+  if (updated.status === 'approved') {
+    excelStore = syncApprovedAdmissionToExcelStudents(updated);
+  }
+  const unifiedStudents = getUnifiedStudents(excelStore, portal);
+  res.json({
+    ok: true,
+    admission: updated,
+    admissions: portal.admissions,
+    students: unifiedStudents,
+    studentsCount: (excelStore.students?.rows || []).length,
+  });
+});
+
+app.post('/api/portal/admissions/:id/approve', requireAdminApi, verifySameOrigin, (req, res) => {
+  const portal = loadPortalStore();
+  const targetId = String(req.params.id || '');
+  const list = Array.isArray(portal.admissions) ? [...portal.admissions] : [];
+  const idx = list.findIndex((a) => String(a.id) === targetId);
+  if (idx === -1) {
+    return res.status(404).json({ error: 'আবেদনটি পাওয়া যায়নি।' });
+  }
+  const b = req.body && typeof req.body === 'object' ? req.body : {};
+  const updated = applyAdmissionEdits(list[idx], b);
+  updated.status = 'approved';
+  updated.approvedAt = new Date().toISOString();
+  updated.updatedAt = updated.approvedAt;
+  list[idx] = updated;
+  portal.admissions = list;
+  savePortalStore(portal);
+
+  const excelStore = syncApprovedAdmissionToExcelStudents(updated);
+  const unifiedStudents = getUnifiedStudents(excelStore, portal);
+  res.json({
+    ok: true,
+    admission: updated,
+    admissions: portal.admissions,
+    students: unifiedStudents,
+    studentsCount: (excelStore.students?.rows || []).length,
+  });
+});
+
 app.delete('/api/portal/admissions/:id', requireAdminApi, verifySameOrigin, (req, res) => {
   const portal = loadPortalStore();
-  portal.admissions = (portal.admissions || []).filter((a) => a.id !== String(req.params.id));
+  const targetId = String(req.params.id || '');
+  portal.admissions = (portal.admissions || []).filter((a) => String(a.id) !== targetId);
   savePortalStore(portal);
-  res.json({ ok: true, admissions: portal.admissions });
+  const excelStore = removeAdmissionFromExcelStudents(targetId);
+  const unifiedStudents = getUnifiedStudents(excelStore, portal);
+  res.json({
+    ok: true,
+    admissions: portal.admissions,
+    students: unifiedStudents,
+    studentsCount: (excelStore.students?.rows || []).length,
+  });
 });
 
 app.get('/api/portal/classes-and-rolls', (req, res) => {

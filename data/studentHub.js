@@ -190,8 +190,9 @@ export function getUnifiedStudents(excelStore, portalStore) {
     });
   }
 
-  // 2) Online Admissions (portalStore.admissions)
+  // 2) Approved Online Admissions (portalStore.admissions)
   for (const adm of portalStore?.admissions || []) {
+    if (adm.status !== 'approved') continue;
     upsert({
       roll: adm.roll_no,
       id: adm.id_no || adm.id,
@@ -206,7 +207,7 @@ export function getUnifiedStudents(excelStore, portalStore) {
       address: adm.address || '',
       mobile: adm.mobile,
       photo: adm.photo,
-      session: '২০২৬',
+      session: adm.session || '২০২৬',
       source: 'admission',
     });
   }

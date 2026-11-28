@@ -390,33 +390,15 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(obj),
                         optimisticUpdate: () => window.NadufmOffline.updateBootstrap((base) => {
+                            const addrText = [obj.village, obj.union, obj.upazila, obj.district].filter(Boolean).join(', ');
                             const localAdm = Object.assign({}, obj, {
                                 id: 'adm_local_' + Date.now(),
+                                status: 'pending',
+                                address: addrText,
+                                photo: obj.base64 || '',
                                 createdAt: new Date().toISOString(),
                             });
                             base.admissions = [localAdm].concat(Array.isArray(base.admissions) ? base.admissions : []);
-                            const cls = window.NadufmOffline.normalizeClassInput(obj.student_class || '');
-                            const rollStr = String(obj.roll_no || '').trim();
-                            const stuObj = {
-                                roll: rollStr,
-                                rollBn: window.NadufmOffline.bnNum(rollStr),
-                                id: String(obj.id_no || '').trim(),
-                                reg_no: String(obj.birth_reg || obj.id_no || '').trim(),
-                                name_bn: obj.name_bn || '',
-                                name_en: obj.name_en || '',
-                                classKey: cls.key || '',
-                                class_name: cls.label || obj.student_class || '',
-                                father_bn: obj.father_bn || '',
-                                mother_bn: obj.mother_bn || '',
-                                dob: obj.dob || '',
-                                mobile: obj.mobile || '',
-                                blood: obj.blood_group || '',
-                                blood_group: obj.blood_group || '',
-                                address: (obj.village || '') + (obj.union ? ', ' + obj.union : ''),
-                                photo: obj.base64 || '/logo.png',
-                                source: 'admissions',
-                            };
-                            base.students = [stuObj].concat(Array.isArray(base.students) ? base.students : []);
                             return base;
                         }),
                     }),
